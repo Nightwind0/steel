@@ -1,0 +1,9 @@
+1) Add %error rules to steel.trison they should
+	A) Set a new boolean "encountered an error" flag in the parser class
+	B) Add an error string, including the line number, etc, to a list of error strings in the parser class
+1.5) Remember to reset the error flag and error string list before parsing again.
+2) Change steel interpreter so that, after parsing, it checks the "encountered error" flag, and displays
+	all of the error strings, and does NOT attempt to run the AST. 
+
+(14:43:12) MrDannyDP: but it can also occur that you'll get that code without ever encountering an %error rule, in which case, you'll get that Parse() error code, but your "encountered error" boolean will be false. 
+(14:43:24) MrDannyDP: In which case, you go "I got an error but I dont have any clue why. Sorry."

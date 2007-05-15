@@ -1,0 +1,448 @@
+%parser_class_name "SteelParser"
+%parser_base_assigned_type "AstBase*"
+%parser_class_methods_and_members{
+    void setBuffer(const char *pBuffer, const std::string &script_name);
+	bool hadError() const { return mbErrorEncountered; }
+	std::string getErrors() const { return mErrors; }
+    Token::Type Scan ();
+private:
+	void addError(unsigned int line, const std::string &error);
+    SteelScanner *m_scanner;
+    const char *m_pBuffer;
+	bool mbErrorEncountered;
+	std::string mErrors;	 
+}
+%parser_header_file_top { 
+	#ifndef STEEL_PARSER_H
+	#define STEEL_PARSER_H
+
+	#include <cassert> 
+	#include <string>
+	#include "Ast.h"
+	class SteelScanner;
+}
+%parser_header_file_bottom {
+	#endif // STEEL_PARSER_H
+}
+
+%parser_implementation_file_top {
+	#include "SteelScanner.h"
+	#include "Ast.h"
+	#include <sstream>
+
+	std::string itos(int i)	// convert int to string
+	{
+		std::stringstream s;
+		s << i;
+		return s.str();
+	}
+
+}
+
+%parser_start_of_parse_method_actions {
+	mbErrorEncountered = false;
+	mErrors.clear();
+}
+
+%parser_implementation_file_bottom {
+
+void SteelParser::addError(unsigned int line, const std::string &error)
+{
+	mbErrorEncountered = true;
+	mErrors +=  itos(line) + ": " + error + '\n';
+}
+
+void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
+{	
+	assert( NULL != m_scanner );
+	m_scanner->setBuffer(pBuffer,name);
+}
+
+
+SteelParser::Token::Type SteelParser::Scan ()
+{
+	assert(m_scanner != NULL);
+	return m_scanner->Scan(&m_lookahead_token);
+}
+}
+
+%parser_constructor_actions{
+    m_scanner = new SteelScanner();
+}
+
+%parser_destructor_actions{
+    delete m_scanner;
+}
+
+
+%parser_throw_away_token_actions{
+    delete token;
+}
+
+
+
+%token ';' '(' ')' '=' '{' '}' '[' ']' ','
+%token '-' '+' '*' '/' '^' '%'
+%token D
+%token GT LT EQ NE GTE LTE
+%token AND OR NOT
+%token WHILE
+%token BREAK
+%token CONTINUE
+%token RETURN
+%token IF
+%token ELSE
+%token FUNCTION
+%token FUNC_IDENTIFIER
+%token VAR_IDENTIFIER
+%token ARRAY_IDENTIFIER
+%token FOR
+%token VAR
+%token INT
+%token FLOAT
+%token STRING
+%token INCREMENT
+%token DECREMENT
+%token CAT
+%token POP
+%token FINAL
+
+%prec ASSIGNMENT
+%prec NON_ELSE
+%prec ELSE
+%prec OR
+%prec AND
+%prec EQ_NE
+%prec COMPARATOR
+%prec ADD_SUB
+%prec MULT_DIV_MOD
+%prec UNARY
+%prec POW
+%prec PAREN
+
+
+%start root
+%%
+
+root %type "AstScript*"
+:
+	statement_list:list 
+			{
+				AstScript * pScript =   new AstScript(
+							list->GetLine(),
+							list->GetScript());
+			        pScript->SetList(list);
+				return pScript;
+			} 
+
+;
+
+func_definition %type "AstFunctionDefinition*"
+:
+	FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{':b1 statement_list:stmts '}':b2
+				{
+					delete b1;
+					delete b2;
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									params,
+									stmts,
+									false);
+				}
+|
+	FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{':b1 statement_list:stmts '}':b2
+				{
+					delete b1;
+					delete b2;
+					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
+					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									pId,
+									NULL,
+									stmts,
+									false);
+				}
+|
+	FUNCTION FUNC_IDENTIFIER:id '(' ')' '{':b1 statement_list:stmts '}':b2
+				{
+					delete b1;
+					delete b2;
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									NULL,
+									stmts,
+									false);
+				}
+|
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{':b1 statement_list:stmts '}':b2
+				{
+					delete b1;
+					delete b2;
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									params,
+									stmts,
+									true);
+				}
+|
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{':b1 statement_list:stmts '}':b2
+				{
+					delete b1;
+					delete b2;
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									NULL,
+									stmts,
+									true);
+				}
+;
+
+
+param_id %type "AstIdentifier*"
+:
+	VAR_IDENTIFIER:id { return id; }
+|
+	ARRAY_IDENTIFIER:id { return id; }
+;
+
+param_definition %type "AstParamDefinitionList*"
+:
+	vardecl:decl 
+			{
+				AstParamDefinitionList * pList = new AstParamDefinitionList(decl->GetLine(),decl->GetScript());
+				pList->add(static_cast<AstDeclaration*>(decl));
+				return pList;		
+			}
+|
+	param_definition:list ',' vardecl:decl
+			{
+				list->add(static_cast<AstDeclaration*>(decl));
+				return list;
+			}
+;
+
+statement_list %type "AstStatementList*"
+:
+	statement:stmt 	{
+				AstStatementList *pList = new AstStatementList( stmt->GetLine(),
+										stmt->GetScript());
+				pList->add(stmt);
+				return pList;
+			}
+|
+	statement_list:list statement:stmt
+				{
+					list->add( stmt ); 
+					return list;
+				}
+;
+
+statement %type "AstStatement*"
+:
+	exp_statement:exp  { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
+|
+	func_definition:func { return func; }
+|
+	'{':b1 statement_list:list '}':b2 { delete b1; delete b2; return list; }
+|
+	'{':b1 '}':b2 {
+			 int line = b1->GetLine();
+			 std::string script = b1->GetScript();
+			 delete b1;
+			 delete b2;
+			 return new AstStatement(line,script);
+			}
+|
+	vardecl:vardecl ';':semi { delete semi; return vardecl; }
+|
+	WHILE '(' exp:exp ')' statement:stmt { return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); }
+|
+	IF '(' exp:exp ')' statement:stmt ELSE statement:elses %prec ELSE { return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);}
+|
+	IF '(' exp:exp ')' statement:stmt %prec NON_ELSE { return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); }
+|
+	RETURN exp:exp ';':semi { delete semi; return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);}
+|
+	RETURN ';':semi
+			{
+				int line = semi->GetLine();
+				std::string script = semi->GetScript();
+				delete semi;
+				return new AstReturnStatement(line,script);
+			}
+|
+	FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt
+			{
+				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition, 
+						new AstExpression (start->GetLine(),start->GetScript()), stmt); 
+			}
+|
+	FOR '(' exp_statement:start exp_statement:condition  exp:iteration ')' statement:stmt
+			{
+				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
+			}
+|
+	BREAK ';':semi 
+			{
+				int line = semi->GetLine();
+				std::string script = semi->GetScript();
+				delete semi;
+				return new AstBreakStatement(line,script); 
+			}
+|
+	CONTINUE ';':semi
+			{
+				int line = semi->GetLine();
+				std::string script = semi->GetScript();
+				delete semi;
+				return new AstContinueStatement(line,script); 
+			}
+;
+
+
+exp %type "AstExpression*"
+:
+	call:call { return call; }
+|
+	INT:i { return i;}
+|	
+	FLOAT:f { return f; }
+|
+	STRING:s { return s; }
+|
+	var_identifier:id { return id; }
+|
+	array_identifier:id { return id; }
+|
+	exp:a '+' exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); }
+|
+	exp:a '-' exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); }
+|
+	exp:a '*' exp:b %prec MULT_DIV_MOD { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,b); }
+|
+	exp:a '/' exp:b %prec MULT_DIV_MOD { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::DIV,a,b); }
+|
+	exp:a '%' exp:b %prec MULT_DIV_MOD { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MOD,a,b); }
+|
+	exp:a D exp:b %prec POW { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); }
+|
+	exp:lvalue '=' exp:exp  %right %prec ASSIGNMENT { return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); }
+|
+	exp:a '^' exp:b %right %prec POW { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); }
+|
+	exp:a OR exp:b %prec OR { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); }
+|
+	exp:a AND exp:b %prec AND { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); }
+|
+	exp:a EQ exp:b %prec EQ_NE { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::EQ,a,b); }
+|
+	exp:a NE exp:b %prec EQ_NE { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::NE,a,b); }
+|
+	exp:a LT exp:b %prec COMPARATOR { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LT,a,b); }
+|
+	exp:a GT exp:b %prec COMPARATOR { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GT,a,b); }
+|
+	exp:a LTE exp:b %prec COMPARATOR { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); }
+|
+	exp:a GTE exp:b %prec COMPARATOR { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }	
+|
+	exp:a CAT exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::CAT,a,b); }
+|
+	'(' exp:exp ')' %prec PAREN { return exp; }
+|
+	'-' exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); }
+|
+	'+' exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); }
+|
+	NOT exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); }
+|
+	CAT exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(),
+exp->GetScript(), AstUnaryOp::CAT,exp); }
+|
+	exp:lvalue '[' exp:index ']'  %prec PAREN { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
+|
+	INCREMENT exp:lvalue %right %prec UNARY { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);}
+|
+	exp:lvalue INCREMENT %prec PAREN { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);}
+|
+	DECREMENT exp:lvalue %right %prec UNARY { return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);}
+|
+	exp:lvalue DECREMENT %prec PAREN { return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);}
+|
+	POP exp:lvalue %prec UNARY { return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); }
+;
+
+exp_statement %type "AstExpression*"
+:
+	';':semi {
+			int line = semi->GetLine();
+			std::string script = semi->GetScript(); 
+			delete semi;
+			return new AstExpression(line,script); 
+		}
+|
+	exp:exp ';':semi { delete semi;  return exp; }
+;
+
+int_literal %type "AstInteger*"
+:
+	INT:i { return i; }
+;
+
+var_identifier %type "AstVarIdentifier *"
+:
+	VAR_IDENTIFIER:id { return id; }
+;
+
+func_identifier %type "AstFuncIdentifier*"
+:
+	FUNC_IDENTIFIER:id { return id; }
+;
+
+array_identifier %type "AstArrayIdentifier*"
+:
+	ARRAY_IDENTIFIER:id { return id; }
+;
+
+
+call %type "AstCallExpression*"
+:
+	func_identifier:id '(' ')' { return new AstCallExpression(id->GetLine(),id->GetScript(),id);}
+|
+	func_identifier:id '(' param_list:params ')' { return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);}
+;
+
+vardecl %type "AstDeclaration*"
+:
+	VAR var_identifier:id { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id);}
+|
+	VAR var_identifier:id '=' exp:exp { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,exp); }
+|
+	VAR array_identifier:id '[' exp:i ']' { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); }
+|
+	VAR array_identifier:id { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); }
+|
+	VAR array_identifier:id '=' exp:exp      {
+							AstArrayDeclaration *pDecl =  new AstArrayDeclaration(id->GetLine(),id->GetScript(),id);
+							pDecl->assign(exp);
+							return pDecl;
+						 }
+;
+
+param_list %type "AstParamList*"
+:
+	exp:exp { AstParamList * pList = new AstParamList ( exp->GetLine(), exp->GetScript() );
+		  pList->add(exp);
+		  return pList;
+		}
+|
+	param_list:list ',' exp:exp { list->add(exp); return list;}
+			    
+;
+
+

@@ -1,0 +1,397 @@
+%target_languages cpp
+
+%language.cpp.header_filename "SteelScanner.h"
+%language.cpp.implementation_filename "SteelScanner.cpp"
+%language.cpp.top_of_header_file %{
+
+#include <cassert>
+#ifndef _STEEL_SCANNER_H
+#define _STEEL_SCANNER_H
+
+#include "SteelParser.h"
+
+class AstBase;
+%}
+
+%language.cpp.bottom_of_header_file %{
+#endif // _STEEL_SCANNER_H
+%}
+
+%language.cpp.top_of_implementation_file %{
+#include <iostream>
+#include <sstream>
+#include <cassert>
+#include "SteelScanner.h"
+#include "Ast.h"
+%}
+
+%language.cpp.start_of_scan_method_actions %{
+	*token = NULL;
+%}
+
+%language.cpp.end_of_scan_method_actions %{
+	
+%}
+
+%language.cpp.top_of_class {
+	void setBuffer(const char * pBuffer, const std::string &name);
+}
+
+%language.cpp.bottom_of_class {
+
+	// Converters
+	int ToInt(const std::string &text);
+	double ToFloat(const std::string &text);
+	int ToIntFromHex(const std::string &text);
+
+	unsigned int m_char_cursor;
+	const char * m_pBuffer;
+	unsigned int m_line;
+	std::string m_script_name;
+}
+
+%language.cpp.bottom_of_implementation_file %{
+void SteelScanner::setBuffer(const char * pBuffer, const std::string &name)
+{
+	assert ( NULL != pBuffer );
+	m_char_cursor = 0;
+	m_line = 1;
+	m_pBuffer = pBuffer;
+	m_script_name = name;
+}
+int SteelScanner::ToInt(const std::string &text)
+{
+	std::istringstream str(text);
+	int i;
+	str >> i;
+
+	return i;
+}
+
+double SteelScanner::ToFloat(const std::string &text)
+{
+	std::istringstream str(text);
+	double d;
+	str >> d;
+
+	return d;
+}
+
+int SteelScanner::ToIntFromHex(const std::string &text)
+{
+	std::istringstream str(text);
+	int i;
+
+	str >> std::hex >> i;
+	return i;
+}
+
+%}
+
+%language.cpp.constructor_actions {
+	m_char_cursor = 0;
+	m_line = 1;
+	m_script_name = "UNKNOWN SCRIPT";	
+	m_pBuffer = "";
+}
+
+%language.cpp.reset_for_new_input_actions {
+	m_line = 0;	
+}
+
+%language.cpp.rejection_actions {
+	//std::cerr << "Warning: unmatched input found:" 
+	//<< '\'' << accepted_string << '\'' << std::endl;
+}
+
+%language.cpp.return_type "SteelParser::Token::Type"
+
+%language.cpp.scan_method_parameters {
+AstBase **token
+}
+
+%language.cpp.return_next_input_char {
+
+	if( m_pBuffer[m_char_cursor] == '\0')
+		return '\n';
+	else
+		return m_pBuffer[m_char_cursor++];
+
+}
+
+%language.cpp.return_true_iff_input_is_at_end {
+
+	return (m_pBuffer[m_char_cursor] == '\0');
+}
+
+
+
+%language.cpp.class_name SteelScanner
+
+%start MAIN
+
+%%
+
+
+%state MAIN
+:
+	(\z)
+	%language.cpp {
+		*token = NULL;	
+		return SteelParser::Token::END_;
+	}
+|
+	(\n)
+	%language.cpp {
+		m_line++;
+	}
+|
+	(//.*)
+	%language.cpp {
+		// Eat the comment
+	}
+|
+	([\t ]+)
+	 %language.cpp {
+		// Eat it
+	 }
+|
+	(")
+	%language.cpp {
+		*token = new AstString(m_line,m_script_name);
+		
+		SetScannerState(State::STRING_LITERAL_GUTS);
+	}
+|
+	(pop)
+	%language.cpp {
+		*token = NULL;
+		
+		return SteelParser::Token::POP;
+	}
+
+|
+	(:)
+	%language.cpp {
+		*token = NULL;
+		return SteelParser::Token::CAT;
+	}
+|
+	(\-\-)
+	%language.cpp {
+		*token = NULL;
+		return SteelParser::Token::DECREMENT;
+	}
+|
+	(\+\+)
+	%language.cpp {
+		*token = NULL;
+		return SteelParser::Token::INCREMENT;
+	}
+|
+	(0|[1-9][0-9]*)
+	%language.cpp{
+		*token = new AstInteger(m_line,m_script_name,ToInt(accepted_string));
+			
+		return SteelParser::Token::INT;
+	}
+|
+	(0x[0-9a-fA-F]+)
+	%language.cpp{
+		*token = new AstInteger(m_line,m_script_name,ToIntFromHex(accepted_string));
+		
+		return SteelParser::Token::INT;
+	}
+|
+	([0-9]+\.[0-9]+)
+	%language.cpp{
+		*token = new AstFloat(m_line,m_script_name,ToFloat(accepted_string));
+		return SteelParser::Token::FLOAT;
+	}	
+|
+	(\$[a-zA-Z_][a-zA-Z0-9_]*)
+	%language.cpp{
+		*token = new AstVarIdentifier(m_line,m_script_name,accepted_string);
+		return SteelParser::Token::VAR_IDENTIFIER;		
+	}
+|
+	(@[a-zA-Z_][a-zA-Z0-9_]*)
+	%language.cpp {
+		*token = new AstArrayIdentifier(m_line,m_script_name,accepted_string);
+		return SteelParser::Token::ARRAY_IDENTIFIER;
+	}
+|
+	(;|\{|\})
+	%language.cpp {
+		*token = new AstKeyword(m_line,m_script_name);
+		return (SteelParser::Token::Type)accepted_string[0];
+	}
+|
+	(@|$|\(|\)|,|%|\+|\-|\^|\*|\=|\[|\]|%|/)
+	%language.cpp{
+		*token = NULL;
+		return (SteelParser::Token::Type)accepted_string[0];
+	}
+|
+	(<=)
+	 %language.cpp{
+		 *token = NULL;
+		 return SteelParser::Token::LTE; 
+	}
+|
+	(>=) 
+	%language.cpp{
+		 *token = NULL;
+		  return SteelParser::Token::GTE; 
+	}
+|
+	(!=)
+	%language.cpp{
+		*token = NULL;
+		return SteelParser::Token::NE;
+	}
+|
+	(==) 
+	%language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::EQ;
+	 }
+|
+	(<) 
+	%language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::LT; 
+	}
+|
+	(>)
+	 %language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::GT; 
+	}
+|
+	(d)
+	 %language.cpp{ 
+		*token = NULL;
+		 return SteelParser::Token::D;
+	 }
+|
+	(and) 
+	%language.cpp{ 
+		*token = NULL;
+		 return SteelParser::Token::AND;
+	 }
+|
+	(or) 
+	%language.cpp{ 
+		*token = NULL;
+		 return SteelParser::Token::OR;
+	 }
+|
+	(not)
+	 %language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::NOT;
+	}
+|
+	(while)
+	 %language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::WHILE;
+	}
+|
+	(for) 
+	%language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::FOR;
+	}
+|
+	(break) 
+	%language.cpp{ 
+		*token = NULL;
+		 return SteelParser::Token::BREAK;
+	}
+|
+	(continue)
+	 %language.cpp{ 
+		*token = NULL;
+		 return SteelParser::Token::CONTINUE;
+	}
+|
+	(if) 
+	%language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::IF;
+	}
+|
+	(else)
+	 %language.cpp{
+		*token = NULL;
+		 return SteelParser::Token::ELSE;
+	}
+|
+	(return) 
+	%language.cpp{
+		 *token = NULL;
+		return SteelParser::Token::RETURN;
+	}
+|
+	(function) 
+	%language.cpp{ 
+		*token = NULL;
+		return SteelParser::Token::FUNCTION;
+	}
+|
+	(final)
+	%language.cpp{
+		*token = NULL;
+		return SteelParser::Token::FINAL;
+	}
+|
+	(var)
+	 %language.cpp{
+	 	*token = NULL;
+		
+		return SteelParser::Token::VAR;
+	}
+|
+	([a-zA-Z_][a-zA-Z0-9_]*)
+	%language.cpp{
+		*token = new AstFuncIdentifier(m_line,m_script_name,accepted_string);
+		return SteelParser::Token::FUNC_IDENTIFIER;
+	}
+
+;
+
+%state STRING_LITERAL_GUTS
+:
+
+	([^"])
+	%language.cpp{
+		// First, add the accepted_string to the string..
+		AstString *pString = (AstString*)*token;		
+		pString->addChar(accepted_string[0]);
+	}
+|
+	(\\.)
+	%language.cpp{
+		AstString *pString = (AstString*)*token;
+		pString->addChar( AstString::getEscapedChar ( accepted_string[1] ) );
+	}
+
+|
+
+	(") 
+	%language.cpp{ 
+		AstString *pString = (AstString*)*token;
+
+		SetScannerState(State::MAIN);
+		return SteelParser::Token::STRING; 
+	}
+|
+	(\z)
+	%language.cpp{
+		// Error
+	}
+
+;
+

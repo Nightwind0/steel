@@ -1,0 +1,57 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.59)
+AC_INIT(steel, 0.0.1.0, dpalm@writeme.com)
+AC_CONFIG_SRCDIR([src/Ast.h])
+
+AM_CONFIG_HEADER( config.h )
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_DISABLE_SHARED
+AC_PROG_LIBTOOL
+AC_PROG_MAKE_SET
+AM_INIT_AUTOMAKE( steel, 0.0.1.0)
+# AM_MAINTAINER_MODE
+# Checks for libraries.
+
+
+# Check for debug or release
+AC_ARG_ENABLE(debug,[--enable-debug enables debug build],
+				     [debugmode=$enableval],	
+				     [debugmode=false]
+)
+
+if test "$debugmode" != false 
+then
+     CPPFLAGS="-g -O0 -DDEBUG"
+     AC_MSG_RESULT(on)
+else
+     CPPFLAGS="-DNDEBUG -O3" 
+     AC_MSG_RESULT(off)
+fi
+
+AC_ARG_ENABLE(gprof,
+[       --enable-gprof          enable profiling with gprof],
+gprof=$enableval,gprof=no)
+if test "$gprof" != no
+then
+    CFLAGS="-pg $CFLAGS"
+    CPPFLAGS="-pg $CPPFLAGS"
+    CXXFLAGS="-pg $CXXFLAGS"
+    AC_CHECK_LIB(gmon, main,[LIBS="$LIBS -lgmon"])
+    AC_MSG_RESULT(enabled)
+else
+    AC_MSG_RESULT(no)
+fi
+				     
+# Checks for header files.
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+# Checks for library functions.
+AC_OUTPUT(Makefile \
+		   src/Makefile
+)

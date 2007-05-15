@@ -1,0 +1,35 @@
+var $hoob = 12;
+var $count=1;
+
+for($count=0;$count<$hoob;$count++)
+	println ($count);
+
+while( 1 )
+{
+	var $hoob = 15;
+	println($hoob);
+	println("Within while.");
+	if ( 1 ) break;
+	println("Didn't break.");
+}
+
+println("Out of while.");
+println($hoob);
+
+
+var $c = 0;
+
+println ( $c++ );
+println ( $c );
+println ( ++$c );
+println ( --$c );
+
+var @array[1];
+
+
+var $index = 0;
+
+@array[$index++] = "Hello";
+
+println( @array[0] );
+println( $index );

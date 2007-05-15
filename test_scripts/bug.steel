@@ -1,0 +1,12 @@
+var @array[1];
+
+var @array2;
+
+println(len(@array));
+println(len(@array2));
+
+@array2 = @array;
+
+println(len(@array2));
+
+println ( @array[0] );

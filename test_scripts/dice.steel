@@ -1,0 +1,9 @@
+var $roll = 1 d 20;
+
+if ($roll == 20)
+	println("You won!");
+else println("You lost.");
+
+
+
+

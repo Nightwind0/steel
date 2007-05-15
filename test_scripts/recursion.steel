@@ -1,0 +1,13 @@
+function factorial(var $count)
+{
+	var $temp;
+
+	if($count <= 1) return 1;
+
+	$temp = $count * factorial ( $count - 1 );
+
+	return $temp;
+}
+
+
+println ( factorial ( 5 ) );

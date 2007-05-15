@@ -1,0 +1,10 @@
+println ( 2 ^ 8 );
+println ( cos(5) );
+println ( exp(log(2)/10) );
+println ( 10 * exp(log(2)/10)^100 );
+println ( 10 * exp(log(2)/10)^110 );
+
+var $magic =  10 * exp(log(2)/10)^120;
+
+println ( floor($magic) );
+

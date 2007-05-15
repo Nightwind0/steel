@@ -1,0 +1,11 @@
+function stumpy()
+{
+	println("HELLO");
+}
+
+final function stumpy()
+{
+	println("WHOOP");
+}
+
+stumpy();

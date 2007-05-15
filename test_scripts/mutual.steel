@@ -1,0 +1,14 @@
+
+function alpha()
+{
+	return beta();
+}
+
+
+function beta()
+{
+	return 0;
+}
+
+
+println ( beta() );

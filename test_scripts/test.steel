@@ -1,0 +1,55 @@
+
+var @array;
+
+@array = "Foo";
+
+println ( len ( @array ) );
+
+function foo(var $count)
+{
+	println($count);
+	var $i;
+	for($i=0;$i<$count; $i++)
+		println ( $i );
+		
+	return;
+	println("Impossible code.");
+}
+
+function foo()
+{
+return 1;
+}
+
+function two()
+{
+	return 2;
+}
+
+function death()
+{
+	println("DEATH");
+}
+
+var $slut = 8 * real("3.14");
+
+println(5 == 5);
+println( integer($slut ));
+
+println( substr("FOOD",1,2 ));
+
+foo(3);
+
+
+foo(4);
+
+println( two() * 2 );
+
+
+if ( 0 and death() ) two();
+
+if ( 1 or death() ) two();
+
+println( 0x20 );
+
+println ( real("8.5") * 2);
