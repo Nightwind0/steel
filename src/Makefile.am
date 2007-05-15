@@ -1,22 +1,24 @@
-noinst_LTLIBRARIES = libsteel.la
+lib_LTLIBRARIES = libsteel.la
 noinst_PROGRAMS = steel
 
 libsteel_la_SOURCES = SteelParser.cpp \
-			SteelParser.h \
 			SteelScanner.cpp \
-			SteelScanner.h \
-			SteelFunctor.h \
 			SteelFunctor.cpp \
-			SteelInterpreter.h \
 			SteelInterpreter.cpp \
-			SteelException.h \
 			SteelException.cpp \
 			Ast.cpp \
-			Ast.h \
-			SteelType.h \
 			SteelType.cpp \
 			steel.trison \
 			steel.reflex
+
+libsteel_ladir = $(pkgincludedir)
+libsteel_la_HEADERS =   Ast.h \
+						SteelFunctor.h \
+						SteelException.h \
+						SteelType.h \
+						SteelParser.h \
+						SteelScanner.h \
+						SteelInterpreter.h
 
 SteelParser.cpp : steel.trison
 	trison -S steel.states -o SteelParser -Hh steel.trison
@@ -31,5 +33,3 @@ func_test : SteelFunctor.h func_test.cpp SteelFunctor.cpp
 steel_SOURCES = steel.cpp
 steel_LDADD = libsteel.la
 
-test_parser_SOURCES = test_parser.cpp
-test_parser_LDADD = libsteel.la
