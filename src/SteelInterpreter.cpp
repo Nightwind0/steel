@@ -558,7 +558,7 @@ SteelType SteelInterpreter::tanh (double f)
 SteelType SteelInterpreter::round (double f)
 {
     SteelType var;
-    var.set(static_cast<double>(round(f)));
+    var.set(static_cast<double>(floor(f+0.5)));
 
     return var;    
 }
