@@ -1,5 +1,5 @@
 noinst_LTLIBRARIES = libsteel.la
-noinst_PROGRAMS = steel test_parser
+noinst_PROGRAMS = steel
 
 libsteel_la_SOURCES = SteelParser.cpp \
 			SteelParser.h \
