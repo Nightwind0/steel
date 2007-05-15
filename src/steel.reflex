@@ -227,7 +227,7 @@ AstBase **token
 		return (SteelParser::Token::Type)accepted_string[0];
 	}
 |
-	(@|$|\(|\)|,|%|\+|\-|\^|\*|\=|\[|\]|%|/)
+	(@|\$|\(|\)|,|%|\+|\-|\^|\*|\=|\[|\]|%|/)
 	%language.cpp{
 		*token = NULL;
 		return (SteelParser::Token::Type)accepted_string[0];
