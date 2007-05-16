@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libsteel.la
-noinst_PROGRAMS = steel
+bin_PROGRAMS = steel
 
 libsteel_la_SOURCES = SteelParser.cpp \
 			SteelScanner.cpp \
@@ -23,7 +23,7 @@ libsteel_la_HEADERS =   Ast.h \
 SteelParser.cpp : steel.trison
 	trison -S steel.states -o SteelParser -Hh steel.trison
 
-SteelScanner.cpp : steel.reflex SteelParser.cpp
+SteelScanner.cpp : steel.reflex
 	reflex  steel.reflex
 
 func_test : SteelFunctor.h func_test.cpp SteelFunctor.cpp

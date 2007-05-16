@@ -123,10 +123,7 @@ SteelParser::ParserReturnCode SteelParser::PrivateParse ()
     m_lookahead_token_type = Token::INVALID_;
     m_lookahead_token = static_cast<AstBase*>(0);
     m_is_new_lookahead_token_required = true;
-
-    m_saved_lookahead_token_type = Token::INVALID_;
-    m_get_new_lookahead_token_type_from_saved = false;
-    m_previous_transition_accepted_error_token = false;
+    m_in_error_handling_mode = false;
 
     m_is_returning_with_non_terminal = false;
     m_returning_with_this_non_terminal = Token::INVALID_;
@@ -178,12 +175,15 @@ SteelParser::ParserReturnCode SteelParser::PrivateParse ()
             StateTransition const &state_transition =
                 ms_state_transition[state_transition_number];
             // if this token matches the current transition, do its action
-            if (state_transition.m_token_type == state_transition_token_type)
+            if (m_in_error_handling_mode && state_transition.m_token_type == Token::ERROR_ && state_transition_token_type != Token::END_ ||
+                !m_in_error_handling_mode && state_transition.m_token_type == state_transition_token_type)
             {
                 if (state_transition.m_token_type == Token::ERROR_)
-                    m_previous_transition_accepted_error_token = true;
-                else
-                    m_previous_transition_accepted_error_token = false;
+                {
+                    ThrowAwayToken(m_lookahead_token);
+                    m_lookahead_token = static_cast<AstBase*>(0);
+                    m_lookahead_token_type = Token::ERROR_;
+                }
 
                 PrintStateTransition(state_transition_number);
                 if (ProcessAction(state_transition.m_action) == ARC_ACCEPT_AND_RETURN)
@@ -209,60 +209,31 @@ SteelParser::ParserReturnCode SteelParser::PrivateParse ()
             else
             {
                 assert(!m_is_new_lookahead_token_required);
+                assert(!m_in_error_handling_mode);
 
                 DEBUG_SPEW_1("!!! error recovery: begin" << std::endl);
+                m_in_error_handling_mode = true;
 
-                // if an error was encountered, and this state accepts the %error
-                // token, then we don't need to pop states
-                if (GetDoesStateAcceptErrorToken(current_state_number))
+                // pop the stack until we reach an error-handling state, but only
+                // if the lookahead token isn't END_ (to prevent an infinite loop).
+                while (!GetDoesStateAcceptErrorToken(current_state_number) || m_lookahead_token_type == Token::END_)
                 {
-                    // if an error token was previously accepted, then throw
-                    // away the lookahead token, because whatever the lookahead
-                    // was didn't match.  this prevents an infinite loop.
-                    if (m_previous_transition_accepted_error_token)
+                    DEBUG_SPEW_1("!!! error recovery: popping state " << current_state_number << std::endl);
+                    assert(m_token_stack.size() + 1 == m_state_stack.size());
+                    if (m_token_stack.size() > 0)
                     {
-                        ThrowAwayToken(m_lookahead_token);
-                        m_is_new_lookahead_token_required = true;
-                    }
-                    // otherwise, save off the lookahead token so that once the
-                    // %error token has been shifted, the lookahead can be
-                    // re-analyzed.
-                    else
-                    {
-                        m_saved_lookahead_token_type = m_lookahead_token_type;
-                        m_get_new_lookahead_token_type_from_saved = true;
-                        m_lookahead_token_type = Token::ERROR_;
-                    }
-                }
-                // otherwise save off the lookahead token for the error panic popping
-                else
-                {
-                    // save off the lookahead token type and set the current to Token::ERROR_
-                    m_saved_lookahead_token_type = m_lookahead_token_type;
-                    m_get_new_lookahead_token_type_from_saved = true;
-                    m_lookahead_token_type = Token::ERROR_;
-
-                    // pop until we either run off the stack, or find a state
-                    // which accepts the %error token.
-                    assert(m_state_stack.size() > 0);
-                    do
-                    {
-                        DEBUG_SPEW_1("!!! error recovery: popping state " << current_state_number << std::endl);
-                        m_state_stack.pop_back();
-
-                        if (m_state_stack.size() == 0)
-                        {
-                            ThrowAwayTokenStack();
-                            DEBUG_SPEW_1("!!! error recovery: unhandled error -- quitting" << std::endl);
-                            return PRC_UNHANDLED_PARSE_ERROR;
-                        }
-
-                        assert(m_token_stack.size() > 0);
                         ThrowAwayToken(m_token_stack.back());
                         m_token_stack.pop_back();
-                        current_state_number = m_state_stack.back();
                     }
-                    while (!GetDoesStateAcceptErrorToken(current_state_number));
+                    m_state_stack.pop_back();
+
+                    if (m_state_stack.size() == 0)
+                    {
+                        DEBUG_SPEW_1("!!! error recovery: unhandled error -- quitting" << std::endl);
+                        return PRC_UNHANDLED_PARSE_ERROR;
+                    }
+
+                    current_state_number = m_state_stack.back();
                 }
 
                 DEBUG_SPEW_1("!!! error recovery: found state which accepts %error token" << std::endl);
@@ -279,15 +250,18 @@ SteelParser::ActionReturnCode SteelParser::ProcessAction (SteelParser::Action co
 {
     if (action.m_transition_action == TA_SHIFT_AND_PUSH_STATE)
     {
+        m_in_error_handling_mode = false;
         ShiftLookaheadToken();
         PushState(action.m_data);
     }
     else if (action.m_transition_action == TA_PUSH_STATE)
     {
+        assert(!m_in_error_handling_mode);
         PushState(action.m_data);
     }
     else if (action.m_transition_action == TA_REDUCE_USING_RULE)
     {
+        assert(!m_in_error_handling_mode);
         unsigned int reduction_rule_number = action.m_data;
         assert(reduction_rule_number < ms_reduction_rule_count);
         ReductionRule const &reduction_rule = ms_reduction_rule[reduction_rule_number];
@@ -295,6 +269,7 @@ SteelParser::ActionReturnCode SteelParser::ProcessAction (SteelParser::Action co
     }
     else if (action.m_transition_action == TA_REDUCE_AND_ACCEPT_USING_RULE)
     {
+        assert(!m_in_error_handling_mode);
         unsigned int reduction_rule_number = action.m_data;
         assert(reduction_rule_number < ms_reduction_rule_count);
         ReductionRule const &reduction_rule = ms_reduction_rule[reduction_rule_number];
@@ -302,12 +277,6 @@ SteelParser::ActionReturnCode SteelParser::ProcessAction (SteelParser::Action co
         DEBUG_SPEW_1("*** accept" << std::endl);
         // everything is done, so just return.
         return ARC_ACCEPT_AND_RETURN;
-    }
-    else if (action.m_transition_action == TA_THROW_AWAY_LOOKAHEAD_TOKEN)
-    {
-        assert(!m_is_new_lookahead_token_required);
-        ThrowAwayToken(m_lookahead_token);
-        m_is_new_lookahead_token_required = true;
     }
 
     return ARC_CONTINUE_PARSING;
@@ -353,6 +322,8 @@ void SteelParser::ReduceUsingRule (ReductionRule const &reduction_rule, bool and
     // call the reduction rule handler if it exists
     if (reduction_rule.m_handler != NULL)
         m_reduction_token = (this->*(reduction_rule.m_handler))();
+    else
+        m_reduction_token = static_cast<AstBase*>(0);
     // pop the states and tokens
     PopStates(reduction_rule.m_number_of_tokens_to_reduce_by, false);
 
@@ -361,12 +332,14 @@ void SteelParser::ReduceUsingRule (ReductionRule const &reduction_rule, bool and
     {
         // push the token that resulted from the reduction
         m_token_stack.push_back(m_reduction_token);
+        m_reduction_token = static_cast<AstBase*>(0);
         PrintStateStack();
     }
 }
 
 void SteelParser::PopStates (unsigned int number_of_states_to_pop, bool print_state_stack)
 {
+    assert(m_token_stack.size() + 1 == m_state_stack.size());
     assert(number_of_states_to_pop < m_state_stack.size());
     assert(number_of_states_to_pop <= m_token_stack.size());
 
@@ -409,12 +382,14 @@ void SteelParser::ScanANewLookaheadToken ()
 
 void SteelParser::ThrowAwayToken (AstBase* token)
 {
+    DEBUG_SPEW_1("*** throwing away token of type " << m_lookahead_token_type << std::endl);
+
 
 #line 78 "steel.trison"
 
     delete token;
 
-#line 418 "SteelParser.cpp"
+#line 393 "SteelParser.cpp"
 }
 
 void SteelParser::ThrowAwayTokenStack ()
@@ -512,7 +487,6 @@ AstBase* SteelParser::ReductionRuleHandler0000 ()
     assert(0 < m_reduction_rule_token_count);
     return m_token_stack[m_token_stack.size() - m_reduction_rule_token_count];
 
-    return static_cast<AstBase*>(0);
 }
 
 // rule 1: root <- statement_list:list    
@@ -529,8 +503,7 @@ AstBase* SteelParser::ReductionRuleHandler0001 ()
 			        pScript->SetList(list);
 				return pScript;
 			
-#line 533 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 507 "SteelParser.cpp"
 }
 
 // rule 2: func_definition <- FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{':b1 statement_list:stmts '}':b2    
@@ -558,8 +531,7 @@ AstBase* SteelParser::ReductionRuleHandler0002 ()
 									stmts,
 									false);
 				
-#line 562 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 535 "SteelParser.cpp"
 }
 
 // rule 3: func_definition <- FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{':b1 statement_list:stmts '}':b2    
@@ -587,8 +559,7 @@ AstBase* SteelParser::ReductionRuleHandler0003 ()
 									stmts,
 									false);
 				
-#line 591 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 563 "SteelParser.cpp"
 }
 
 // rule 4: func_definition <- FUNCTION FUNC_IDENTIFIER:id '(' ')' '{':b1 statement_list:stmts '}':b2    
@@ -614,8 +585,7 @@ AstBase* SteelParser::ReductionRuleHandler0004 ()
 									stmts,
 									false);
 				
-#line 618 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 589 "SteelParser.cpp"
 }
 
 // rule 5: func_definition <- FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{':b1 statement_list:stmts '}':b2    
@@ -643,8 +613,7 @@ AstBase* SteelParser::ReductionRuleHandler0005 ()
 									stmts,
 									true);
 				
-#line 647 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 617 "SteelParser.cpp"
 }
 
 // rule 6: func_definition <- FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{':b1 statement_list:stmts '}':b2    
@@ -670,8 +639,7 @@ AstBase* SteelParser::ReductionRuleHandler0006 ()
 									stmts,
 									true);
 				
-#line 674 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 643 "SteelParser.cpp"
 }
 
 // rule 7: param_id <- VAR_IDENTIFIER:id    
@@ -682,8 +650,7 @@ AstBase* SteelParser::ReductionRuleHandler0007 ()
 
 #line 208 "steel.trison"
  return id; 
-#line 686 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 654 "SteelParser.cpp"
 }
 
 // rule 8: param_id <- ARRAY_IDENTIFIER:id    
@@ -694,8 +661,7 @@ AstBase* SteelParser::ReductionRuleHandler0008 ()
 
 #line 210 "steel.trison"
  return id; 
-#line 698 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 665 "SteelParser.cpp"
 }
 
 // rule 9: param_definition <- vardecl:decl    
@@ -710,8 +676,7 @@ AstBase* SteelParser::ReductionRuleHandler0009 ()
 				pList->add(static_cast<AstDeclaration*>(decl));
 				return pList;		
 			
-#line 714 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 680 "SteelParser.cpp"
 }
 
 // rule 10: param_definition <- param_definition:list ',' vardecl:decl    
@@ -727,8 +692,7 @@ AstBase* SteelParser::ReductionRuleHandler0010 ()
 				list->add(static_cast<AstDeclaration*>(decl));
 				return list;
 			
-#line 731 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 696 "SteelParser.cpp"
 }
 
 // rule 11: statement_list <- statement:stmt    
@@ -744,8 +708,7 @@ AstBase* SteelParser::ReductionRuleHandler0011 ()
 				pList->add(stmt);
 				return pList;
 			
-#line 748 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 712 "SteelParser.cpp"
 }
 
 // rule 12: statement_list <- statement_list:list statement:stmt    
@@ -761,8 +724,7 @@ AstBase* SteelParser::ReductionRuleHandler0012 ()
 					list->add( stmt ); 
 					return list;
 				
-#line 765 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 728 "SteelParser.cpp"
 }
 
 // rule 13: statement <- exp_statement:exp    
@@ -773,8 +735,7 @@ AstBase* SteelParser::ReductionRuleHandler0013 ()
 
 #line 247 "steel.trison"
  return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); 
-#line 777 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 739 "SteelParser.cpp"
 }
 
 // rule 14: statement <- func_definition:func    
@@ -785,8 +746,7 @@ AstBase* SteelParser::ReductionRuleHandler0014 ()
 
 #line 249 "steel.trison"
  return func; 
-#line 789 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 750 "SteelParser.cpp"
 }
 
 // rule 15: statement <- '{':b1 statement_list:list '}':b2    
@@ -801,8 +761,7 @@ AstBase* SteelParser::ReductionRuleHandler0015 ()
 
 #line 251 "steel.trison"
  delete b1; delete b2; return list; 
-#line 805 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 765 "SteelParser.cpp"
 }
 
 // rule 16: statement <- '{':b1 '}':b2    
@@ -821,8 +780,7 @@ AstBase* SteelParser::ReductionRuleHandler0016 ()
 			 delete b2;
 			 return new AstStatement(line,script);
 			
-#line 825 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 784 "SteelParser.cpp"
 }
 
 // rule 17: statement <- vardecl:vardecl ';':semi    
@@ -835,8 +793,7 @@ AstBase* SteelParser::ReductionRuleHandler0017 ()
 
 #line 261 "steel.trison"
  delete semi; return vardecl; 
-#line 839 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 797 "SteelParser.cpp"
 }
 
 // rule 18: statement <- WHILE '(' exp:exp ')' statement:stmt    
@@ -849,8 +806,7 @@ AstBase* SteelParser::ReductionRuleHandler0018 ()
 
 #line 263 "steel.trison"
  return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); 
-#line 853 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 810 "SteelParser.cpp"
 }
 
 // rule 19: statement <- IF '(' exp:exp ')' statement:stmt ELSE statement:elses     %prec ELSE
@@ -865,8 +821,7 @@ AstBase* SteelParser::ReductionRuleHandler0019 ()
 
 #line 265 "steel.trison"
  return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);
-#line 869 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 825 "SteelParser.cpp"
 }
 
 // rule 20: statement <- IF '(' exp:exp ')' statement:stmt     %prec NON_ELSE
@@ -879,8 +834,7 @@ AstBase* SteelParser::ReductionRuleHandler0020 ()
 
 #line 267 "steel.trison"
  return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); 
-#line 883 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 838 "SteelParser.cpp"
 }
 
 // rule 21: statement <- RETURN exp:exp ';':semi    
@@ -893,8 +847,7 @@ AstBase* SteelParser::ReductionRuleHandler0021 ()
 
 #line 269 "steel.trison"
  delete semi; return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);
-#line 897 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 851 "SteelParser.cpp"
 }
 
 // rule 22: statement <- RETURN ';':semi    
@@ -910,8 +863,7 @@ AstBase* SteelParser::ReductionRuleHandler0022 ()
 				delete semi;
 				return new AstReturnStatement(line,script);
 			
-#line 914 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 867 "SteelParser.cpp"
 }
 
 // rule 23: statement <- FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt    
@@ -929,8 +881,7 @@ AstBase* SteelParser::ReductionRuleHandler0023 ()
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition, 
 						new AstExpression (start->GetLine(),start->GetScript()), stmt); 
 			
-#line 933 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 885 "SteelParser.cpp"
 }
 
 // rule 24: statement <- FOR '(' exp_statement:start exp_statement:condition exp:iteration ')' statement:stmt    
@@ -949,8 +900,7 @@ AstBase* SteelParser::ReductionRuleHandler0024 ()
 
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			
-#line 953 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 904 "SteelParser.cpp"
 }
 
 // rule 25: statement <- BREAK ';':semi    
@@ -966,8 +916,7 @@ AstBase* SteelParser::ReductionRuleHandler0025 ()
 				delete semi;
 				return new AstBreakStatement(line,script); 
 			
-#line 970 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 920 "SteelParser.cpp"
 }
 
 // rule 26: statement <- CONTINUE ';':semi    
@@ -983,8 +932,7 @@ AstBase* SteelParser::ReductionRuleHandler0026 ()
 				delete semi;
 				return new AstContinueStatement(line,script); 
 			
-#line 987 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 936 "SteelParser.cpp"
 }
 
 // rule 27: exp <- call:call    
@@ -995,8 +943,7 @@ AstBase* SteelParser::ReductionRuleHandler0027 ()
 
 #line 310 "steel.trison"
  return call; 
-#line 999 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 947 "SteelParser.cpp"
 }
 
 // rule 28: exp <- INT:i    
@@ -1007,8 +954,7 @@ AstBase* SteelParser::ReductionRuleHandler0028 ()
 
 #line 312 "steel.trison"
  return i;
-#line 1011 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 958 "SteelParser.cpp"
 }
 
 // rule 29: exp <- FLOAT:f    
@@ -1019,8 +965,7 @@ AstBase* SteelParser::ReductionRuleHandler0029 ()
 
 #line 314 "steel.trison"
  return f; 
-#line 1023 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 969 "SteelParser.cpp"
 }
 
 // rule 30: exp <- STRING:s    
@@ -1031,8 +976,7 @@ AstBase* SteelParser::ReductionRuleHandler0030 ()
 
 #line 316 "steel.trison"
  return s; 
-#line 1035 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 980 "SteelParser.cpp"
 }
 
 // rule 31: exp <- var_identifier:id    
@@ -1043,8 +987,7 @@ AstBase* SteelParser::ReductionRuleHandler0031 ()
 
 #line 318 "steel.trison"
  return id; 
-#line 1047 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 991 "SteelParser.cpp"
 }
 
 // rule 32: exp <- array_identifier:id    
@@ -1055,8 +998,7 @@ AstBase* SteelParser::ReductionRuleHandler0032 ()
 
 #line 320 "steel.trison"
  return id; 
-#line 1059 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1002 "SteelParser.cpp"
 }
 
 // rule 33: exp <- exp:a '+' exp:b    %left %prec ADD_SUB
@@ -1069,8 +1011,7 @@ AstBase* SteelParser::ReductionRuleHandler0033 ()
 
 #line 322 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); 
-#line 1073 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1015 "SteelParser.cpp"
 }
 
 // rule 34: exp <- exp:a '-' exp:b    %left %prec ADD_SUB
@@ -1083,8 +1024,7 @@ AstBase* SteelParser::ReductionRuleHandler0034 ()
 
 #line 324 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); 
-#line 1087 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1028 "SteelParser.cpp"
 }
 
 // rule 35: exp <- exp:a '*' exp:b    %left %prec MULT_DIV_MOD
@@ -1097,8 +1037,7 @@ AstBase* SteelParser::ReductionRuleHandler0035 ()
 
 #line 326 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,b); 
-#line 1101 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1041 "SteelParser.cpp"
 }
 
 // rule 36: exp <- exp:a '/' exp:b    %left %prec MULT_DIV_MOD
@@ -1111,8 +1050,7 @@ AstBase* SteelParser::ReductionRuleHandler0036 ()
 
 #line 328 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::DIV,a,b); 
-#line 1115 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1054 "SteelParser.cpp"
 }
 
 // rule 37: exp <- exp:a '%' exp:b    %left %prec MULT_DIV_MOD
@@ -1125,8 +1063,7 @@ AstBase* SteelParser::ReductionRuleHandler0037 ()
 
 #line 330 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MOD,a,b); 
-#line 1129 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1067 "SteelParser.cpp"
 }
 
 // rule 38: exp <- exp:a D exp:b    %left %prec POW
@@ -1139,8 +1076,7 @@ AstBase* SteelParser::ReductionRuleHandler0038 ()
 
 #line 332 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); 
-#line 1143 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1080 "SteelParser.cpp"
 }
 
 // rule 39: exp <- exp:lvalue '=' exp:exp    %right %prec ASSIGNMENT
@@ -1153,8 +1089,7 @@ AstBase* SteelParser::ReductionRuleHandler0039 ()
 
 #line 334 "steel.trison"
  return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); 
-#line 1157 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1093 "SteelParser.cpp"
 }
 
 // rule 40: exp <- exp:a '^' exp:b    %right %prec POW
@@ -1167,8 +1102,7 @@ AstBase* SteelParser::ReductionRuleHandler0040 ()
 
 #line 336 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); 
-#line 1171 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1106 "SteelParser.cpp"
 }
 
 // rule 41: exp <- exp:a OR exp:b    %left %prec OR
@@ -1181,8 +1115,7 @@ AstBase* SteelParser::ReductionRuleHandler0041 ()
 
 #line 338 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); 
-#line 1185 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1119 "SteelParser.cpp"
 }
 
 // rule 42: exp <- exp:a AND exp:b    %left %prec AND
@@ -1195,8 +1128,7 @@ AstBase* SteelParser::ReductionRuleHandler0042 ()
 
 #line 340 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); 
-#line 1199 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1132 "SteelParser.cpp"
 }
 
 // rule 43: exp <- exp:a EQ exp:b    %left %prec EQ_NE
@@ -1209,8 +1141,7 @@ AstBase* SteelParser::ReductionRuleHandler0043 ()
 
 #line 342 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::EQ,a,b); 
-#line 1213 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1145 "SteelParser.cpp"
 }
 
 // rule 44: exp <- exp:a NE exp:b    %left %prec EQ_NE
@@ -1223,8 +1154,7 @@ AstBase* SteelParser::ReductionRuleHandler0044 ()
 
 #line 344 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::NE,a,b); 
-#line 1227 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1158 "SteelParser.cpp"
 }
 
 // rule 45: exp <- exp:a LT exp:b    %left %prec COMPARATOR
@@ -1237,8 +1167,7 @@ AstBase* SteelParser::ReductionRuleHandler0045 ()
 
 #line 346 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LT,a,b); 
-#line 1241 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1171 "SteelParser.cpp"
 }
 
 // rule 46: exp <- exp:a GT exp:b    %left %prec COMPARATOR
@@ -1251,8 +1180,7 @@ AstBase* SteelParser::ReductionRuleHandler0046 ()
 
 #line 348 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GT,a,b); 
-#line 1255 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1184 "SteelParser.cpp"
 }
 
 // rule 47: exp <- exp:a LTE exp:b    %left %prec COMPARATOR
@@ -1265,8 +1193,7 @@ AstBase* SteelParser::ReductionRuleHandler0047 ()
 
 #line 350 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); 
-#line 1269 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1197 "SteelParser.cpp"
 }
 
 // rule 48: exp <- exp:a GTE exp:b    %left %prec COMPARATOR
@@ -1279,8 +1206,7 @@ AstBase* SteelParser::ReductionRuleHandler0048 ()
 
 #line 352 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); 
-#line 1283 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1210 "SteelParser.cpp"
 }
 
 // rule 49: exp <- exp:a CAT exp:b    %left %prec ADD_SUB
@@ -1293,8 +1219,7 @@ AstBase* SteelParser::ReductionRuleHandler0049 ()
 
 #line 354 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::CAT,a,b); 
-#line 1297 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1223 "SteelParser.cpp"
 }
 
 // rule 50: exp <- '(' exp:exp ')'     %prec PAREN
@@ -1305,8 +1230,7 @@ AstBase* SteelParser::ReductionRuleHandler0050 ()
 
 #line 356 "steel.trison"
  return exp; 
-#line 1309 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1234 "SteelParser.cpp"
 }
 
 // rule 51: exp <- '-' exp:exp     %prec UNARY
@@ -1317,8 +1241,7 @@ AstBase* SteelParser::ReductionRuleHandler0051 ()
 
 #line 358 "steel.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); 
-#line 1321 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1245 "SteelParser.cpp"
 }
 
 // rule 52: exp <- '+' exp:exp     %prec UNARY
@@ -1329,8 +1252,7 @@ AstBase* SteelParser::ReductionRuleHandler0052 ()
 
 #line 360 "steel.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); 
-#line 1333 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1256 "SteelParser.cpp"
 }
 
 // rule 53: exp <- NOT exp:exp     %prec UNARY
@@ -1341,8 +1263,7 @@ AstBase* SteelParser::ReductionRuleHandler0053 ()
 
 #line 362 "steel.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); 
-#line 1345 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1267 "SteelParser.cpp"
 }
 
 // rule 54: exp <- CAT exp:exp     %prec UNARY
@@ -1354,8 +1275,7 @@ AstBase* SteelParser::ReductionRuleHandler0054 ()
 #line 364 "steel.trison"
  return new AstUnaryOp(exp->GetLine(),
 exp->GetScript(), AstUnaryOp::CAT,exp); 
-#line 1358 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1279 "SteelParser.cpp"
 }
 
 // rule 55: exp <- exp:lvalue '[' exp:index ']'     %prec PAREN
@@ -1368,8 +1288,7 @@ AstBase* SteelParser::ReductionRuleHandler0055 ()
 
 #line 367 "steel.trison"
  return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); 
-#line 1372 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1292 "SteelParser.cpp"
 }
 
 // rule 56: exp <- INCREMENT exp:lvalue     %prec UNARY
@@ -1380,8 +1299,7 @@ AstBase* SteelParser::ReductionRuleHandler0056 ()
 
 #line 369 "steel.trison"
  return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);
-#line 1384 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1303 "SteelParser.cpp"
 }
 
 // rule 57: exp <- exp:lvalue INCREMENT     %prec PAREN
@@ -1392,8 +1310,7 @@ AstBase* SteelParser::ReductionRuleHandler0057 ()
 
 #line 371 "steel.trison"
  return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);
-#line 1396 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1314 "SteelParser.cpp"
 }
 
 // rule 58: exp <- DECREMENT exp:lvalue     %prec UNARY
@@ -1404,8 +1321,7 @@ AstBase* SteelParser::ReductionRuleHandler0058 ()
 
 #line 373 "steel.trison"
  return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);
-#line 1408 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1325 "SteelParser.cpp"
 }
 
 // rule 59: exp <- exp:lvalue DECREMENT     %prec PAREN
@@ -1416,8 +1332,7 @@ AstBase* SteelParser::ReductionRuleHandler0059 ()
 
 #line 375 "steel.trison"
  return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
-#line 1420 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1336 "SteelParser.cpp"
 }
 
 // rule 60: exp <- POP exp:lvalue     %prec UNARY
@@ -1428,8 +1343,7 @@ AstBase* SteelParser::ReductionRuleHandler0060 ()
 
 #line 377 "steel.trison"
  return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); 
-#line 1432 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1347 "SteelParser.cpp"
 }
 
 // rule 61: exp_statement <- ';':semi    
@@ -1445,8 +1359,7 @@ AstBase* SteelParser::ReductionRuleHandler0061 ()
 			delete semi;
 			return new AstExpression(line,script); 
 		
-#line 1449 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1363 "SteelParser.cpp"
 }
 
 // rule 62: exp_statement <- exp:exp ';':semi    
@@ -1459,8 +1372,7 @@ AstBase* SteelParser::ReductionRuleHandler0062 ()
 
 #line 389 "steel.trison"
  delete semi;  return exp; 
-#line 1463 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1376 "SteelParser.cpp"
 }
 
 // rule 63: int_literal <- INT:i    
@@ -1471,8 +1383,7 @@ AstBase* SteelParser::ReductionRuleHandler0063 ()
 
 #line 394 "steel.trison"
  return i; 
-#line 1475 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1387 "SteelParser.cpp"
 }
 
 // rule 64: var_identifier <- VAR_IDENTIFIER:id    
@@ -1483,8 +1394,7 @@ AstBase* SteelParser::ReductionRuleHandler0064 ()
 
 #line 399 "steel.trison"
  return id; 
-#line 1487 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1398 "SteelParser.cpp"
 }
 
 // rule 65: func_identifier <- FUNC_IDENTIFIER:id    
@@ -1495,8 +1405,7 @@ AstBase* SteelParser::ReductionRuleHandler0065 ()
 
 #line 404 "steel.trison"
  return id; 
-#line 1499 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1409 "SteelParser.cpp"
 }
 
 // rule 66: array_identifier <- ARRAY_IDENTIFIER:id    
@@ -1507,8 +1416,7 @@ AstBase* SteelParser::ReductionRuleHandler0066 ()
 
 #line 409 "steel.trison"
  return id; 
-#line 1511 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1420 "SteelParser.cpp"
 }
 
 // rule 67: call <- func_identifier:id '(' ')'    
@@ -1519,8 +1427,7 @@ AstBase* SteelParser::ReductionRuleHandler0067 ()
 
 #line 415 "steel.trison"
  return new AstCallExpression(id->GetLine(),id->GetScript(),id);
-#line 1523 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1431 "SteelParser.cpp"
 }
 
 // rule 68: call <- func_identifier:id '(' param_list:params ')'    
@@ -1533,8 +1440,7 @@ AstBase* SteelParser::ReductionRuleHandler0068 ()
 
 #line 417 "steel.trison"
  return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);
-#line 1537 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1444 "SteelParser.cpp"
 }
 
 // rule 69: vardecl <- VAR var_identifier:id    
@@ -1545,8 +1451,7 @@ AstBase* SteelParser::ReductionRuleHandler0069 ()
 
 #line 422 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id);
-#line 1549 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1455 "SteelParser.cpp"
 }
 
 // rule 70: vardecl <- VAR var_identifier:id '=' exp:exp    
@@ -1559,8 +1464,7 @@ AstBase* SteelParser::ReductionRuleHandler0070 ()
 
 #line 424 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,exp); 
-#line 1563 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1468 "SteelParser.cpp"
 }
 
 // rule 71: vardecl <- VAR array_identifier:id '[' exp:i ']'    
@@ -1573,8 +1477,7 @@ AstBase* SteelParser::ReductionRuleHandler0071 ()
 
 #line 426 "steel.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); 
-#line 1577 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1481 "SteelParser.cpp"
 }
 
 // rule 72: vardecl <- VAR array_identifier:id    
@@ -1585,8 +1488,7 @@ AstBase* SteelParser::ReductionRuleHandler0072 ()
 
 #line 428 "steel.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); 
-#line 1589 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1492 "SteelParser.cpp"
 }
 
 // rule 73: vardecl <- VAR array_identifier:id '=' exp:exp    
@@ -1603,8 +1505,7 @@ AstBase* SteelParser::ReductionRuleHandler0073 ()
 							pDecl->assign(exp);
 							return pDecl;
 						 
-#line 1607 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1509 "SteelParser.cpp"
 }
 
 // rule 74: param_list <- exp:exp    
@@ -1618,8 +1519,7 @@ AstBase* SteelParser::ReductionRuleHandler0074 ()
 		  pList->add(exp);
 		  return pList;
 		
-#line 1622 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1523 "SteelParser.cpp"
 }
 
 // rule 75: param_list <- param_list:list ',' exp:exp    
@@ -1632,8 +1532,7 @@ AstBase* SteelParser::ReductionRuleHandler0075 ()
 
 #line 444 "steel.trison"
  list->add(exp); return list;
-#line 1636 "SteelParser.cpp"
-    return static_cast<AstBase*>(0);
+#line 1536 "SteelParser.cpp"
 }
 
 
@@ -1852,51 +1751,51 @@ SteelParser::State const SteelParser::ms_state[] =
     {1251,    2,    0,    0,    0}, // state  114
     {1253,   25,    0, 1278,    9}, // state  115
     {1287,   25,    0, 1312,    9}, // state  116
-    {1321,    2,    0,    0,    0}, // state  117
-    {1323,    1,    0,    0,    0}, // state  118
-    {1324,    2,    0,    0,    0}, // state  119
-    {   0,    0, 1326,    0,    0}, // state  120
-    {1327,   15,    0, 1342,    5}, // state  121
-    {1347,   20, 1367,    0,    0}, // state  122
-    {1368,   20, 1388,    0,    0}, // state  123
-    {1389,   21,    0,    0,    0}, // state  124
-    {1410,    2,    0, 1412,    2}, // state  125
-    {   0,    0, 1414,    0,    0}, // state  126
-    {   0,    0, 1415,    0,    0}, // state  127
-    {1416,   14,    0, 1430,    5}, // state  128
-    {   0,    0, 1435,    0,    0}, // state  129
-    {1436,    1, 1437,    0,    0}, // state  130
-    {1438,    1,    0,    0,    0}, // state  131
-    {1439,   25,    0, 1464,   10}, // state  132
-    {1474,    1,    0,    0,    0}, // state  133
-    {1475,    1,    0, 1476,    1}, // state  134
-    {1477,   25,    0, 1502,    9}, // state  135
-    {1511,   21,    0,    0,    0}, // state  136
-    {   0,    0, 1532,    0,    0}, // state  137
-    {1533,    1,    0,    0,    0}, // state  138
-    {1534,    2,    0,    0,    0}, // state  139
-    {1536,   20, 1556,    0,    0}, // state  140
-    {1557,   25,    0, 1582,    9}, // state  141
-    {1591,   25,    0, 1616,   10}, // state  142
-    {1626,   26,    0, 1652,    9}, // state  143
-    {1661,   25,    0, 1686,   10}, // state  144
-    {   0,    0, 1696,    0,    0}, // state  145
-    {   0,    0, 1697,    0,    0}, // state  146
-    {1698,   25,    0, 1723,    9}, // state  147
-    {1732,   25,    0, 1757,   10}, // state  148
-    {1767,    1,    0,    0,    0}, // state  149
-    {   0,    0, 1768,    0,    0}, // state  150
-    {1769,   26,    0, 1795,    9}, // state  151
-    {   0,    0, 1804,    0,    0}, // state  152
-    {1805,   26,    0, 1831,    9}, // state  153
-    {   0,    0, 1840,    0,    0}, // state  154
-    {1841,   26,    0, 1867,    9}, // state  155
-    {1876,   25,    0, 1901,   10}, // state  156
-    {   0,    0, 1911,    0,    0}, // state  157
-    {   0,    0, 1912,    0,    0}, // state  158
-    {   0,    0, 1913,    0,    0}, // state  159
-    {1914,   26,    0, 1940,    9}, // state  160
-    {   0,    0, 1949,    0,    0}  // state  161
+    {1321,    1,    0,    0,    0}, // state  117
+    {1322,    1,    0,    0,    0}, // state  118
+    {1323,    2,    0,    0,    0}, // state  119
+    {   0,    0, 1325,    0,    0}, // state  120
+    {1326,   15,    0, 1341,    5}, // state  121
+    {1346,   20, 1366,    0,    0}, // state  122
+    {1367,   20, 1387,    0,    0}, // state  123
+    {1388,   21,    0,    0,    0}, // state  124
+    {1409,    2,    0, 1411,    2}, // state  125
+    {   0,    0, 1413,    0,    0}, // state  126
+    {   0,    0, 1414,    0,    0}, // state  127
+    {1415,   14,    0, 1429,    5}, // state  128
+    {   0,    0, 1434,    0,    0}, // state  129
+    {1435,    1, 1436,    0,    0}, // state  130
+    {1437,    1,    0,    0,    0}, // state  131
+    {1438,   25,    0, 1463,   10}, // state  132
+    {1473,    1,    0,    0,    0}, // state  133
+    {1474,    1,    0, 1475,    1}, // state  134
+    {1476,   25,    0, 1501,    9}, // state  135
+    {1510,   21,    0,    0,    0}, // state  136
+    {   0,    0, 1531,    0,    0}, // state  137
+    {1532,    1,    0,    0,    0}, // state  138
+    {1533,    2,    0,    0,    0}, // state  139
+    {1535,   20, 1555,    0,    0}, // state  140
+    {1556,   25,    0, 1581,    9}, // state  141
+    {1590,   25,    0, 1615,   10}, // state  142
+    {1625,   26,    0, 1651,    9}, // state  143
+    {1660,   25,    0, 1685,   10}, // state  144
+    {   0,    0, 1695,    0,    0}, // state  145
+    {   0,    0, 1696,    0,    0}, // state  146
+    {1697,   25,    0, 1722,    9}, // state  147
+    {1731,   25,    0, 1756,   10}, // state  148
+    {1766,    1,    0,    0,    0}, // state  149
+    {   0,    0, 1767,    0,    0}, // state  150
+    {1768,   26,    0, 1794,    9}, // state  151
+    {   0,    0, 1803,    0,    0}, // state  152
+    {1804,   26,    0, 1830,    9}, // state  153
+    {   0,    0, 1839,    0,    0}, // state  154
+    {1840,   26,    0, 1866,    9}, // state  155
+    {1875,   25,    0, 1900,   10}, // state  156
+    {   0,    0, 1910,    0,    0}, // state  157
+    {   0,    0, 1911,    0,    0}, // state  158
+    {   0,    0, 1912,    0,    0}, // state  159
+    {1913,   26,    0, 1939,    9}, // state  160
+    {   0,    0, 1948,    0,    0}  // state  161
 
 };
 
@@ -3893,7 +3792,6 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // state  117
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {  TA_THROW_AWAY_LOOKAHEAD_TOKEN,    0}},
     {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  131}},
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -4793,5 +4691,5 @@ SteelParser::Token::Type SteelParser::Scan ()
 	return m_scanner->Scan(&m_lookahead_token);
 }
 
-#line 4797 "SteelParser.cpp"
+#line 4695 "SteelParser.cpp"
 
