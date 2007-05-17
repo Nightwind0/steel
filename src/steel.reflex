@@ -35,6 +35,8 @@ class AstBase;
 
 %language.cpp.top_of_class {
 	void setBuffer(const char * pBuffer, const std::string &name);
+	int getCurrentLine() const { return m_line; }
+	std::string getScriptName() const { return m_script_name; }
 }
 
 %language.cpp.bottom_of_class {

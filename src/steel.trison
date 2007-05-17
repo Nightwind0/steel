@@ -228,10 +228,10 @@ param_definition %type "AstParamDefinitionList*"
 
 statement_list %type "AstStatementList*"
 :
-	statement:stmt 	{
-				AstStatementList *pList = new AstStatementList( stmt->GetLine(),
-										stmt->GetScript());
-				pList->add(stmt);
+			{
+				AstStatementList *pList = 
+					new AstStatementList(m_scanner->getCurrentLine(),
+										m_scanner->getScriptName());
 				return pList;
 			}
 |
