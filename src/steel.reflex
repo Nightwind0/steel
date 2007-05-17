@@ -225,7 +225,7 @@ AstBase **token
 |
 	(;|\{|\})
 	%language.cpp {
-		*token = new AstKeyword(m_line,m_script_name);
+		*token = NULL;
 		return (SteelParser::Token::Type)accepted_string[0];
 	}
 |

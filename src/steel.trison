@@ -36,7 +36,8 @@ private:
 		s << i;
 		return s.str();
 	}
-
+#define GET_LINE() m_scanner->getCurrentLine()
+#define GET_SCRIPT() m_scanner->getScriptName()
 }
 
 %parser_start_of_parse_method_actions {
@@ -49,7 +50,7 @@ private:
 void SteelParser::addError(unsigned int line, const std::string &error)
 {
 	mbErrorEncountered = true;
-	mErrors +=  itos(line) + ": " + error + '\n';
+	mErrors +=  GET_SCRIPT() + ':' + itos(line) + ": " + error + '\n';
 }
 
 void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
@@ -131,7 +132,7 @@ root %type "AstScript*"
 				AstScript * pScript =   new AstScript(
 							list->GetLine(),
 							list->GetScript());
-			        pScript->SetList(list);
+		        pScript->SetList(list);
 				return pScript;
 			} 
 
@@ -139,10 +140,8 @@ root %type "AstScript*"
 
 func_definition %type "AstFunctionDefinition*"
 :
-	FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{':b1 statement_list:stmts '}':b2
+	FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
 				{
-					delete b1;
-					delete b2;
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
 									static_cast<AstFuncIdentifier*>(id),
@@ -151,10 +150,8 @@ func_definition %type "AstFunctionDefinition*"
 									false);
 				}
 |
-	FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{':b1 statement_list:stmts '}':b2
+	FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'
 				{
-					delete b1;
-					delete b2;
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
 					return new AstFunctionDefinition(id->GetLine(),
@@ -165,10 +162,75 @@ func_definition %type "AstFunctionDefinition*"
 									false);
 				}
 |
-	FUNCTION FUNC_IDENTIFIER:id '(' ')' '{':b1 statement_list:stmts '}':b2
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'
 				{
-					delete b1;
-					delete b2;
+					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
+					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									pId,
+									NULL,
+									stmts,
+									true);
+				}
+
+|
+	FUNCTION %error '('  ')' '{' statement_list:stmts '}'
+				{
+					addError(GET_LINE(),"parser error after 'function' keyword.");
+					return new AstFunctionDefinition(GET_LINE(),
+									GET_SCRIPT(),
+									new AstFuncIdentifier(GET_LINE(),
+										GET_SCRIPT(),
+										"__%%error%%__"),
+									NULL,
+									stmts,
+									false);
+				}
+|
+	FINAL FUNCTION %error '('  ')' '{' statement_list:stmts '}'
+				{
+					addError(GET_LINE(),"parser error after 'function' keyword.");
+					return new AstFunctionDefinition(GET_LINE(),
+									GET_SCRIPT(),
+									new AstFuncIdentifier(GET_LINE(),
+										GET_SCRIPT(),
+										"__%%error%%__"),
+									NULL,
+									stmts,
+									true);
+				}
+
+|
+	FUNCTION %error '(' param_definition:params  ')' '{' statement_list:stmts '}'
+				{
+					addError(GET_LINE(),"parser error after 'function' keyword.");
+					return new AstFunctionDefinition(GET_LINE(),
+									GET_SCRIPT(),
+									new AstFuncIdentifier(GET_LINE(),
+										GET_SCRIPT(),
+										"__%%error%%__"),
+									params,
+									stmts,
+									false);
+				}
+|
+	FINAL FUNCTION %error '(' param_definition:params ')' '{' statement_list:stmts '}'
+				{
+					addError(GET_LINE(),"parser error after 'function' keyword.");
+					return new AstFunctionDefinition(GET_LINE(),
+									GET_SCRIPT(),
+									new AstFuncIdentifier(GET_LINE(),
+										GET_SCRIPT(),
+										"__%%error%%__"),
+									params,
+									stmts,
+									true);
+				}
+
+|
+	FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts '}'
+				{
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
 									static_cast<AstFuncIdentifier*>(id),
@@ -177,10 +239,8 @@ func_definition %type "AstFunctionDefinition*"
 									false);
 				}
 |
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{':b1 statement_list:stmts '}':b2
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
 				{
-					delete b1;
-					delete b2;
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
 									static_cast<AstFuncIdentifier*>(id),
@@ -189,10 +249,8 @@ func_definition %type "AstFunctionDefinition*"
 									true);
 				}
 |
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{':b1 statement_list:stmts '}':b2
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts '}'
 				{
-					delete b1;
-					delete b2;
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
 									static_cast<AstFuncIdentifier*>(id),
@@ -200,6 +258,74 @@ func_definition %type "AstFunctionDefinition*"
 									stmts,
 									true);
 				}
+|
+	FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts %error
+				{
+					addError(GET_LINE(),"expected }");
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									NULL,
+									stmts,
+									false);
+				}
+|
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts %error
+				{
+					addError(GET_LINE(),"expected }");
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									NULL,
+									stmts,
+									true);
+				}
+|
+	FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts %error
+				{
+					addError(GET_LINE(),"expected }");
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									params,
+									stmts,
+									false);
+				}
+|
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts %error
+				{
+					addError(GET_LINE(),"expected }");
+					return new AstFunctionDefinition(id->GetLine(),
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									params,
+									stmts,
+									true);
+				}
+|
+	FUNCTION FUNC_IDENTIFIER:id '(' ')' %error 
+				{
+					addError(GET_LINE(),"expected function body.");
+					return new AstFunctionDefinition(id->GetLine(),	
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									NULL,
+									new AstStatementList(GET_LINE(),GET_SCRIPT()),
+									false);
+				}	 
+
+|
+	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' %error 
+				{
+					addError(GET_LINE(),"expected function body.");
+					return new AstFunctionDefinition(id->GetLine(),	
+									id->GetScript(),
+									static_cast<AstFuncIdentifier*>(id),
+									NULL,
+									new AstStatementList(GET_LINE(), GET_SCRIPT()),
+									true);
+				}	 
+
 ;
 
 
@@ -248,17 +374,13 @@ statement %type "AstStatement*"
 |
 	func_definition:func { return func; }
 |
-	'{':b1 statement_list:list '}':b2 { delete b1; delete b2; return list; }
+	'{' statement_list:list '}' { return list; }
 |
-	'{':b1 '}':b2 {
-			 int line = b1->GetLine();
-			 std::string script = b1->GetScript();
-			 delete b1;
-			 delete b2;
-			 return new AstStatement(line,script);
+	'{' '}' {
+			 return new AstStatement(GET_LINE(),GET_SCRIPT());
 			}
 |
-	vardecl:vardecl ';':semi { delete semi; return vardecl; }
+	vardecl:vardecl ';' { return vardecl; }
 |
 	WHILE '(' exp:exp ')' statement:stmt { return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); }
 |
@@ -266,14 +388,11 @@ statement %type "AstStatement*"
 |
 	IF '(' exp:exp ')' statement:stmt %prec NON_ELSE { return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); }
 |
-	RETURN exp:exp ';':semi { delete semi; return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);}
+	RETURN exp:exp ';'{ return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);}
 |
-	RETURN ';':semi
+	RETURN ';'
 			{
-				int line = semi->GetLine();
-				std::string script = semi->GetScript();
-				delete semi;
-				return new AstReturnStatement(line,script);
+				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			}
 |
 	FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt
@@ -287,20 +406,14 @@ statement %type "AstStatement*"
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			}
 |
-	BREAK ';':semi 
+	BREAK ';' 
 			{
-				int line = semi->GetLine();
-				std::string script = semi->GetScript();
-				delete semi;
-				return new AstBreakStatement(line,script); 
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
 			}
 |
-	CONTINUE ';':semi
+	CONTINUE ';'
 			{
-				int line = semi->GetLine();
-				std::string script = semi->GetScript();
-				delete semi;
-				return new AstContinueStatement(line,script); 
+				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
 			}
 ;
 
@@ -379,14 +492,11 @@ exp->GetScript(), AstUnaryOp::CAT,exp); }
 
 exp_statement %type "AstExpression*"
 :
-	';':semi {
-			int line = semi->GetLine();
-			std::string script = semi->GetScript(); 
-			delete semi;
-			return new AstExpression(line,script); 
+	';' {
+			return new AstExpression(GET_LINE(),GET_SCRIPT()); 
 		}
 |
-	exp:exp ';':semi { delete semi;  return exp; }
+	exp:exp ';' { return exp; }
 ;
 
 int_literal %type "AstInteger*"

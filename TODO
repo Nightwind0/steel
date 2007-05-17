@@ -1,3 +1,5 @@
+0) use m_scanner->getLine() and m_scanner->getScriptName() instead of using the Ast objects. That way, we don't need to new up ast keywords anymore, and we will probably get better data that way.
+
 1) Add %error rules to steel.trison they should
 	A) Set a new boolean "encountered an error" flag in the parser class
 	B) Add an error string, including the line number, etc, to a list of error strings in the parser class

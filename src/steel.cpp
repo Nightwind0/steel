@@ -18,7 +18,7 @@ int main()
     }
     catch(SteelException ex)
     {
-        std::cerr << "Error on line " << ex.getLine() << ": " << ex.getMessage() << std::endl;
+        std::cerr << ex.getMessage() << std::endl;
     }
 }
 

@@ -312,6 +312,17 @@ private:
     AstBase* ReductionRuleHandler0073 ();
     AstBase* ReductionRuleHandler0074 ();
     AstBase* ReductionRuleHandler0075 ();
+    AstBase* ReductionRuleHandler0076 ();
+    AstBase* ReductionRuleHandler0077 ();
+    AstBase* ReductionRuleHandler0078 ();
+    AstBase* ReductionRuleHandler0079 ();
+    AstBase* ReductionRuleHandler0080 ();
+    AstBase* ReductionRuleHandler0081 ();
+    AstBase* ReductionRuleHandler0082 ();
+    AstBase* ReductionRuleHandler0083 ();
+    AstBase* ReductionRuleHandler0084 ();
+    AstBase* ReductionRuleHandler0085 ();
+    AstBase* ReductionRuleHandler0086 ();
 
 }; // end of class SteelParser
 
@@ -322,4 +333,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token::Type token_
 
 	#endif // STEEL_PARSER_H
 
-#line 326 "SteelParser.h"
+#line 337 "SteelParser.h"
