@@ -1,4 +1,4 @@
-function asldf (  )
+function asldf ( )
 {
 	if ( 0 )
 	{
@@ -15,13 +15,21 @@ function asldf (  )
 		println ($i);
 	}
 
-	while(0) -1
+//	while(0) -1
 
 	var @h = :12;
 
 	@h[0] = 5+9;
 
 	println (@h[0]);
+
+	if ( foo() and  7   
+		) 
+	{
+		println("Foo");
+
+	}
+}
 }
 
 

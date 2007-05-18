@@ -51,7 +51,7 @@ void SteelParser::addError(unsigned int line, const std::string &error)
 {
 	mbErrorEncountered = true;
 	std::string error_text = GET_SCRIPT() + ':' + itos(line) + ": " + error + '\n';
-	mErrors =  error_text + mErrors;
+	mErrors =  mErrors + error_text;
 }
 
 void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
@@ -109,6 +109,8 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token FINAL
 
 %prec CORRECT
+%prec NON_ELSE_INCORRECT
+%prec ELSE_INCORRECT
 %prec ASSIGNMENT
 %prec NON_ELSE
 %prec ELSE
@@ -240,6 +242,13 @@ param_definition %type "AstParamDefinitionList*"
 				list->add(static_cast<AstDeclaration*>(decl));
 				return list;
 			}
+|
+	param_definition:list %error
+			{
+				addError(list->GetLine(),"expected parameter definition");
+				return list;
+			}
+
 ;
 
 statement_list %type "AstStatementList*"
@@ -269,13 +278,25 @@ statement %type "AstStatement*"
 |
 	func_definition:func { return func; }
 |
-	'{' statement_list:list '}' { return list; }
+	'{' statement_list:list '}' %prec CORRECT { return list; }
 |
 	'{' '}' {
 			 return new AstStatement(GET_LINE(),GET_SCRIPT());
 			}
 |
 	vardecl:vardecl ';' { return vardecl; }
+|
+	%error vardecl:decl 
+			{
+				addError(decl->GetLine(),"unexpected tokens found before variable declaration.");
+				return decl;
+			}
+|
+	vardecl:decl %error ';'
+		{
+			addError(decl->GetLine(),"expected ';' after variable declaration.");
+			return decl;
+		}
 |
 	WHILE '(' exp:exp ')' statement:stmt %prec CORRECT { return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); }
 |
@@ -316,6 +337,21 @@ statement %type "AstStatement*"
 				return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);
 			}
 |
+	IF '(' %error 
+		{
+			addError(GET_LINE(),"expected ')' after if condition.");
+			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
+				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
+		}
+|
+	IF %error
+		{
+			addError(GET_LINE(),"expected opening '(' after 'if'");
+			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
+				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
+
+		}
+|
 
 	RETURN exp:exp ';' %prec CORRECT { return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);}
 |
@@ -335,8 +371,6 @@ statement %type "AstStatement*"
 				addError(GET_LINE(),"expected ';' after 'return'");
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
 			}
-
-
 
 |
 	FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt %prec CORRECT
@@ -384,7 +418,7 @@ statement %type "AstStatement*"
 |
 	FOR %error
 			{
-				addError(GET_LINE(),"malformed for loop. Expected '('");
+				addError(GET_LINE(),"malformed for loop. Expected opening '('");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
@@ -448,9 +482,25 @@ exp %type "AstExpression*"
 	exp:a '+' exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); }
 |
 	exp:a '+'  %prec ADD_SUB{ 
-				addError(a->GetLine(),"expected expression before ';'.");	
+				addError(a->GetLine(),"expected expression before '+'.");	
 				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
 			  }
+|
+	exp:a '-'  %prec ADD_SUB{ 
+				addError(a->GetLine(),"expected expression before '-'.");	
+				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
+			  }
+|
+	exp:a '*'  %prec MULT_DIV_MOD{ 
+				addError(a->GetLine(),"expected expression after '*'.");	
+				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
+			  }
+|
+	'*' exp:b  %prec MULT_DIV_MOD{ 
+				addError(b->GetLine(),"expected expression before '*'.");	
+				return new AstBinOp(b->GetLine(),b->GetScript(),AstBinOp::MULT,new AstExpression(GET_LINE(),GET_SCRIPT()),b);
+			  }
+
 |
 	exp:a '-' exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); }
 |
@@ -488,17 +538,7 @@ exp %type "AstExpression*"
 |
 	'-' exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); }
 |
-	'-' %error %right %prec UNARY {
-						addError(GET_LINE(),"expected expression after unary minus.");
-						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::MINUS,new AstExpression(GET_LINE(),GET_SCRIPT()));
-								  }
-|
 	'+' exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); }
-|
-	'+' %error %right %prec UNARY {
-						addError(GET_LINE(),"expected expression after unary plus.");
-						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::PLUS,new AstExpression(GET_LINE(),GET_SCRIPT()));
-								  }
 |
 	NOT %error %right %prec UNARY {
 						addError(GET_LINE(),"expected expression after unary minus.");
