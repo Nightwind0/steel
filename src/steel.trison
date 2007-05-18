@@ -559,13 +559,7 @@ exp %type "AstExpression*"
 	CAT exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(),
 exp->GetScript(), AstUnaryOp::CAT,exp); }
 |
-	exp:lvalue '[' exp:index ']' { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
-|
-	exp:lvalue '[' ']' 
-						{ 
-								addError(GET_LINE(),"expected expression in array index");
-								return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue, new AstExpression(GET_LINE(),GET_SCRIPT()));
-						}
+	exp:lvalue '[' exp:index ']' %prec PAREN { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
 |
 	INCREMENT exp:lvalue %right %prec UNARY { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);}
 |

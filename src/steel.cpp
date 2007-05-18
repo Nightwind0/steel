@@ -18,6 +18,9 @@ int main()
     }
     catch(SteelException ex)
     {
+        if(ex.getType() != SteelException::PARSING)
+            std::cerr << ex.getLine() << ':';
+        
         std::cerr << ex.getMessage() << std::endl;
     }
 }
