@@ -124,7 +124,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
 SteelType SteelInterpreter::run(const std::string &name,const std::string &script)
 {
     SteelParser parser;
-   //  parser.SetDebugSpewLevel(2);
+//    parser.SetDebugSpewLevel(2);
     parser.setBuffer(script.c_str(),name);
     if(parser.Parse() != SteelParser::PRC_SUCCESS)
     {

@@ -1,4 +1,30 @@
-function as ldf ( - )
+function asldf (  )
 {
+	if ( 0 )
+	{
+	 return "hi";
+	}
 
+	var $i;
+
+
+	println ( 2 * 14 );
+
+	for ($i=0; $i<5; $i++)
+	{
+		println ($i);
+	}
+
+	while(0) -1
+
+	var @h = :12;
+
+	@h[0] = 5+9;
+
+	println (@h[0]);
 }
+
+
+asldf();
+
+

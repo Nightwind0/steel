@@ -50,7 +50,8 @@ private:
 void SteelParser::addError(unsigned int line, const std::string &error)
 {
 	mbErrorEncountered = true;
-	mErrors +=  GET_SCRIPT() + ':' + itos(line) + ": " + error + '\n';
+	std::string error_text = GET_SCRIPT() + ':' + itos(line) + ": " + error + '\n';
+	mErrors =  error_text + mErrors;
 }
 
 void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
@@ -66,7 +67,6 @@ SteelParser::Token::Type SteelParser::Scan ()
 	return m_scanner->Scan(&m_lookahead_token);
 }
 }
-
 %parser_constructor_actions{
     m_scanner = new SteelScanner();
 }
@@ -108,6 +108,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token POP
 %token FINAL
 
+%prec CORRECT
 %prec ASSIGNMENT
 %prec NON_ELSE
 %prec ELSE
@@ -173,34 +174,6 @@ func_definition %type "AstFunctionDefinition*"
 									stmts,
 									true);
 				}
-
-|
-	FUNCTION %error '('  ')' '{' statement_list:stmts '}'
-				{
-					addError(GET_LINE(),"parser error after 'function' keyword.");
-					return new AstFunctionDefinition(GET_LINE(),
-									GET_SCRIPT(),
-									new AstFuncIdentifier(GET_LINE(),
-										GET_SCRIPT(),
-										"__%%error%%__"),
-									NULL,
-									stmts,
-									false);
-				}
-|
-	FINAL FUNCTION %error '('  ')' '{' statement_list:stmts '}'
-				{
-					addError(GET_LINE(),"parser error after 'function' keyword.");
-					return new AstFunctionDefinition(GET_LINE(),
-									GET_SCRIPT(),
-									new AstFuncIdentifier(GET_LINE(),
-										GET_SCRIPT(),
-										"__%%error%%__"),
-									NULL,
-									stmts,
-									true);
-				}
-
 |
 	FUNCTION %error '(' param_definition:params  ')' '{' statement_list:stmts '}'
 				{
@@ -229,16 +202,6 @@ func_definition %type "AstFunctionDefinition*"
 				}
 
 |
-	FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts '}'
-				{
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									NULL,
-									stmts,
-									false);
-				}
-|
 	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
 				{
 					return new AstFunctionDefinition(id->GetLine(),
@@ -248,85 +211,8 @@ func_definition %type "AstFunctionDefinition*"
 									stmts,
 									true);
 				}
-|
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts '}'
-				{
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									NULL,
-									stmts,
-									true);
-				}
-|
-	FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts %error
-				{
-					addError(GET_LINE(),"expected }");
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									NULL,
-									stmts,
-									false);
-				}
-|
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' '{' statement_list:stmts %error
-				{
-					addError(GET_LINE(),"expected }");
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									NULL,
-									stmts,
-									true);
-				}
-|
-	FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts %error
-				{
-					addError(GET_LINE(),"expected }");
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									params,
-									stmts,
-									false);
-				}
-|
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts %error
-				{
-					addError(GET_LINE(),"expected }");
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									params,
-									stmts,
-									true);
-				}
-|
-	FUNCTION FUNC_IDENTIFIER:id '(' ')' %error 
-				{
-					addError(GET_LINE(),"expected function body.");
-					return new AstFunctionDefinition(id->GetLine(),	
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									NULL,
-									new AstStatementList(GET_LINE(),GET_SCRIPT()),
-									false);
-				}	 
-
-|
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' ')' %error 
-				{
-					addError(GET_LINE(),"expected function body.");
-					return new AstFunctionDefinition(id->GetLine(),	
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									NULL,
-									new AstStatementList(GET_LINE(), GET_SCRIPT()),
-									true);
-				}	 
-
 ;
+
 
 
 param_id %type "AstIdentifier*"
@@ -338,6 +224,10 @@ param_id %type "AstIdentifier*"
 
 param_definition %type "AstParamDefinitionList*"
 :
+	{
+		 return new AstParamDefinitionList(GET_LINE(), GET_SCRIPT());
+	}
+|
 	vardecl:decl 
 			{
 				AstParamDefinitionList * pList = new AstParamDefinitionList(decl->GetLine(),decl->GetScript());
@@ -370,6 +260,11 @@ statement_list %type "AstStatementList*"
 
 statement %type "AstStatement*"
 :
+	%error { 
+			addError(GET_LINE(),"parse error");
+			return new AstStatement(GET_LINE(),GET_SCRIPT());
+		}
+|
 	exp_statement:exp  { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
 |
 	func_definition:func { return func; }
@@ -382,39 +277,157 @@ statement %type "AstStatement*"
 |
 	vardecl:vardecl ';' { return vardecl; }
 |
-	WHILE '(' exp:exp ')' statement:stmt { return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); }
+	WHILE '(' exp:exp ')' statement:stmt %prec CORRECT { return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); }
+|
+	WHILE '('   
+			{ 
+				addError(GET_LINE(),"expected ')'");
+				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT())); 
+			}
+|
+	WHILE %error  
+			{ 
+				addError(GET_LINE(),"missing loop condition.");
+				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT())); 
+			}
+|
+
+	WHILE '(' %error ')' statement:stmt
+			{ 
+				addError(GET_LINE(),"error in loop expression.");
+				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);    
+			}
 |
 	IF '(' exp:exp ')' statement:stmt ELSE statement:elses %prec ELSE { return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);}
 |
 	IF '(' exp:exp ')' statement:stmt %prec NON_ELSE { return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); }
 |
-	RETURN exp:exp ';'{ return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);}
+	IF '(' %error ')' statement:stmt ELSE statement:elses %prec ELSE 
+		{
+			addError(GET_LINE(),"parse error in if condition."); 
+			return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt,elses);
+		}
 |
-	RETURN ';'
+	IF '(' %error ')' statement:stmt %prec NON_ELSE 
+			{
+				addError(GET_LINE(),"parse error in if condition."); 
+				return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);
+			}
+|
+
+	RETURN exp:exp ';' %prec CORRECT { return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);}
+|
+	RETURN ';' %prec CORRECT
 			{
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			}
 |
-	FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt
+	RETURN %error
+			{
+				addError(GET_LINE(),"expected ';' after 'return'");
+				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
+			}
+|
+	RETURN 
+			{
+				addError(GET_LINE(),"expected ';' after 'return'");
+				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
+			}
+
+
+
+|
+	FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt %prec CORRECT
 			{
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition, 
 						new AstExpression (start->GetLine(),start->GetScript()), stmt); 
 			}
 |
-	FOR '(' exp_statement:start exp_statement:condition  exp:iteration ')' statement:stmt
+	FOR '(' exp_statement:start exp_statement:condition  exp:iteration ')' statement:stmt %prec CORRECT
 			{
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			}
 |
-	BREAK ';' 
+	FOR '(' %error 
+			{
+				addError(GET_LINE(),"malformed for loop.");
+				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstStatement(GET_LINE(),GET_SCRIPT()));
+			}
+|
+	FOR '(' exp_statement:start %error
+			{
+				addError(GET_LINE(),"malformed for loop.");
+				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstStatement(GET_LINE(),GET_SCRIPT()));
+			}
+|
+	FOR '(' exp_statement:start exp_statement:condition %error
+			{
+				addError(GET_LINE(),"malformed for loop.");
+				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstStatement(GET_LINE(),GET_SCRIPT()));
+			}
+|
+	FOR '(' exp_statement:start exp_statement:condition exp:iteration
+			{
+				addError(GET_LINE(),"malformed for loop. Expected ')'");
+				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstStatement(GET_LINE(),GET_SCRIPT()));
+			}
+|
+	FOR %error
+			{
+				addError(GET_LINE(),"malformed for loop. Expected '('");
+				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
+						new AstStatement(GET_LINE(),GET_SCRIPT()));
+			}
+
+|
+	BREAK ';' %prec CORRECT
 			{
 				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
 			}
 |
-	CONTINUE ';'
+	BREAK %error
+			{
+				addError(GET_LINE(),"expected ';' after 'break'");
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
+			}
+|
+	BREAK 
+			{
+				addError(GET_LINE(),"expected ';' after 'break'");
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
+			}
+
+
+|
+	CONTINUE ';' %prec CORRECT
 			{
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
 			}
+|
+	CONTINUE %error
+			{
+				addError(GET_LINE(),"expected ';' after 'continue'");
+				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
+			}
+|
+	CONTINUE 
+			{
+				addError(GET_LINE(),"expected ';' after 'continue'");
+				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
+			}
+
+
 ;
 
 
@@ -433,6 +446,11 @@ exp %type "AstExpression*"
 	array_identifier:id { return id; }
 |
 	exp:a '+' exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); }
+|
+	exp:a '+'  %prec ADD_SUB{ 
+				addError(a->GetLine(),"expected expression before ';'.");	
+				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
+			  }
 |
 	exp:a '-' exp:b %prec ADD_SUB { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); }
 |
@@ -470,24 +488,87 @@ exp %type "AstExpression*"
 |
 	'-' exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); }
 |
+	'-' %error %right %prec UNARY {
+						addError(GET_LINE(),"expected expression after unary minus.");
+						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::MINUS,new AstExpression(GET_LINE(),GET_SCRIPT()));
+								  }
+|
 	'+' exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); }
 |
+	'+' %error %right %prec UNARY {
+						addError(GET_LINE(),"expected expression after unary plus.");
+						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::PLUS,new AstExpression(GET_LINE(),GET_SCRIPT()));
+								  }
+|
+	NOT %error %right %prec UNARY {
+						addError(GET_LINE(),"expected expression after unary minus.");
+						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
+								  }
+
+
+|
+
+	CAT %error %right %prec UNARY {
+						addError(GET_LINE(),"expected expression after ':'.");
+						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::CAT,new AstExpression(GET_LINE(),GET_SCRIPT()));
+								  }
+|
+
 	NOT exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); }
 |
 	CAT exp:exp %right %prec UNARY { return new AstUnaryOp(exp->GetLine(),
 exp->GetScript(), AstUnaryOp::CAT,exp); }
 |
-	exp:lvalue '[' exp:index ']'  %prec PAREN { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
+	exp:lvalue '[' exp:index ']' { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
+|
+	exp:lvalue '[' ']' 
+						{ 
+								addError(GET_LINE(),"expected expression in array index");
+								return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue, new AstExpression(GET_LINE(),GET_SCRIPT()));
+						}
 |
 	INCREMENT exp:lvalue %right %prec UNARY { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);}
+|
+	INCREMENT %error %right %prec UNARY{
+										addError(GET_LINE(),"expected lvalue after '++'");
+										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
+												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
+										}
+|
+	%error INCREMENT %prec PAREN { 
+									addError(GET_LINE(),"expected lvalue before '++'");
+									return new AstIncrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstIncrement::POST);
+	   							}
+
 |
 	exp:lvalue INCREMENT %prec PAREN { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);}
 |
 	DECREMENT exp:lvalue %right %prec UNARY { return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);}
 |
-	exp:lvalue DECREMENT %prec PAREN { return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);}
+	DECREMENT %error %right %prec UNARY{
+										addError(GET_LINE(),"expected lvalue after '--'");
+										return new AstDecrement(GET_LINE(),GET_SCRIPT(),
+												new AstExpression(GET_LINE(),GET_SCRIPT()),AstDecrement::PRE);
+										}
+
+|
+	exp:lvalue DECREMENT %prec PAREN { 
+									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
+									}
+|
+	%error DECREMENT %prec PAREN { 
+									addError(GET_LINE(),"expected lvalue before '--'");
+									return new AstDecrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstDecrement::POST);
+									}
+
 |
 	POP exp:lvalue %prec UNARY { return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); }
+|
+	POP %error %right %prec UNARY {
+						addError(GET_LINE(),"expected expression after 'pop'.");
+						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()));
+							  }
+
 ;
 
 exp_statement %type "AstExpression*"
@@ -522,9 +603,40 @@ array_identifier %type "AstArrayIdentifier*"
 
 call %type "AstCallExpression*"
 :
-	func_identifier:id '(' ')' { return new AstCallExpression(id->GetLine(),id->GetScript(),id);}
+	func_identifier:id '(' ')' %prec CORRECT { return new AstCallExpression(id->GetLine(),id->GetScript(),id);}
 |
-	func_identifier:id '(' param_list:params ')' { return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);}
+	func_identifier:id '(' param_list:params ')' %prec CORRECT { return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);}
+|
+	func_identifier:id '(' param_list:params 
+			{
+				addError(GET_LINE(),"expected ')' before ';'.");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id,params); 
+			}
+|
+	func_identifier:id '('
+			{
+				addError(GET_LINE(),"expected ')' before ';'");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			}
+|
+	func_identifier:id %error ')'
+			{
+				addError(GET_LINE(),"missing '(' in function call");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			}
+|
+	func_identifier:id %error
+			{
+				addError(GET_LINE(),"function call missing parentheses.");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			}
+|
+	func_identifier:id
+			{
+				addError(GET_LINE(),"invalid bareword. function call missing parentheses?");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			}
+
 ;
 
 vardecl %type "AstDeclaration*"
