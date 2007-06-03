@@ -13,7 +13,8 @@ private:
         BOOL,
         INT,
         DOUBLE,
-        STRING
+        STRING,
+        HANDLE
     };
 
 public:
@@ -27,12 +28,14 @@ public:
     operator std::string () const;
     operator bool () const;
     operator std::vector<SteelType> () const;
+    operator void* () const;
 
     void set(int i);
     void set(double d);
     void set(bool b);
     void set(const std::string &);
     void set(const std::vector<SteelType> &);
+    void set(void *p);
 
     // Array stuff
     bool isArray() const { return m_storage == ARRAY; }
@@ -82,6 +85,7 @@ private:
         bool b;
         double d;
         int i;
+        void *h;
         std::string *s;
         std::vector<SteelType> *a;
     };

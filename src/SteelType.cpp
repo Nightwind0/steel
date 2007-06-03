@@ -11,6 +11,7 @@ SteelType::SteelType()
     m_value.i = 0;
     m_value.s = NULL;
     m_value.a = NULL;
+    m_value.h = NULL;
     m_storage = SteelType::INT;
 }
 
@@ -46,9 +47,18 @@ SteelType::operator int () const
         return static_cast<int>(m_value.d);
     case SteelType::STRING:
         return strInt();
+    case SteelType::HANDLE:
+        throw TypeMismatch();
     }
     assert ( 0 );
     return 0;
+}
+
+SteelType::operator void*() const
+{
+    if(m_storage != SteelType::HANDLE)
+        throw TypeMismatch();
+    else return m_value.h;
 }
 
 SteelType::operator double () const
@@ -66,6 +76,8 @@ SteelType::operator double () const
         return m_value.d;
     case SteelType::STRING:
         return strDouble();
+    case SteelType::HANDLE:
+        throw TypeMismatch();
     }
     assert( 0 );
     return 0.0;
@@ -80,6 +92,8 @@ SteelType::operator std::string () const
     case SteelType::BOOL:
         if(m_value.b) return "TRUE";
         else return "FALSE";
+    case SteelType::HANDLE:
+        // Intentional fallthrough.. kind of hacky
     case SteelType::INT:
         return strToInt(m_value.i);
     case SteelType::DOUBLE:
@@ -96,6 +110,8 @@ SteelType::operator bool () const
     {
     case SteelType::ARRAY:
         return true;
+    case SteelType::HANDLE:
+        return (m_value.h == NULL?false:true);
     case SteelType::BOOL:
         return m_value.b;
     case SteelType::INT:
@@ -139,6 +155,12 @@ void SteelType::set(const std::string &str)
     m_storage = SteelType::STRING;
 }
 
+void SteelType::set(void* h)
+{
+    m_value.h = h;
+    m_storage = SteelType::HANDLE;
+}
+
 void SteelType::set(const std::vector<SteelType> &ref)
 {
     m_value.a = new std::vector<SteelType>(ref);
@@ -166,6 +188,8 @@ SteelType & SteelType::operator=(const SteelType &rhs)
         set ( rhs.m_value.i );
     else if ( rhs.m_storage == SteelType::DOUBLE)
         set ( rhs.m_value.d );
+    else if (rhs.m_storage == SteelType::HANDLE)
+        set( rhs.m_value.h );
 
     return *this;
 }
@@ -189,6 +213,7 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -215,6 +240,7 @@ SteelType  SteelType::operator-(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -241,6 +267,7 @@ SteelType  SteelType::operator*(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -267,6 +294,7 @@ SteelType  SteelType::operator^(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -293,6 +321,7 @@ SteelType  SteelType::operator/(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -319,6 +348,7 @@ SteelType  SteelType::operator%(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -365,6 +395,10 @@ bool  operator==(const SteelType &lhs, const SteelType &rhs)
         if((std::string)lhs == (std::string)rhs)
             val = true;
         break;
+    case SteelType::HANDLE:
+        if((void*)lhs == (void*)rhs)
+            val = true;
+        break;
        
     }
 
@@ -386,6 +420,7 @@ SteelType  SteelType::operator<(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
     case SteelType::INT:
         if((int)*this < (int)rhs)
@@ -415,6 +450,7 @@ SteelType  SteelType::operator<=(const SteelType &rhs)
     {
     case SteelType::ARRAY:
     case SteelType::BOOL:
+    case SteelType::HANDLE:
         throw OperationMismatch();
     case SteelType::INT:
         if((int)*this <= (int)rhs)
@@ -485,7 +521,9 @@ SteelType SteelType::cat(const SteelType &rhs)
         ret.set ( *m_value.a );
         ret.add ( rhs );
         return ret;
-    
+    case SteelType::HANDLE:
+        var.set ( m_value.h );
+        break;
 
     case SteelType::STRING:
     {
@@ -527,6 +565,7 @@ SteelType SteelType::operator-()
     case SteelType::BOOL:
     case SteelType::STRING:
     case SteelType::ARRAY:
+    case SteelType::HANDLE:
         throw OperationMismatch();
     case SteelType::INT:
         var.set(0 - m_value.i);
@@ -563,6 +602,12 @@ SteelType SteelType::operator!()
         if(m_value.d == 0.0)
             var.set( true );
         else var.set ( false );
+        break;
+    case SteelType::HANDLE:
+        if(m_value.h == NULL)
+            var.set(true);
+        else var.set(false);
+        break;
     case SteelType::ARRAY:
         throw OperationMismatch();
     }
@@ -577,6 +622,7 @@ SteelType SteelType::operator++()
     case SteelType::ARRAY:
     case SteelType::BOOL:
     case SteelType::STRING:
+    case SteelType::HANDLE:
         throw OperationMismatch();
     case SteelType::INT:
         m_value.i = m_value.i + 1;
@@ -605,6 +651,7 @@ SteelType SteelType::operator--()
     case SteelType::ARRAY:
     case SteelType::BOOL:
     case SteelType::STRING:
+    case SteelType::HANDLE:
         throw OperationMismatch();
     case SteelType::INT:
         m_value.i = m_value.i - 1;
