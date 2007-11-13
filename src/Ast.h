@@ -575,7 +575,7 @@ public:
     virtual ~AstDeclaration(){}
     
     virtual void setValue(const SteelType &value);
-    
+    virtual bool hasInitializer() const { return false; }    
 protected:
     bool m_bHasValue;
     SteelType m_value;
@@ -585,16 +585,24 @@ class AstVarDeclaration : public AstDeclaration
 {
 public:
     AstVarDeclaration(unsigned int line,
-              const std::string &script,
-              AstVarIdentifier *pId,
-              AstExpression *pExp = NULL);
+                      const std::string &script,
+                      AstVarIdentifier *pId,
+                      AstExpression *pExp = NULL);
+    AstVarDeclaration(unsigned int line,
+                      const std::string &script,
+                      AstVarIdentifier *pId,
+                      bool bConst,
+                      AstExpression *pExp);
+
     virtual ~AstVarDeclaration();
     virtual ostream & print(std::ostream &out);
     virtual eStopType execute(SteelInterpreter *pInterpreter);
-
+    virtual bool hasInitializer() const { return m_pExp != NULL; }
+    virtual bool isConst() const { return m_bConst; }
 private:
     AstVarIdentifier *m_pId ;
     AstExpression * m_pExp;
+    bool m_bConst;
 };
 
 class AstArrayDeclaration: public AstDeclaration
@@ -609,6 +617,7 @@ public:
 
     virtual ~AstArrayDeclaration();
     virtual ostream & print(std::ostream &out);
+    virtual bool hasInitializer() const { return m_pExp != NULL; }
     virtual eStopType execute(SteelInterpreter *pInterpreter);
 private:
     AstArrayIdentifier *m_pId;
@@ -628,11 +637,14 @@ public:
     virtual ostream & print (std::ostream &out);
 
     int size() const;
+    // How many parameters have default values 
+    int defaultCount() const;
 
     void executeDeclarations(SteelInterpreter *pInterpreter);
     void executeDeclarations(SteelInterpreter *pInterpreter, 
                  const std::vector<SteelType> &params);
 private:
+    int mnDefaults;
     std::list<AstDeclaration*> m_params;
 };
 

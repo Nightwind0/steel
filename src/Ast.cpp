@@ -1143,6 +1143,13 @@ SteelType * AstVarIdentifier::lvalue(SteelInterpreter *pInterpreter)
     {
         return pInterpreter->lookup_lvalue ( getValue() );
     }
+    catch(ConstViolation)
+    {
+        throw SteelException(SteelException::VALUE_IS_CONSTANT,
+                             GetLine(),
+                             GetScript(),
+                             "Cannot modify constant value '" + getValue() + '\'');
+    }
     catch(UnknownIdentifier)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
@@ -1181,9 +1188,19 @@ AstVarDeclaration::AstVarDeclaration(unsigned int line,
                                      const std::string &script,
                                      AstVarIdentifier *pId,
                                      AstExpression *pExp)
-    :AstDeclaration(line,script),m_pId(pId),m_pExp(pExp)
+    :AstDeclaration(line,script),m_pId(pId),m_bConst(false),m_pExp(pExp)
 {
 }
+
+AstVarDeclaration::AstVarDeclaration(unsigned int line,
+                                     const std::string &script,
+                                     AstVarIdentifier *pId,
+                                     bool bConst,
+                                     AstExpression *pExp)
+    :AstDeclaration(line,script),m_pId(pId),m_bConst(bConst),m_pExp(pExp)
+{
+}
+
 
 AstVarDeclaration::~AstVarDeclaration()
 {
@@ -1194,18 +1211,31 @@ AstVarDeclaration::~AstVarDeclaration()
 AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterpreter)
 {
     try{
-        pInterpreter->declare(m_pId->getValue());
+        if(m_bConst)
+        {
+            if(!m_pExp)
+                throw SteelException(SteelException::ASSIGNMENT_REQUIRED,
+                                     GetLine(),
+                                     GetScript(),
+                                     "Assignment missing from const declaration of " + m_pId->getValue());
 
-        SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
-        // If this is null, its crazy, because we JUST declared its ass.
-        assert ( NULL != pVar);
-    
-        if(m_pExp) 
-            pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
-
-        // If there is a value, it overrides whatever the expression was.
-        // This is for parameters
-        if(m_bHasValue) pInterpreter->assign( pVar, m_value);
+            pInterpreter->declare_const(m_pId->getValue(), m_pExp->evaluate(pInterpreter));
+        }
+        else
+        {
+            pInterpreter->declare(m_pId->getValue());
+        
+            SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
+            // If this is null, its crazy, because we JUST declared its ass.
+            assert ( NULL != pVar);
+            
+            if(m_pExp) 
+                pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+            
+            // If there is a value, it overrides whatever the expression was.
+            // This is for parameters
+            if(m_bHasValue) pInterpreter->assign( pVar, m_value);
+        }
     }
     catch(TypeMismatch)
     {
@@ -1234,7 +1264,10 @@ AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterprete
 
 ostream & AstVarDeclaration::print(std::ostream &out)
 {
-    out << "var " << *m_pId;
+    if(m_bConst)
+        out << "const " << *m_pId;
+    else
+        out << "var " << *m_pId;
 
     if( m_pExp ) out << '=' << *m_pExp << ';' << std::endl;
     return out;
@@ -1319,7 +1352,7 @@ ostream & AstArrayDeclaration::print(std::ostream &out)
 
 AstParamDefinitionList::AstParamDefinitionList(unsigned int line,
                                                const std::string &script)
-    :AstBase(line,script)
+    :AstBase(line,script),mnDefaults(0)
 {
 }
 
@@ -1332,6 +1365,19 @@ AstParamDefinitionList::~AstParamDefinitionList()
 
 void AstParamDefinitionList::add(AstDeclaration *pDef)
 {
+    if(pDef->hasInitializer())
+    {
+        ++mnDefaults;
+    }
+    else
+    {
+        // Are there defaults already? If so... we can't have one without defaults now.
+        if(mnDefaults != 0)
+        {
+            throw SteelException(SteelException::DEFAULTS_MISMATCH, GetLine(), GetScript(), "Default parameter values may only be on the last parameters.");
+        }
+    }
+
     m_params.push_back( pDef );
 }
 
@@ -1347,6 +1393,11 @@ int AstParamDefinitionList::size() const
     return m_params.size();
 }
 
+int AstParamDefinitionList::defaultCount() const
+{
+    return mnDefaults;
+}
+
 
 void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter, 
                                                  const std::vector<SteelType> &params)
@@ -1358,7 +1409,9 @@ void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter,
     for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
         i != m_params.end(); i++)
     {
-        (*i)->setValue(params[parameter++]); 
+        if(parameter < params.size())
+            (*i)->setValue(params[parameter++]); 
+
         (*i)->execute(pInterpreter);
     }
 }

@@ -107,6 +107,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token CAT
 %token POP
 %token FINAL
+%token CONST
 
 %prec CORRECT
 %prec NON_ELSE_INCORRECT
@@ -678,6 +679,8 @@ vardecl %type "AstDeclaration*"
 	VAR var_identifier:id { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id);}
 |
 	VAR var_identifier:id '=' exp:exp { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,exp); }
+|
+	CONST var_identifier:id '=' exp:exp { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,true,exp); }
 |
 	VAR array_identifier:id '[' exp:i ']' { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); }
 |

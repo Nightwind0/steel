@@ -25,22 +25,23 @@ SteelUserFunction::~SteelUserFunction()
     // In fact, we shouldn't. 
 }
 
-SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const std::vector<SteelType> &params)
+SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const std::vector<SteelType> &supplied_params)
 {
     SteelType ret;
     pInterpreter->pushScope();
 
     if( m_pParams != NULL)
     {
-        if( params.size() != m_pParams->size() ) throw ParamMismatch();
+        if( supplied_params.size() > m_pParams->size() ) throw ParamMismatch();
+        if( supplied_params.size() < (m_pParams->size() - m_pParams->defaultCount()) ) throw ParamMismatch();
     }
     else 
     {
-        if( params.size() != 0) throw ParamMismatch();
+        if( supplied_params.size() != 0) throw ParamMismatch();
     }
 
     if(m_pParams)
-        m_pParams->executeDeclarations(pInterpreter, params);
+        m_pParams->executeDeclarations(pInterpreter, supplied_params);
 
     if(m_pList)
     {

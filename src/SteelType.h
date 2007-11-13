@@ -71,6 +71,8 @@ public:
     SteelType  d(const SteelType &rhs);
     SteelType cat(const SteelType &rhs);
 
+    bool isConst()const;
+    void makeConst();
 private:
     int strInt() const ;
     double strDouble()const;
@@ -91,7 +93,7 @@ private:
     };
     value m_value;
     storage m_storage;
-
+    bool m_bConst;
     friend bool operator==(const SteelType &lhs, const SteelType &rhs);
 };
 

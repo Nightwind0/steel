@@ -17,7 +17,10 @@ public:
         TYPE_MISMATCH,
         PARAM_MISMATCH,
         VARIABLE_DEFINED,
-        FUNCTION_DEFINED
+        FUNCTION_DEFINED,
+        DEFAULTS_MISMATCH,
+        ASSIGNMENT_REQUIRED,
+        VALUE_IS_CONSTANT
     };
 
 
@@ -66,6 +69,10 @@ class OutOfBounds
 };
 
 class AlreadyDefined
+{
+};
+
+class ConstViolation
 {
 };
 

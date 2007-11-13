@@ -100,13 +100,13 @@ var @ted = :(1:2):(3:4);
 printarray(@ted);
 
 
-if( is_array ( :2 ) ) print("Yes.");
+if( is_array ( :2 ) ) println("Yes.");
 
 
-if( is_array ( 2 ) ) print("Help!");
+if( is_array ( 2 ) ) println("Help!");
 
 
-println ( (1:2)[0] );
+println ( (1:2:"Three":"Four")[2] );
 
 
 

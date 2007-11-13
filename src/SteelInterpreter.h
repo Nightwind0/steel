@@ -59,7 +59,9 @@ public:
     SteelType *lookup_lvalue(const std::string &name);
     void declare(const std::string &name);
     void declare_array(const std::string &array, int size);
-
+    void declare_const(const std::string &name, const SteelType &datum);
+    template<class T>
+    void declare_const(const std::string &name, const T &datum);
     void assign(SteelType *pVar,const SteelType &value);
 
     void pushScope();

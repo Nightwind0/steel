@@ -201,6 +201,25 @@ void SteelInterpreter::declare(const std::string &name)
     file[name] = SteelType();
 }
 
+void SteelInterpreter::declare_const(const std::string &name, const SteelType &datum)
+{
+    declare(name);
+
+    SteelType *pDatum = lookup_internal(name);
+    pDatum->operator=(datum);
+
+    pDatum->makeConst();
+}
+
+template<class T>
+void SteelInterpreter::declare_const(const std::string &name, const T &value)
+{
+    SteelType datum;
+    datum.set(value);
+
+    declare_const(name,datum);
+}
+
 // Note: Step 1 is to create a SteelArray in the ArrayFile
 // is to create a SteelType in the variable file, and set it's 
 // array reference to the array
@@ -225,6 +244,8 @@ void SteelInterpreter::declare_array(const std::string &array_name, int size)
 SteelType *SteelInterpreter::lookup_lvalue(const std::string &name)
 {
     SteelType *p = lookup_internal(name);
+
+    if(p->isConst()) throw ConstViolation();
 
     if(p == NULL) throw UnknownIdentifier();
     return p;

@@ -13,12 +13,14 @@ SteelType::SteelType()
     m_value.a = NULL;
     m_value.h = NULL;
     m_storage = SteelType::INT;
+    m_bConst = false;
 }
 
 SteelType::SteelType(const SteelType &rhs)
 {
     set(0);
     *this = rhs;
+    m_bConst = false;
 }
 
 SteelType::~SteelType()
@@ -739,6 +741,10 @@ SteelType SteelType::getElement(int index) const
 
 SteelType *SteelType::getLValue(int index) const
 {
+    // Not a valid lvalue if its const
+    // TODO: Throw ConstViolation. But then you have to catch it
+    if(m_bConst) return NULL;
+
     if ( index >= getArraySize() ) throw OutOfBounds();
 
     return & ((*m_value.a)[index]);
@@ -785,4 +791,13 @@ void SteelType::reserveArray(int index)
 }
 
 
+bool SteelType::isConst()const
+{
+    return m_bConst;
+}
+
+void SteelType::makeConst()
+{
+    m_bConst=true;
+}
 
