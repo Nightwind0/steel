@@ -301,6 +301,12 @@ AstBase **token
 		 return SteelParser::Token::WHILE;
 	}
 |
+	(do)
+	%language.cpp{
+		*token = NULL;
+		return SteelParser::Token::DO;
+	}
+|
 	(for) 
 	%language.cpp{
 		*token = NULL;

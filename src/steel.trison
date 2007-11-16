@@ -108,6 +108,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token POP
 %token FINAL
 %token CONST
+%token DO
 
 %prec CORRECT
 %prec NON_ELSE_INCORRECT
@@ -322,6 +323,32 @@ statement %type "AstStatement*"
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);    
 			}
 |
+	DO statement:stmt WHILE '(' exp:condition ')' %prec CORRECT
+	   {
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), condition, stmt);
+	   }
+|
+	DO statement:stmt WHILE '(' %error ')'
+	   {
+				addError(GET_LINE(),"error in while condition.");
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
+	   }
+|
+	DO statement:stmt %error
+	   {
+				addError(GET_LINE(),"error. do loop missing proper while condition.");
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
+	   }
+
+|
+	DO statement:stmt WHILE '(' %error
+	   {
+				addError(GET_LINE(),"error, missing condition or no closing ')' found after while.");
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, NULL);
+	   }
+
+|
+
 	IF '(' exp:exp ')' statement:stmt ELSE statement:elses %prec ELSE { return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);}
 |
 	IF '(' exp:exp ')' statement:stmt %prec NON_ELSE { return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); }

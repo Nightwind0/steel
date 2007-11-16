@@ -115,6 +115,21 @@ private:
     AstStatement * m_pStatement;
 };
 
+class AstDoStatement : public AstStatement
+{
+public:
+    AstDoStatement(unsigned int line, const std::string &script, AstExpression *pExp, AstStatement *pStmt);
+    virtual ~AstDoStatement();
+    
+    virtual ostream & print(std::ostream &out);
+    virtual eStopType execute(SteelInterpreter *pInterpreter);
+    
+private:
+    AstExpression * m_pCondition;
+    AstStatement * m_pStatement;
+};
+
+
 class AstIfStatement : public AstStatement
 {
 public:

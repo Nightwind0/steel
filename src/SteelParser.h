@@ -33,6 +33,7 @@ public:
             CONTINUE,
             D,
             DECREMENT,
+            DO,
             ELSE,
             EQ,
             FINAL,
@@ -124,7 +125,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 128 "SteelParser.h"
+#line 129 "SteelParser.h"
 
 private:
 
@@ -354,6 +355,10 @@ private:
     AstBase* ReductionRuleHandler0114 ();
     AstBase* ReductionRuleHandler0115 ();
     AstBase* ReductionRuleHandler0116 ();
+    AstBase* ReductionRuleHandler0117 ();
+    AstBase* ReductionRuleHandler0118 ();
+    AstBase* ReductionRuleHandler0119 ();
+    AstBase* ReductionRuleHandler0120 ();
 
 }; // end of class SteelParser
 
@@ -364,4 +369,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token::Type token_
 
 	#endif // STEEL_PARSER_H
 
-#line 368 "SteelParser.h"
+#line 373 "SteelParser.h"

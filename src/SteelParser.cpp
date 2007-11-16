@@ -414,6 +414,7 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token::Type token_
         "CONTINUE",
         "D",
         "DECREMENT",
+        "DO",
         "ELSE",
         "EQ",
         "FINAL",
@@ -497,7 +498,7 @@ AstBase* SteelParser::ReductionRuleHandler0001 ()
     assert(0 < m_reduction_rule_token_count);
     AstStatementList* list = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 135 "steel.trison"
+#line 136 "steel.trison"
 
 				AstScript * pScript =   new AstScript(
 							list->GetLine(),
@@ -505,7 +506,7 @@ AstBase* SteelParser::ReductionRuleHandler0001 ()
 		        pScript->SetList(list);
 				return pScript;
 			
-#line 509 "SteelParser.cpp"
+#line 510 "SteelParser.cpp"
 }
 
 // rule 2: func_definition <- FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'    
@@ -518,7 +519,7 @@ AstBase* SteelParser::ReductionRuleHandler0002 ()
     assert(6 < m_reduction_rule_token_count);
     AstStatementList* stmts = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
 
-#line 148 "steel.trison"
+#line 149 "steel.trison"
 
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -527,7 +528,7 @@ AstBase* SteelParser::ReductionRuleHandler0002 ()
 									stmts,
 									false);
 				
-#line 531 "SteelParser.cpp"
+#line 532 "SteelParser.cpp"
 }
 
 // rule 3: func_definition <- FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'    
@@ -538,7 +539,7 @@ AstBase* SteelParser::ReductionRuleHandler0003 ()
     assert(6 < m_reduction_rule_token_count);
     AstStatementList* stmts = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
 
-#line 158 "steel.trison"
+#line 159 "steel.trison"
 
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
@@ -549,7 +550,7 @@ AstBase* SteelParser::ReductionRuleHandler0003 ()
 									stmts,
 									false);
 				
-#line 553 "SteelParser.cpp"
+#line 554 "SteelParser.cpp"
 }
 
 // rule 4: func_definition <- FINAL FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'    
@@ -560,7 +561,7 @@ AstBase* SteelParser::ReductionRuleHandler0004 ()
     assert(7 < m_reduction_rule_token_count);
     AstStatementList* stmts = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 7]);
 
-#line 170 "steel.trison"
+#line 171 "steel.trison"
 
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
@@ -571,7 +572,7 @@ AstBase* SteelParser::ReductionRuleHandler0004 ()
 									stmts,
 									true);
 				
-#line 575 "SteelParser.cpp"
+#line 576 "SteelParser.cpp"
 }
 
 // rule 5: func_definition <- FUNCTION %error '(' param_definition:params ')' '{' statement_list:stmts '}'    
@@ -582,7 +583,7 @@ AstBase* SteelParser::ReductionRuleHandler0005 ()
     assert(6 < m_reduction_rule_token_count);
     AstStatementList* stmts = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
 
-#line 182 "steel.trison"
+#line 183 "steel.trison"
 
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -594,7 +595,7 @@ AstBase* SteelParser::ReductionRuleHandler0005 ()
 									stmts,
 									false);
 				
-#line 598 "SteelParser.cpp"
+#line 599 "SteelParser.cpp"
 }
 
 // rule 6: func_definition <- FINAL FUNCTION %error '(' param_definition:params ')' '{' statement_list:stmts '}'    
@@ -605,7 +606,7 @@ AstBase* SteelParser::ReductionRuleHandler0006 ()
     assert(7 < m_reduction_rule_token_count);
     AstStatementList* stmts = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 7]);
 
-#line 195 "steel.trison"
+#line 196 "steel.trison"
 
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -617,7 +618,7 @@ AstBase* SteelParser::ReductionRuleHandler0006 ()
 									stmts,
 									true);
 				
-#line 621 "SteelParser.cpp"
+#line 622 "SteelParser.cpp"
 }
 
 // rule 7: func_definition <- FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'    
@@ -630,7 +631,7 @@ AstBase* SteelParser::ReductionRuleHandler0007 ()
     assert(7 < m_reduction_rule_token_count);
     AstStatementList* stmts = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 7]);
 
-#line 209 "steel.trison"
+#line 210 "steel.trison"
 
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -639,7 +640,7 @@ AstBase* SteelParser::ReductionRuleHandler0007 ()
 									stmts,
 									true);
 				
-#line 643 "SteelParser.cpp"
+#line 644 "SteelParser.cpp"
 }
 
 // rule 8: param_id <- VAR_IDENTIFIER:id    
@@ -648,9 +649,9 @@ AstBase* SteelParser::ReductionRuleHandler0008 ()
     assert(0 < m_reduction_rule_token_count);
     AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 223 "steel.trison"
+#line 224 "steel.trison"
  return id; 
-#line 654 "SteelParser.cpp"
+#line 655 "SteelParser.cpp"
 }
 
 // rule 9: param_id <- ARRAY_IDENTIFIER:id    
@@ -659,20 +660,20 @@ AstBase* SteelParser::ReductionRuleHandler0009 ()
     assert(0 < m_reduction_rule_token_count);
     AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 225 "steel.trison"
+#line 226 "steel.trison"
  return id; 
-#line 665 "SteelParser.cpp"
+#line 666 "SteelParser.cpp"
 }
 
 // rule 10: param_definition <-     
 AstBase* SteelParser::ReductionRuleHandler0010 ()
 {
 
-#line 230 "steel.trison"
+#line 231 "steel.trison"
 
 		 return new AstParamDefinitionList(GET_LINE(), GET_SCRIPT());
 	
-#line 676 "SteelParser.cpp"
+#line 677 "SteelParser.cpp"
 }
 
 // rule 11: param_definition <- vardecl:decl    
@@ -681,13 +682,13 @@ AstBase* SteelParser::ReductionRuleHandler0011 ()
     assert(0 < m_reduction_rule_token_count);
     AstDeclaration* decl = static_cast< AstDeclaration* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 235 "steel.trison"
+#line 236 "steel.trison"
 
 				AstParamDefinitionList * pList = new AstParamDefinitionList(decl->GetLine(),decl->GetScript());
 				pList->add(static_cast<AstDeclaration*>(decl));
 				return pList;		
 			
-#line 691 "SteelParser.cpp"
+#line 692 "SteelParser.cpp"
 }
 
 // rule 12: param_definition <- param_definition:list ',' vardecl:decl    
@@ -698,12 +699,12 @@ AstBase* SteelParser::ReductionRuleHandler0012 ()
     assert(2 < m_reduction_rule_token_count);
     AstDeclaration* decl = static_cast< AstDeclaration* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 242 "steel.trison"
+#line 243 "steel.trison"
 
 				list->add(static_cast<AstDeclaration*>(decl));
 				return list;
 			
-#line 707 "SteelParser.cpp"
+#line 708 "SteelParser.cpp"
 }
 
 // rule 13: param_definition <- param_definition:list %error    
@@ -712,26 +713,26 @@ AstBase* SteelParser::ReductionRuleHandler0013 ()
     assert(0 < m_reduction_rule_token_count);
     AstParamDefinitionList* list = static_cast< AstParamDefinitionList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 248 "steel.trison"
+#line 249 "steel.trison"
 
 				addError(list->GetLine(),"expected parameter definition");
 				return list;
 			
-#line 721 "SteelParser.cpp"
+#line 722 "SteelParser.cpp"
 }
 
 // rule 14: statement_list <-     
 AstBase* SteelParser::ReductionRuleHandler0014 ()
 {
 
-#line 257 "steel.trison"
+#line 258 "steel.trison"
 
 				AstStatementList *pList = 
 					new AstStatementList(m_scanner->getCurrentLine(),
 										m_scanner->getScriptName());
 				return pList;
 			
-#line 735 "SteelParser.cpp"
+#line 736 "SteelParser.cpp"
 }
 
 // rule 15: statement_list <- statement_list:list statement:stmt    
@@ -742,24 +743,24 @@ AstBase* SteelParser::ReductionRuleHandler0015 ()
     assert(1 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 265 "steel.trison"
+#line 266 "steel.trison"
 
 					list->add( stmt ); 
 					return list;
 				
-#line 751 "SteelParser.cpp"
+#line 752 "SteelParser.cpp"
 }
 
 // rule 16: statement <- %error    
 AstBase* SteelParser::ReductionRuleHandler0016 ()
 {
 
-#line 273 "steel.trison"
+#line 274 "steel.trison"
  
 			addError(GET_LINE(),"parse error");
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		
-#line 763 "SteelParser.cpp"
+#line 764 "SteelParser.cpp"
 }
 
 // rule 17: statement <- exp_statement:exp    
@@ -768,9 +769,9 @@ AstBase* SteelParser::ReductionRuleHandler0017 ()
     assert(0 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 278 "steel.trison"
+#line 279 "steel.trison"
  return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); 
-#line 774 "SteelParser.cpp"
+#line 775 "SteelParser.cpp"
 }
 
 // rule 18: statement <- func_definition:func    
@@ -779,9 +780,9 @@ AstBase* SteelParser::ReductionRuleHandler0018 ()
     assert(0 < m_reduction_rule_token_count);
     AstFunctionDefinition* func = static_cast< AstFunctionDefinition* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 280 "steel.trison"
+#line 281 "steel.trison"
  return func; 
-#line 785 "SteelParser.cpp"
+#line 786 "SteelParser.cpp"
 }
 
 // rule 19: statement <- '{' statement_list:list '}'     %prec CORRECT
@@ -790,20 +791,20 @@ AstBase* SteelParser::ReductionRuleHandler0019 ()
     assert(1 < m_reduction_rule_token_count);
     AstStatementList* list = static_cast< AstStatementList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 282 "steel.trison"
+#line 283 "steel.trison"
  return list; 
-#line 796 "SteelParser.cpp"
+#line 797 "SteelParser.cpp"
 }
 
 // rule 20: statement <- '{' '}'    
 AstBase* SteelParser::ReductionRuleHandler0020 ()
 {
 
-#line 284 "steel.trison"
+#line 285 "steel.trison"
 
 			 return new AstStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 807 "SteelParser.cpp"
+#line 808 "SteelParser.cpp"
 }
 
 // rule 21: statement <- vardecl:vardecl ';'    
@@ -812,9 +813,9 @@ AstBase* SteelParser::ReductionRuleHandler0021 ()
     assert(0 < m_reduction_rule_token_count);
     AstDeclaration* vardecl = static_cast< AstDeclaration* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 288 "steel.trison"
+#line 289 "steel.trison"
  return vardecl; 
-#line 818 "SteelParser.cpp"
+#line 819 "SteelParser.cpp"
 }
 
 // rule 22: statement <- %error vardecl:decl    
@@ -823,12 +824,12 @@ AstBase* SteelParser::ReductionRuleHandler0022 ()
     assert(1 < m_reduction_rule_token_count);
     AstDeclaration* decl = static_cast< AstDeclaration* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 291 "steel.trison"
+#line 292 "steel.trison"
 
 				addError(decl->GetLine(),"unexpected tokens found before variable declaration.");
 				return decl;
 			
-#line 832 "SteelParser.cpp"
+#line 833 "SteelParser.cpp"
 }
 
 // rule 23: statement <- vardecl:decl %error ';'    
@@ -837,12 +838,12 @@ AstBase* SteelParser::ReductionRuleHandler0023 ()
     assert(0 < m_reduction_rule_token_count);
     AstDeclaration* decl = static_cast< AstDeclaration* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 297 "steel.trison"
+#line 298 "steel.trison"
 
 			addError(decl->GetLine(),"expected ';' after variable declaration.");
 			return decl;
 		
-#line 846 "SteelParser.cpp"
+#line 847 "SteelParser.cpp"
 }
 
 // rule 24: statement <- WHILE '(' exp:exp ')' statement:stmt     %prec CORRECT
@@ -853,35 +854,35 @@ AstBase* SteelParser::ReductionRuleHandler0024 ()
     assert(4 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
 
-#line 302 "steel.trison"
+#line 303 "steel.trison"
  return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); 
-#line 859 "SteelParser.cpp"
+#line 860 "SteelParser.cpp"
 }
 
 // rule 25: statement <- WHILE '('    
 AstBase* SteelParser::ReductionRuleHandler0025 ()
 {
 
-#line 305 "steel.trison"
+#line 306 "steel.trison"
  
 				addError(GET_LINE(),"expected ')'");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT())); 
 			
-#line 872 "SteelParser.cpp"
+#line 873 "SteelParser.cpp"
 }
 
 // rule 26: statement <- WHILE %error    
 AstBase* SteelParser::ReductionRuleHandler0026 ()
 {
 
-#line 312 "steel.trison"
+#line 313 "steel.trison"
  
 				addError(GET_LINE(),"missing loop condition.");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT())); 
 			
-#line 885 "SteelParser.cpp"
+#line 886 "SteelParser.cpp"
 }
 
 // rule 27: statement <- WHILE '(' %error ')' statement:stmt    
@@ -890,147 +891,204 @@ AstBase* SteelParser::ReductionRuleHandler0027 ()
     assert(4 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
 
-#line 320 "steel.trison"
+#line 321 "steel.trison"
  
 				addError(GET_LINE(),"error in loop expression.");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);    
 			
-#line 899 "SteelParser.cpp"
+#line 900 "SteelParser.cpp"
 }
 
-// rule 28: statement <- IF '(' exp:exp ')' statement:stmt ELSE statement:elses     %prec ELSE
+// rule 28: statement <- DO statement:stmt WHILE '(' exp:condition ')'     %prec CORRECT
 AstBase* SteelParser::ReductionRuleHandler0028 ()
 {
-    assert(2 < m_reduction_rule_token_count);
-    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    assert(1 < m_reduction_rule_token_count);
+    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
     assert(4 < m_reduction_rule_token_count);
-    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
-    assert(6 < m_reduction_rule_token_count);
-    AstStatement* elses = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
-
-#line 325 "steel.trison"
- return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);
-#line 914 "SteelParser.cpp"
-}
-
-// rule 29: statement <- IF '(' exp:exp ')' statement:stmt     %prec NON_ELSE
-AstBase* SteelParser::ReductionRuleHandler0029 ()
-{
-    assert(2 < m_reduction_rule_token_count);
-    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
-    assert(4 < m_reduction_rule_token_count);
-    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
+    AstExpression* condition = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
 
 #line 327 "steel.trison"
- return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); 
-#line 927 "SteelParser.cpp"
+
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), condition, stmt);
+	   
+#line 915 "SteelParser.cpp"
 }
 
-// rule 30: statement <- IF '(' %error ')' statement:stmt ELSE statement:elses     %prec ELSE
+// rule 29: statement <- DO statement:stmt WHILE '(' %error ')'    
+AstBase* SteelParser::ReductionRuleHandler0029 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 332 "steel.trison"
+
+				addError(GET_LINE(),"error in while condition.");
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
+	   
+#line 929 "SteelParser.cpp"
+}
+
+// rule 30: statement <- DO statement:stmt %error    
 AstBase* SteelParser::ReductionRuleHandler0030 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 338 "steel.trison"
+
+				addError(GET_LINE(),"error. do loop missing proper while condition.");
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
+	   
+#line 943 "SteelParser.cpp"
+}
+
+// rule 31: statement <- DO statement:stmt WHILE '(' %error    
+AstBase* SteelParser::ReductionRuleHandler0031 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 345 "steel.trison"
+
+				addError(GET_LINE(),"error, missing condition or no closing ')' found after while.");
+				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, NULL);
+	   
+#line 957 "SteelParser.cpp"
+}
+
+// rule 32: statement <- IF '(' exp:exp ')' statement:stmt ELSE statement:elses     %prec ELSE
+AstBase* SteelParser::ReductionRuleHandler0032 ()
+{
+    assert(2 < m_reduction_rule_token_count);
+    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    assert(4 < m_reduction_rule_token_count);
+    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
+    assert(6 < m_reduction_rule_token_count);
+    AstStatement* elses = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
+
+#line 352 "steel.trison"
+ return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);
+#line 972 "SteelParser.cpp"
+}
+
+// rule 33: statement <- IF '(' exp:exp ')' statement:stmt     %prec NON_ELSE
+AstBase* SteelParser::ReductionRuleHandler0033 ()
+{
+    assert(2 < m_reduction_rule_token_count);
+    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    assert(4 < m_reduction_rule_token_count);
+    AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
+
+#line 354 "steel.trison"
+ return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); 
+#line 985 "SteelParser.cpp"
+}
+
+// rule 34: statement <- IF '(' %error ')' statement:stmt ELSE statement:elses     %prec ELSE
+AstBase* SteelParser::ReductionRuleHandler0034 ()
 {
     assert(4 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
     assert(6 < m_reduction_rule_token_count);
     AstStatement* elses = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
 
-#line 330 "steel.trison"
+#line 357 "steel.trison"
 
 			addError(GET_LINE(),"parse error in if condition."); 
 			return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt,elses);
 		
-#line 943 "SteelParser.cpp"
+#line 1001 "SteelParser.cpp"
 }
 
-// rule 31: statement <- IF '(' %error ')' statement:stmt     %prec NON_ELSE
-AstBase* SteelParser::ReductionRuleHandler0031 ()
+// rule 35: statement <- IF '(' %error ')' statement:stmt     %prec NON_ELSE
+AstBase* SteelParser::ReductionRuleHandler0035 ()
 {
     assert(4 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
 
-#line 336 "steel.trison"
+#line 363 "steel.trison"
 
 				addError(GET_LINE(),"parse error in if condition."); 
 				return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);
 			
-#line 957 "SteelParser.cpp"
+#line 1015 "SteelParser.cpp"
 }
 
-// rule 32: statement <- IF '(' %error    
-AstBase* SteelParser::ReductionRuleHandler0032 ()
+// rule 36: statement <- IF '(' %error    
+AstBase* SteelParser::ReductionRuleHandler0036 ()
 {
 
-#line 342 "steel.trison"
+#line 369 "steel.trison"
 
 			addError(GET_LINE(),"expected ')' after if condition.");
 			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
 				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 		
-#line 970 "SteelParser.cpp"
+#line 1028 "SteelParser.cpp"
 }
 
-// rule 33: statement <- IF %error    
-AstBase* SteelParser::ReductionRuleHandler0033 ()
+// rule 37: statement <- IF %error    
+AstBase* SteelParser::ReductionRuleHandler0037 ()
 {
 
-#line 349 "steel.trison"
+#line 376 "steel.trison"
 
 			addError(GET_LINE(),"expected opening '(' after 'if'");
 			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
 				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 
 		
-#line 984 "SteelParser.cpp"
+#line 1042 "SteelParser.cpp"
 }
 
-// rule 34: statement <- RETURN exp:exp ';'     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0034 ()
+// rule 38: statement <- RETURN exp:exp ';'     %prec CORRECT
+AstBase* SteelParser::ReductionRuleHandler0038 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 357 "steel.trison"
+#line 384 "steel.trison"
  return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);
-#line 995 "SteelParser.cpp"
+#line 1053 "SteelParser.cpp"
 }
 
-// rule 35: statement <- RETURN ';'     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0035 ()
+// rule 39: statement <- RETURN ';'     %prec CORRECT
+AstBase* SteelParser::ReductionRuleHandler0039 ()
 {
 
-#line 360 "steel.trison"
+#line 387 "steel.trison"
 
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1006 "SteelParser.cpp"
+#line 1064 "SteelParser.cpp"
 }
 
-// rule 36: statement <- RETURN %error    
-AstBase* SteelParser::ReductionRuleHandler0036 ()
+// rule 40: statement <- RETURN %error    
+AstBase* SteelParser::ReductionRuleHandler0040 ()
 {
 
-#line 365 "steel.trison"
+#line 392 "steel.trison"
 
 				addError(GET_LINE(),"expected ';' after 'return'");
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1018 "SteelParser.cpp"
+#line 1076 "SteelParser.cpp"
 }
 
-// rule 37: statement <- RETURN    
-AstBase* SteelParser::ReductionRuleHandler0037 ()
+// rule 41: statement <- RETURN    
+AstBase* SteelParser::ReductionRuleHandler0041 ()
 {
 
-#line 371 "steel.trison"
+#line 398 "steel.trison"
 
 				addError(GET_LINE(),"expected ';' after 'return'");
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1030 "SteelParser.cpp"
+#line 1088 "SteelParser.cpp"
 }
 
-// rule 38: statement <- FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0038 ()
+// rule 42: statement <- FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt     %prec CORRECT
+AstBase* SteelParser::ReductionRuleHandler0042 ()
 {
     assert(2 < m_reduction_rule_token_count);
     AstExpression* start = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
@@ -1039,16 +1097,16 @@ AstBase* SteelParser::ReductionRuleHandler0038 ()
     assert(5 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 5]);
 
-#line 378 "steel.trison"
+#line 405 "steel.trison"
 
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition, 
 						new AstExpression (start->GetLine(),start->GetScript()), stmt); 
 			
-#line 1048 "SteelParser.cpp"
+#line 1106 "SteelParser.cpp"
 }
 
-// rule 39: statement <- FOR '(' exp_statement:start exp_statement:condition exp:iteration ')' statement:stmt     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0039 ()
+// rule 43: statement <- FOR '(' exp_statement:start exp_statement:condition exp:iteration ')' statement:stmt     %prec CORRECT
+AstBase* SteelParser::ReductionRuleHandler0043 ()
 {
     assert(2 < m_reduction_rule_token_count);
     AstExpression* start = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
@@ -1059,63 +1117,63 @@ AstBase* SteelParser::ReductionRuleHandler0039 ()
     assert(6 < m_reduction_rule_token_count);
     AstStatement* stmt = static_cast< AstStatement* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 6]);
 
-#line 384 "steel.trison"
+#line 411 "steel.trison"
 
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			
-#line 1067 "SteelParser.cpp"
+#line 1125 "SteelParser.cpp"
 }
 
-// rule 40: statement <- FOR '(' %error    
-AstBase* SteelParser::ReductionRuleHandler0040 ()
+// rule 44: statement <- FOR '(' %error    
+AstBase* SteelParser::ReductionRuleHandler0044 ()
 {
 
-#line 389 "steel.trison"
+#line 416 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1081 "SteelParser.cpp"
+#line 1139 "SteelParser.cpp"
 }
 
-// rule 41: statement <- FOR '(' exp_statement:start %error    
-AstBase* SteelParser::ReductionRuleHandler0041 ()
+// rule 45: statement <- FOR '(' exp_statement:start %error    
+AstBase* SteelParser::ReductionRuleHandler0045 ()
 {
     assert(2 < m_reduction_rule_token_count);
     AstExpression* start = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 397 "steel.trison"
+#line 424 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1097 "SteelParser.cpp"
+#line 1155 "SteelParser.cpp"
 }
 
-// rule 42: statement <- FOR '(' exp_statement:start exp_statement:condition %error    
-AstBase* SteelParser::ReductionRuleHandler0042 ()
+// rule 46: statement <- FOR '(' exp_statement:start exp_statement:condition %error    
+AstBase* SteelParser::ReductionRuleHandler0046 ()
 {
     assert(2 < m_reduction_rule_token_count);
     AstExpression* start = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
     assert(3 < m_reduction_rule_token_count);
     AstExpression* condition = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 3]);
 
-#line 405 "steel.trison"
+#line 432 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1115 "SteelParser.cpp"
+#line 1173 "SteelParser.cpp"
 }
 
-// rule 43: statement <- FOR '(' exp_statement:start exp_statement:condition exp:iteration    
-AstBase* SteelParser::ReductionRuleHandler0043 ()
+// rule 47: statement <- FOR '(' exp_statement:start exp_statement:condition exp:iteration    
+AstBase* SteelParser::ReductionRuleHandler0047 ()
 {
     assert(2 < m_reduction_rule_token_count);
     AstExpression* start = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
@@ -1124,263 +1182,168 @@ AstBase* SteelParser::ReductionRuleHandler0043 ()
     assert(4 < m_reduction_rule_token_count);
     AstExpression* iteration = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 4]);
 
-#line 413 "steel.trison"
+#line 440 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop. Expected ')'");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1135 "SteelParser.cpp"
+#line 1193 "SteelParser.cpp"
 }
 
-// rule 44: statement <- FOR %error    
-AstBase* SteelParser::ReductionRuleHandler0044 ()
+// rule 48: statement <- FOR %error    
+AstBase* SteelParser::ReductionRuleHandler0048 ()
 {
 
-#line 421 "steel.trison"
+#line 448 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop. Expected opening '('");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1149 "SteelParser.cpp"
-}
-
-// rule 45: statement <- BREAK ';'     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0045 ()
-{
-
-#line 430 "steel.trison"
-
-				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
-			
-#line 1160 "SteelParser.cpp"
-}
-
-// rule 46: statement <- BREAK %error    
-AstBase* SteelParser::ReductionRuleHandler0046 ()
-{
-
-#line 435 "steel.trison"
-
-				addError(GET_LINE(),"expected ';' after 'break'");
-				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
-			
-#line 1172 "SteelParser.cpp"
-}
-
-// rule 47: statement <- BREAK    
-AstBase* SteelParser::ReductionRuleHandler0047 ()
-{
-
-#line 441 "steel.trison"
-
-				addError(GET_LINE(),"expected ';' after 'break'");
-				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
-			
-#line 1184 "SteelParser.cpp"
-}
-
-// rule 48: statement <- CONTINUE ';'     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0048 ()
-{
-
-#line 449 "steel.trison"
-
-				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
-			
-#line 1195 "SteelParser.cpp"
-}
-
-// rule 49: statement <- CONTINUE %error    
-AstBase* SteelParser::ReductionRuleHandler0049 ()
-{
-
-#line 454 "steel.trison"
-
-				addError(GET_LINE(),"expected ';' after 'continue'");
-				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
-			
 #line 1207 "SteelParser.cpp"
 }
 
-// rule 50: statement <- CONTINUE    
+// rule 49: statement <- BREAK ';'     %prec CORRECT
+AstBase* SteelParser::ReductionRuleHandler0049 ()
+{
+
+#line 457 "steel.trison"
+
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1218 "SteelParser.cpp"
+}
+
+// rule 50: statement <- BREAK %error    
 AstBase* SteelParser::ReductionRuleHandler0050 ()
 {
 
-#line 460 "steel.trison"
+#line 462 "steel.trison"
+
+				addError(GET_LINE(),"expected ';' after 'break'");
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1230 "SteelParser.cpp"
+}
+
+// rule 51: statement <- BREAK    
+AstBase* SteelParser::ReductionRuleHandler0051 ()
+{
+
+#line 468 "steel.trison"
+
+				addError(GET_LINE(),"expected ';' after 'break'");
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1242 "SteelParser.cpp"
+}
+
+// rule 52: statement <- CONTINUE ';'     %prec CORRECT
+AstBase* SteelParser::ReductionRuleHandler0052 ()
+{
+
+#line 476 "steel.trison"
+
+				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1253 "SteelParser.cpp"
+}
+
+// rule 53: statement <- CONTINUE %error    
+AstBase* SteelParser::ReductionRuleHandler0053 ()
+{
+
+#line 481 "steel.trison"
 
 				addError(GET_LINE(),"expected ';' after 'continue'");
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1219 "SteelParser.cpp"
+#line 1265 "SteelParser.cpp"
 }
 
-// rule 51: exp <- call:call    
-AstBase* SteelParser::ReductionRuleHandler0051 ()
+// rule 54: statement <- CONTINUE    
+AstBase* SteelParser::ReductionRuleHandler0054 ()
+{
+
+#line 487 "steel.trison"
+
+				addError(GET_LINE(),"expected ';' after 'continue'");
+				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1277 "SteelParser.cpp"
+}
+
+// rule 55: exp <- call:call    
+AstBase* SteelParser::ReductionRuleHandler0055 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstCallExpression* call = static_cast< AstCallExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 471 "steel.trison"
+#line 498 "steel.trison"
  return call; 
-#line 1230 "SteelParser.cpp"
+#line 1288 "SteelParser.cpp"
 }
 
-// rule 52: exp <- INT:i    
-AstBase* SteelParser::ReductionRuleHandler0052 ()
+// rule 56: exp <- INT:i    
+AstBase* SteelParser::ReductionRuleHandler0056 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstBase* i = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 473 "steel.trison"
+#line 500 "steel.trison"
  return i;
-#line 1241 "SteelParser.cpp"
+#line 1299 "SteelParser.cpp"
 }
 
-// rule 53: exp <- FLOAT:f    
-AstBase* SteelParser::ReductionRuleHandler0053 ()
+// rule 57: exp <- FLOAT:f    
+AstBase* SteelParser::ReductionRuleHandler0057 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstBase* f = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 475 "steel.trison"
+#line 502 "steel.trison"
  return f; 
-#line 1252 "SteelParser.cpp"
+#line 1310 "SteelParser.cpp"
 }
 
-// rule 54: exp <- STRING:s    
-AstBase* SteelParser::ReductionRuleHandler0054 ()
+// rule 58: exp <- STRING:s    
+AstBase* SteelParser::ReductionRuleHandler0058 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstBase* s = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 477 "steel.trison"
+#line 504 "steel.trison"
  return s; 
-#line 1263 "SteelParser.cpp"
+#line 1321 "SteelParser.cpp"
 }
 
-// rule 55: exp <- var_identifier:id    
-AstBase* SteelParser::ReductionRuleHandler0055 ()
+// rule 59: exp <- var_identifier:id    
+AstBase* SteelParser::ReductionRuleHandler0059 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstVarIdentifier * id = static_cast< AstVarIdentifier * >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 479 "steel.trison"
+#line 506 "steel.trison"
  return id; 
-#line 1274 "SteelParser.cpp"
+#line 1332 "SteelParser.cpp"
 }
 
-// rule 56: exp <- array_identifier:id    
-AstBase* SteelParser::ReductionRuleHandler0056 ()
+// rule 60: exp <- array_identifier:id    
+AstBase* SteelParser::ReductionRuleHandler0060 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstArrayIdentifier* id = static_cast< AstArrayIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 481 "steel.trison"
- return id; 
-#line 1285 "SteelParser.cpp"
-}
-
-// rule 57: exp <- exp:a '+' exp:b    %left %prec ADD_SUB
-AstBase* SteelParser::ReductionRuleHandler0057 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-    assert(2 < m_reduction_rule_token_count);
-    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
-
-#line 483 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); 
-#line 1298 "SteelParser.cpp"
-}
-
-// rule 58: exp <- exp:a '+'     %prec ADD_SUB
-AstBase* SteelParser::ReductionRuleHandler0058 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 485 "steel.trison"
- 
-				addError(a->GetLine(),"expected expression before '+'.");	
-				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
-			  
-#line 1312 "SteelParser.cpp"
-}
-
-// rule 59: exp <- exp:a '-'     %prec ADD_SUB
-AstBase* SteelParser::ReductionRuleHandler0059 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 490 "steel.trison"
- 
-				addError(a->GetLine(),"expected expression before '-'.");	
-				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
-			  
-#line 1326 "SteelParser.cpp"
-}
-
-// rule 60: exp <- exp:a '*'     %prec MULT_DIV_MOD
-AstBase* SteelParser::ReductionRuleHandler0060 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 495 "steel.trison"
- 
-				addError(a->GetLine(),"expected expression after '*'.");	
-				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
-			  
-#line 1340 "SteelParser.cpp"
-}
-
-// rule 61: exp <- '*' exp:b     %prec MULT_DIV_MOD
-AstBase* SteelParser::ReductionRuleHandler0061 ()
-{
-    assert(1 < m_reduction_rule_token_count);
-    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
-
-#line 500 "steel.trison"
- 
-				addError(b->GetLine(),"expected expression before '*'.");	
-				return new AstBinOp(b->GetLine(),b->GetScript(),AstBinOp::MULT,new AstExpression(GET_LINE(),GET_SCRIPT()),b);
-			  
-#line 1354 "SteelParser.cpp"
-}
-
-// rule 62: exp <- exp:a '-' exp:b    %left %prec ADD_SUB
-AstBase* SteelParser::ReductionRuleHandler0062 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-    assert(2 < m_reduction_rule_token_count);
-    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
-
-#line 506 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); 
-#line 1367 "SteelParser.cpp"
-}
-
-// rule 63: exp <- exp:a '*' exp:b    %left %prec MULT_DIV_MOD
-AstBase* SteelParser::ReductionRuleHandler0063 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-    assert(2 < m_reduction_rule_token_count);
-    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
-
 #line 508 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,b); 
-#line 1380 "SteelParser.cpp"
+ return id; 
+#line 1343 "SteelParser.cpp"
 }
 
-// rule 64: exp <- exp:a '/' exp:b    %left %prec MULT_DIV_MOD
-AstBase* SteelParser::ReductionRuleHandler0064 ()
+// rule 61: exp <- exp:a '+' exp:b    %left %prec ADD_SUB
+AstBase* SteelParser::ReductionRuleHandler0061 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
@@ -1388,24 +1351,67 @@ AstBase* SteelParser::ReductionRuleHandler0064 ()
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
 #line 510 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::DIV,a,b); 
-#line 1393 "SteelParser.cpp"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); 
+#line 1356 "SteelParser.cpp"
 }
 
-// rule 65: exp <- exp:a '%' exp:b    %left %prec MULT_DIV_MOD
-AstBase* SteelParser::ReductionRuleHandler0065 ()
+// rule 62: exp <- exp:a '+'     %prec ADD_SUB
+AstBase* SteelParser::ReductionRuleHandler0062 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-    assert(2 < m_reduction_rule_token_count);
-    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
 #line 512 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MOD,a,b); 
-#line 1406 "SteelParser.cpp"
+ 
+				addError(a->GetLine(),"expected expression before '+'.");	
+				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
+			  
+#line 1370 "SteelParser.cpp"
 }
 
-// rule 66: exp <- exp:a D exp:b    %left %prec POW
+// rule 63: exp <- exp:a '-'     %prec ADD_SUB
+AstBase* SteelParser::ReductionRuleHandler0063 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 517 "steel.trison"
+ 
+				addError(a->GetLine(),"expected expression before '-'.");	
+				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
+			  
+#line 1384 "SteelParser.cpp"
+}
+
+// rule 64: exp <- exp:a '*'     %prec MULT_DIV_MOD
+AstBase* SteelParser::ReductionRuleHandler0064 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 522 "steel.trison"
+ 
+				addError(a->GetLine(),"expected expression after '*'.");	
+				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
+			  
+#line 1398 "SteelParser.cpp"
+}
+
+// rule 65: exp <- '*' exp:b     %prec MULT_DIV_MOD
+AstBase* SteelParser::ReductionRuleHandler0065 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 527 "steel.trison"
+ 
+				addError(b->GetLine(),"expected expression before '*'.");	
+				return new AstBinOp(b->GetLine(),b->GetScript(),AstBinOp::MULT,new AstExpression(GET_LINE(),GET_SCRIPT()),b);
+			  
+#line 1412 "SteelParser.cpp"
+}
+
+// rule 66: exp <- exp:a '-' exp:b    %left %prec ADD_SUB
 AstBase* SteelParser::ReductionRuleHandler0066 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1413,25 +1419,25 @@ AstBase* SteelParser::ReductionRuleHandler0066 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 514 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); 
-#line 1419 "SteelParser.cpp"
+#line 533 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); 
+#line 1425 "SteelParser.cpp"
 }
 
-// rule 67: exp <- exp:lvalue '=' exp:exp    %right %prec ASSIGNMENT
+// rule 67: exp <- exp:a '*' exp:b    %left %prec MULT_DIV_MOD
 AstBase* SteelParser::ReductionRuleHandler0067 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
     assert(2 < m_reduction_rule_token_count);
-    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 516 "steel.trison"
- return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); 
-#line 1432 "SteelParser.cpp"
+#line 535 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,b); 
+#line 1438 "SteelParser.cpp"
 }
 
-// rule 68: exp <- exp:a '^' exp:b    %right %prec POW
+// rule 68: exp <- exp:a '/' exp:b    %left %prec MULT_DIV_MOD
 AstBase* SteelParser::ReductionRuleHandler0068 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1439,12 +1445,12 @@ AstBase* SteelParser::ReductionRuleHandler0068 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 518 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); 
-#line 1445 "SteelParser.cpp"
+#line 537 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::DIV,a,b); 
+#line 1451 "SteelParser.cpp"
 }
 
-// rule 69: exp <- exp:a OR exp:b    %left %prec OR
+// rule 69: exp <- exp:a '%' exp:b    %left %prec MULT_DIV_MOD
 AstBase* SteelParser::ReductionRuleHandler0069 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1452,12 +1458,12 @@ AstBase* SteelParser::ReductionRuleHandler0069 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 520 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); 
-#line 1458 "SteelParser.cpp"
+#line 539 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MOD,a,b); 
+#line 1464 "SteelParser.cpp"
 }
 
-// rule 70: exp <- exp:a AND exp:b    %left %prec AND
+// rule 70: exp <- exp:a D exp:b    %left %prec POW
 AstBase* SteelParser::ReductionRuleHandler0070 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1465,25 +1471,25 @@ AstBase* SteelParser::ReductionRuleHandler0070 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 522 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); 
-#line 1471 "SteelParser.cpp"
+#line 541 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); 
+#line 1477 "SteelParser.cpp"
 }
 
-// rule 71: exp <- exp:a EQ exp:b    %left %prec EQ_NE
+// rule 71: exp <- exp:lvalue '=' exp:exp    %right %prec ASSIGNMENT
 AstBase* SteelParser::ReductionRuleHandler0071 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
     assert(2 < m_reduction_rule_token_count);
-    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 524 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::EQ,a,b); 
-#line 1484 "SteelParser.cpp"
+#line 543 "steel.trison"
+ return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); 
+#line 1490 "SteelParser.cpp"
 }
 
-// rule 72: exp <- exp:a NE exp:b    %left %prec EQ_NE
+// rule 72: exp <- exp:a '^' exp:b    %right %prec POW
 AstBase* SteelParser::ReductionRuleHandler0072 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1491,12 +1497,12 @@ AstBase* SteelParser::ReductionRuleHandler0072 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 526 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::NE,a,b); 
-#line 1497 "SteelParser.cpp"
+#line 545 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); 
+#line 1503 "SteelParser.cpp"
 }
 
-// rule 73: exp <- exp:a LT exp:b    %left %prec COMPARATOR
+// rule 73: exp <- exp:a OR exp:b    %left %prec OR
 AstBase* SteelParser::ReductionRuleHandler0073 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1504,12 +1510,12 @@ AstBase* SteelParser::ReductionRuleHandler0073 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 528 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LT,a,b); 
-#line 1510 "SteelParser.cpp"
+#line 547 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); 
+#line 1516 "SteelParser.cpp"
 }
 
-// rule 74: exp <- exp:a GT exp:b    %left %prec COMPARATOR
+// rule 74: exp <- exp:a AND exp:b    %left %prec AND
 AstBase* SteelParser::ReductionRuleHandler0074 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1517,12 +1523,12 @@ AstBase* SteelParser::ReductionRuleHandler0074 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 530 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GT,a,b); 
-#line 1523 "SteelParser.cpp"
+#line 549 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); 
+#line 1529 "SteelParser.cpp"
 }
 
-// rule 75: exp <- exp:a LTE exp:b    %left %prec COMPARATOR
+// rule 75: exp <- exp:a EQ exp:b    %left %prec EQ_NE
 AstBase* SteelParser::ReductionRuleHandler0075 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1530,12 +1536,12 @@ AstBase* SteelParser::ReductionRuleHandler0075 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 532 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); 
-#line 1536 "SteelParser.cpp"
+#line 551 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::EQ,a,b); 
+#line 1542 "SteelParser.cpp"
 }
 
-// rule 76: exp <- exp:a GTE exp:b    %left %prec COMPARATOR
+// rule 76: exp <- exp:a NE exp:b    %left %prec EQ_NE
 AstBase* SteelParser::ReductionRuleHandler0076 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1543,12 +1549,12 @@ AstBase* SteelParser::ReductionRuleHandler0076 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 534 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); 
-#line 1549 "SteelParser.cpp"
+#line 553 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::NE,a,b); 
+#line 1555 "SteelParser.cpp"
 }
 
-// rule 77: exp <- exp:a CAT exp:b    %left %prec ADD_SUB
+// rule 77: exp <- exp:a LT exp:b    %left %prec COMPARATOR
 AstBase* SteelParser::ReductionRuleHandler0077 ()
 {
     assert(0 < m_reduction_rule_token_count);
@@ -1556,488 +1562,540 @@ AstBase* SteelParser::ReductionRuleHandler0077 ()
     assert(2 < m_reduction_rule_token_count);
     AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 536 "steel.trison"
- return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::CAT,a,b); 
-#line 1562 "SteelParser.cpp"
+#line 555 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LT,a,b); 
+#line 1568 "SteelParser.cpp"
 }
 
-// rule 78: exp <- '(' exp:exp ')'     %prec PAREN
+// rule 78: exp <- exp:a GT exp:b    %left %prec COMPARATOR
 AstBase* SteelParser::ReductionRuleHandler0078 ()
 {
-    assert(1 < m_reduction_rule_token_count);
-    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    assert(2 < m_reduction_rule_token_count);
+    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 538 "steel.trison"
- return exp; 
-#line 1573 "SteelParser.cpp"
+#line 557 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GT,a,b); 
+#line 1581 "SteelParser.cpp"
 }
 
-// rule 79: exp <- '-' exp:exp     %prec UNARY
+// rule 79: exp <- exp:a LTE exp:b    %left %prec COMPARATOR
 AstBase* SteelParser::ReductionRuleHandler0079 ()
 {
-    assert(1 < m_reduction_rule_token_count);
-    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    assert(2 < m_reduction_rule_token_count);
+    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 540 "steel.trison"
- return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); 
-#line 1584 "SteelParser.cpp"
+#line 559 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); 
+#line 1594 "SteelParser.cpp"
 }
 
-// rule 80: exp <- '+' exp:exp     %prec UNARY
+// rule 80: exp <- exp:a GTE exp:b    %left %prec COMPARATOR
 AstBase* SteelParser::ReductionRuleHandler0080 ()
 {
-    assert(1 < m_reduction_rule_token_count);
-    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    assert(2 < m_reduction_rule_token_count);
+    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 542 "steel.trison"
- return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); 
-#line 1595 "SteelParser.cpp"
-}
-
-// rule 81: exp <- NOT %error     %prec UNARY
-AstBase* SteelParser::ReductionRuleHandler0081 ()
-{
-
-#line 544 "steel.trison"
-
-						addError(GET_LINE(),"expected expression after unary minus.");
-						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
-								  
+#line 561 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); 
 #line 1607 "SteelParser.cpp"
 }
 
-// rule 82: exp <- CAT %error     %prec UNARY
-AstBase* SteelParser::ReductionRuleHandler0082 ()
+// rule 81: exp <- exp:a CAT exp:b    %left %prec ADD_SUB
+AstBase* SteelParser::ReductionRuleHandler0081 ()
 {
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* a = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    assert(2 < m_reduction_rule_token_count);
+    AstExpression* b = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 552 "steel.trison"
-
-						addError(GET_LINE(),"expected expression after ':'.");
-						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::CAT,new AstExpression(GET_LINE(),GET_SCRIPT()));
-								  
-#line 1619 "SteelParser.cpp"
+#line 563 "steel.trison"
+ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::CAT,a,b); 
+#line 1620 "SteelParser.cpp"
 }
 
-// rule 83: exp <- NOT exp:exp     %prec UNARY
+// rule 82: exp <- '(' exp:exp ')'     %prec PAREN
+AstBase* SteelParser::ReductionRuleHandler0082 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 565 "steel.trison"
+ return exp; 
+#line 1631 "SteelParser.cpp"
+}
+
+// rule 83: exp <- '-' exp:exp     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0083 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 558 "steel.trison"
- return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); 
-#line 1630 "SteelParser.cpp"
+#line 567 "steel.trison"
+ return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); 
+#line 1642 "SteelParser.cpp"
 }
 
-// rule 84: exp <- CAT exp:exp     %prec UNARY
+// rule 84: exp <- '+' exp:exp     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0084 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 560 "steel.trison"
- return new AstUnaryOp(exp->GetLine(),
-exp->GetScript(), AstUnaryOp::CAT,exp); 
-#line 1642 "SteelParser.cpp"
+#line 569 "steel.trison"
+ return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); 
+#line 1653 "SteelParser.cpp"
 }
 
-// rule 85: exp <- exp:lvalue '[' exp:index ']'     %prec PAREN
+// rule 85: exp <- NOT %error     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0085 ()
+{
+
+#line 571 "steel.trison"
+
+						addError(GET_LINE(),"expected expression after unary minus.");
+						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
+								  
+#line 1665 "SteelParser.cpp"
+}
+
+// rule 86: exp <- CAT %error     %prec UNARY
+AstBase* SteelParser::ReductionRuleHandler0086 ()
+{
+
+#line 579 "steel.trison"
+
+						addError(GET_LINE(),"expected expression after ':'.");
+						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::CAT,new AstExpression(GET_LINE(),GET_SCRIPT()));
+								  
+#line 1677 "SteelParser.cpp"
+}
+
+// rule 87: exp <- NOT exp:exp     %prec UNARY
+AstBase* SteelParser::ReductionRuleHandler0087 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 585 "steel.trison"
+ return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); 
+#line 1688 "SteelParser.cpp"
+}
+
+// rule 88: exp <- CAT exp:exp     %prec UNARY
+AstBase* SteelParser::ReductionRuleHandler0088 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 587 "steel.trison"
+ return new AstUnaryOp(exp->GetLine(),
+exp->GetScript(), AstUnaryOp::CAT,exp); 
+#line 1700 "SteelParser.cpp"
+}
+
+// rule 89: exp <- exp:lvalue '[' exp:index ']'     %prec PAREN
+AstBase* SteelParser::ReductionRuleHandler0089 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
     assert(2 < m_reduction_rule_token_count);
     AstExpression* index = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 563 "steel.trison"
+#line 590 "steel.trison"
  return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); 
-#line 1655 "SteelParser.cpp"
+#line 1713 "SteelParser.cpp"
 }
 
-// rule 86: exp <- INCREMENT exp:lvalue     %prec UNARY
-AstBase* SteelParser::ReductionRuleHandler0086 ()
-{
-    assert(1 < m_reduction_rule_token_count);
-    AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
-
-#line 565 "steel.trison"
- return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);
-#line 1666 "SteelParser.cpp"
-}
-
-// rule 87: exp <- INCREMENT %error     %prec UNARY
-AstBase* SteelParser::ReductionRuleHandler0087 ()
-{
-
-#line 567 "steel.trison"
-
-										addError(GET_LINE(),"expected lvalue after '++'");
-										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
-												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
-										
-#line 1679 "SteelParser.cpp"
-}
-
-// rule 88: exp <- %error INCREMENT     %prec PAREN
-AstBase* SteelParser::ReductionRuleHandler0088 ()
-{
-
-#line 573 "steel.trison"
- 
-									addError(GET_LINE(),"expected lvalue before '++'");
-									return new AstIncrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstIncrement::POST);
-	   							
-#line 1691 "SteelParser.cpp"
-}
-
-// rule 89: exp <- exp:lvalue INCREMENT     %prec PAREN
-AstBase* SteelParser::ReductionRuleHandler0089 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 579 "steel.trison"
- return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);
-#line 1702 "SteelParser.cpp"
-}
-
-// rule 90: exp <- DECREMENT exp:lvalue     %prec UNARY
+// rule 90: exp <- INCREMENT exp:lvalue     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0090 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 581 "steel.trison"
- return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);
-#line 1713 "SteelParser.cpp"
+#line 592 "steel.trison"
+ return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);
+#line 1724 "SteelParser.cpp"
 }
 
-// rule 91: exp <- DECREMENT %error     %prec UNARY
+// rule 91: exp <- INCREMENT %error     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0091 ()
 {
 
-#line 583 "steel.trison"
+#line 594 "steel.trison"
 
-										addError(GET_LINE(),"expected lvalue after '--'");
-										return new AstDecrement(GET_LINE(),GET_SCRIPT(),
-												new AstExpression(GET_LINE(),GET_SCRIPT()),AstDecrement::PRE);
+										addError(GET_LINE(),"expected lvalue after '++'");
+										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
+												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
 										
-#line 1726 "SteelParser.cpp"
+#line 1737 "SteelParser.cpp"
 }
 
-// rule 92: exp <- exp:lvalue DECREMENT     %prec PAREN
+// rule 92: exp <- %error INCREMENT     %prec PAREN
 AstBase* SteelParser::ReductionRuleHandler0092 ()
+{
+
+#line 600 "steel.trison"
+ 
+									addError(GET_LINE(),"expected lvalue before '++'");
+									return new AstIncrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstIncrement::POST);
+	   							
+#line 1749 "SteelParser.cpp"
+}
+
+// rule 93: exp <- exp:lvalue INCREMENT     %prec PAREN
+AstBase* SteelParser::ReductionRuleHandler0093 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 590 "steel.trison"
- 
-									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
-									
-#line 1739 "SteelParser.cpp"
+#line 606 "steel.trison"
+ return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);
+#line 1760 "SteelParser.cpp"
 }
 
-// rule 93: exp <- %error DECREMENT     %prec PAREN
-AstBase* SteelParser::ReductionRuleHandler0093 ()
-{
-
-#line 594 "steel.trison"
- 
-									addError(GET_LINE(),"expected lvalue before '--'");
-									return new AstDecrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstDecrement::POST);
-									
-#line 1751 "SteelParser.cpp"
-}
-
-// rule 94: exp <- POP exp:lvalue     %prec UNARY
+// rule 94: exp <- DECREMENT exp:lvalue     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0094 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 600 "steel.trison"
- return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); 
-#line 1762 "SteelParser.cpp"
+#line 608 "steel.trison"
+ return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);
+#line 1771 "SteelParser.cpp"
 }
 
-// rule 95: exp <- POP %error     %prec UNARY
+// rule 95: exp <- DECREMENT %error     %prec UNARY
 AstBase* SteelParser::ReductionRuleHandler0095 ()
 {
 
-#line 602 "steel.trison"
+#line 610 "steel.trison"
+
+										addError(GET_LINE(),"expected lvalue after '--'");
+										return new AstDecrement(GET_LINE(),GET_SCRIPT(),
+												new AstExpression(GET_LINE(),GET_SCRIPT()),AstDecrement::PRE);
+										
+#line 1784 "SteelParser.cpp"
+}
+
+// rule 96: exp <- exp:lvalue DECREMENT     %prec PAREN
+AstBase* SteelParser::ReductionRuleHandler0096 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 617 "steel.trison"
+ 
+									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
+									
+#line 1797 "SteelParser.cpp"
+}
+
+// rule 97: exp <- %error DECREMENT     %prec PAREN
+AstBase* SteelParser::ReductionRuleHandler0097 ()
+{
+
+#line 621 "steel.trison"
+ 
+									addError(GET_LINE(),"expected lvalue before '--'");
+									return new AstDecrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstDecrement::POST);
+									
+#line 1809 "SteelParser.cpp"
+}
+
+// rule 98: exp <- POP exp:lvalue     %prec UNARY
+AstBase* SteelParser::ReductionRuleHandler0098 ()
+{
+    assert(1 < m_reduction_rule_token_count);
+    AstExpression* lvalue = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+
+#line 627 "steel.trison"
+ return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); 
+#line 1820 "SteelParser.cpp"
+}
+
+// rule 99: exp <- POP %error     %prec UNARY
+AstBase* SteelParser::ReductionRuleHandler0099 ()
+{
+
+#line 629 "steel.trison"
 
 						addError(GET_LINE(),"expected expression after 'pop'.");
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()));
 							  
-#line 1774 "SteelParser.cpp"
+#line 1832 "SteelParser.cpp"
 }
 
-// rule 96: exp_statement <- ';'    
-AstBase* SteelParser::ReductionRuleHandler0096 ()
+// rule 100: exp_statement <- ';'    
+AstBase* SteelParser::ReductionRuleHandler0100 ()
 {
 
-#line 611 "steel.trison"
+#line 638 "steel.trison"
 
 			return new AstExpression(GET_LINE(),GET_SCRIPT()); 
 		
-#line 1785 "SteelParser.cpp"
+#line 1843 "SteelParser.cpp"
 }
 
-// rule 97: exp_statement <- exp:exp ';'    
-AstBase* SteelParser::ReductionRuleHandler0097 ()
+// rule 101: exp_statement <- exp:exp ';'    
+AstBase* SteelParser::ReductionRuleHandler0101 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 615 "steel.trison"
+#line 642 "steel.trison"
  return exp; 
-#line 1796 "SteelParser.cpp"
+#line 1854 "SteelParser.cpp"
 }
 
-// rule 98: int_literal <- INT:i    
-AstBase* SteelParser::ReductionRuleHandler0098 ()
+// rule 102: int_literal <- INT:i    
+AstBase* SteelParser::ReductionRuleHandler0102 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstBase* i = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 620 "steel.trison"
+#line 647 "steel.trison"
  return i; 
-#line 1807 "SteelParser.cpp"
+#line 1865 "SteelParser.cpp"
 }
 
-// rule 99: var_identifier <- VAR_IDENTIFIER:id    
-AstBase* SteelParser::ReductionRuleHandler0099 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 625 "steel.trison"
- return id; 
-#line 1818 "SteelParser.cpp"
-}
-
-// rule 100: func_identifier <- FUNC_IDENTIFIER:id    
-AstBase* SteelParser::ReductionRuleHandler0100 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 630 "steel.trison"
- return id; 
-#line 1829 "SteelParser.cpp"
-}
-
-// rule 101: array_identifier <- ARRAY_IDENTIFIER:id    
-AstBase* SteelParser::ReductionRuleHandler0101 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 635 "steel.trison"
- return id; 
-#line 1840 "SteelParser.cpp"
-}
-
-// rule 102: call <- func_identifier:id '(' ')'     %prec CORRECT
-AstBase* SteelParser::ReductionRuleHandler0102 ()
-{
-    assert(0 < m_reduction_rule_token_count);
-    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-
-#line 641 "steel.trison"
- return new AstCallExpression(id->GetLine(),id->GetScript(),id);
-#line 1851 "SteelParser.cpp"
-}
-
-// rule 103: call <- func_identifier:id '(' param_list:params ')'     %prec CORRECT
+// rule 103: var_identifier <- VAR_IDENTIFIER:id    
 AstBase* SteelParser::ReductionRuleHandler0103 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-    assert(2 < m_reduction_rule_token_count);
-    AstParamList* params = static_cast< AstParamList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 643 "steel.trison"
- return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);
-#line 1864 "SteelParser.cpp"
+#line 652 "steel.trison"
+ return id; 
+#line 1876 "SteelParser.cpp"
 }
 
-// rule 104: call <- func_identifier:id '(' param_list:params    
+// rule 104: func_identifier <- FUNC_IDENTIFIER:id    
 AstBase* SteelParser::ReductionRuleHandler0104 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
-    assert(2 < m_reduction_rule_token_count);
-    AstParamList* params = static_cast< AstParamList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
+    AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 646 "steel.trison"
-
-				addError(GET_LINE(),"expected ')' before ';'.");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id,params); 
-			
-#line 1880 "SteelParser.cpp"
+#line 657 "steel.trison"
+ return id; 
+#line 1887 "SteelParser.cpp"
 }
 
-// rule 105: call <- func_identifier:id '('    
+// rule 105: array_identifier <- ARRAY_IDENTIFIER:id    
 AstBase* SteelParser::ReductionRuleHandler0105 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstBase* id = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 652 "steel.trison"
-
-				addError(GET_LINE(),"expected ')' before ';'");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			
-#line 1894 "SteelParser.cpp"
+#line 662 "steel.trison"
+ return id; 
+#line 1898 "SteelParser.cpp"
 }
 
-// rule 106: call <- func_identifier:id %error ')'    
+// rule 106: call <- func_identifier:id '(' ')'     %prec CORRECT
 AstBase* SteelParser::ReductionRuleHandler0106 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 658 "steel.trison"
-
-				addError(GET_LINE(),"missing '(' in function call");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			
-#line 1908 "SteelParser.cpp"
+#line 668 "steel.trison"
+ return new AstCallExpression(id->GetLine(),id->GetScript(),id);
+#line 1909 "SteelParser.cpp"
 }
 
-// rule 107: call <- func_identifier:id %error    
+// rule 107: call <- func_identifier:id '(' param_list:params ')'     %prec CORRECT
 AstBase* SteelParser::ReductionRuleHandler0107 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    assert(2 < m_reduction_rule_token_count);
+    AstParamList* params = static_cast< AstParamList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 664 "steel.trison"
-
-				addError(GET_LINE(),"function call missing parentheses.");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			
+#line 670 "steel.trison"
+ return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);
 #line 1922 "SteelParser.cpp"
 }
 
-// rule 108: call <- func_identifier:id    
+// rule 108: call <- func_identifier:id '(' param_list:params    
 AstBase* SteelParser::ReductionRuleHandler0108 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    assert(2 < m_reduction_rule_token_count);
+    AstParamList* params = static_cast< AstParamList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 670 "steel.trison"
+#line 673 "steel.trison"
+
+				addError(GET_LINE(),"expected ')' before ';'.");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id,params); 
+			
+#line 1938 "SteelParser.cpp"
+}
+
+// rule 109: call <- func_identifier:id '('    
+AstBase* SteelParser::ReductionRuleHandler0109 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 679 "steel.trison"
+
+				addError(GET_LINE(),"expected ')' before ';'");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			
+#line 1952 "SteelParser.cpp"
+}
+
+// rule 110: call <- func_identifier:id %error ')'    
+AstBase* SteelParser::ReductionRuleHandler0110 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 685 "steel.trison"
+
+				addError(GET_LINE(),"missing '(' in function call");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			
+#line 1966 "SteelParser.cpp"
+}
+
+// rule 111: call <- func_identifier:id %error    
+AstBase* SteelParser::ReductionRuleHandler0111 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 691 "steel.trison"
+
+				addError(GET_LINE(),"function call missing parentheses.");
+				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
+			
+#line 1980 "SteelParser.cpp"
+}
+
+// rule 112: call <- func_identifier:id    
+AstBase* SteelParser::ReductionRuleHandler0112 ()
+{
+    assert(0 < m_reduction_rule_token_count);
+    AstFuncIdentifier* id = static_cast< AstFuncIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+
+#line 697 "steel.trison"
 
 				addError(GET_LINE(),"invalid bareword. function call missing parentheses?");
 				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
 			
-#line 1936 "SteelParser.cpp"
+#line 1994 "SteelParser.cpp"
 }
 
-// rule 109: vardecl <- VAR var_identifier:id    
-AstBase* SteelParser::ReductionRuleHandler0109 ()
+// rule 113: vardecl <- VAR var_identifier:id    
+AstBase* SteelParser::ReductionRuleHandler0113 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstVarIdentifier * id = static_cast< AstVarIdentifier * >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 679 "steel.trison"
+#line 706 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id);
-#line 1947 "SteelParser.cpp"
+#line 2005 "SteelParser.cpp"
 }
 
-// rule 110: vardecl <- VAR var_identifier:id '=' exp:exp    
-AstBase* SteelParser::ReductionRuleHandler0110 ()
+// rule 114: vardecl <- VAR var_identifier:id '=' exp:exp    
+AstBase* SteelParser::ReductionRuleHandler0114 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstVarIdentifier * id = static_cast< AstVarIdentifier * >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
     assert(3 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 3]);
 
-#line 681 "steel.trison"
+#line 708 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,exp); 
-#line 1960 "SteelParser.cpp"
+#line 2018 "SteelParser.cpp"
 }
 
-// rule 111: vardecl <- CONST var_identifier:id '=' exp:exp    
-AstBase* SteelParser::ReductionRuleHandler0111 ()
+// rule 115: vardecl <- CONST var_identifier:id '=' exp:exp    
+AstBase* SteelParser::ReductionRuleHandler0115 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstVarIdentifier * id = static_cast< AstVarIdentifier * >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
     assert(3 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 3]);
 
-#line 683 "steel.trison"
+#line 710 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,true,exp); 
-#line 1973 "SteelParser.cpp"
+#line 2031 "SteelParser.cpp"
 }
 
-// rule 112: vardecl <- VAR array_identifier:id '[' exp:i ']'    
-AstBase* SteelParser::ReductionRuleHandler0112 ()
+// rule 116: vardecl <- VAR array_identifier:id '[' exp:i ']'    
+AstBase* SteelParser::ReductionRuleHandler0116 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstArrayIdentifier* id = static_cast< AstArrayIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
     assert(3 < m_reduction_rule_token_count);
     AstExpression* i = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 3]);
 
-#line 685 "steel.trison"
+#line 712 "steel.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); 
-#line 1986 "SteelParser.cpp"
+#line 2044 "SteelParser.cpp"
 }
 
-// rule 113: vardecl <- VAR array_identifier:id    
-AstBase* SteelParser::ReductionRuleHandler0113 ()
+// rule 117: vardecl <- VAR array_identifier:id    
+AstBase* SteelParser::ReductionRuleHandler0117 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstArrayIdentifier* id = static_cast< AstArrayIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
-#line 687 "steel.trison"
+#line 714 "steel.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); 
-#line 1997 "SteelParser.cpp"
+#line 2055 "SteelParser.cpp"
 }
 
-// rule 114: vardecl <- VAR array_identifier:id '=' exp:exp    
-AstBase* SteelParser::ReductionRuleHandler0114 ()
+// rule 118: vardecl <- VAR array_identifier:id '=' exp:exp    
+AstBase* SteelParser::ReductionRuleHandler0118 ()
 {
     assert(1 < m_reduction_rule_token_count);
     AstArrayIdentifier* id = static_cast< AstArrayIdentifier* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
     assert(3 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 3]);
 
-#line 689 "steel.trison"
+#line 716 "steel.trison"
 
 							AstArrayDeclaration *pDecl =  new AstArrayDeclaration(id->GetLine(),id->GetScript(),id);
 							pDecl->assign(exp);
 							return pDecl;
 						 
-#line 2014 "SteelParser.cpp"
+#line 2072 "SteelParser.cpp"
 }
 
-// rule 115: param_list <- exp:exp    
-AstBase* SteelParser::ReductionRuleHandler0115 ()
+// rule 119: param_list <- exp:exp    
+AstBase* SteelParser::ReductionRuleHandler0119 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
-#line 698 "steel.trison"
+#line 725 "steel.trison"
  AstParamList * pList = new AstParamList ( exp->GetLine(), exp->GetScript() );
 		  pList->add(exp);
 		  return pList;
 		
-#line 2028 "SteelParser.cpp"
+#line 2086 "SteelParser.cpp"
 }
 
-// rule 116: param_list <- param_list:list ',' exp:exp    
-AstBase* SteelParser::ReductionRuleHandler0116 ()
+// rule 120: param_list <- param_list:list ',' exp:exp    
+AstBase* SteelParser::ReductionRuleHandler0120 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstParamList* list = static_cast< AstParamList* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
     assert(2 < m_reduction_rule_token_count);
     AstExpression* exp = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 2]);
 
-#line 703 "steel.trison"
+#line 730 "steel.trison"
  list->add(exp); return list;
-#line 2041 "SteelParser.cpp"
+#line 2099 "SteelParser.cpp"
 }
 
 
@@ -2076,95 +2134,99 @@ SteelParser::ReductionRule const SteelParser::ms_reduction_rule[] =
     {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0025, "rule 25: statement <- WHILE '('    "},
     {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0026, "rule 26: statement <- WHILE %error    "},
     {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0027, "rule 27: statement <- WHILE '(' %error ')' statement    "},
-    {            Token::statement__,  7, &SteelParser::ReductionRuleHandler0028, "rule 28: statement <- IF '(' exp ')' statement ELSE statement     %prec ELSE"},
-    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0029, "rule 29: statement <- IF '(' exp ')' statement     %prec NON_ELSE"},
-    {            Token::statement__,  7, &SteelParser::ReductionRuleHandler0030, "rule 30: statement <- IF '(' %error ')' statement ELSE statement     %prec ELSE"},
-    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0031, "rule 31: statement <- IF '(' %error ')' statement     %prec NON_ELSE"},
-    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0032, "rule 32: statement <- IF '(' %error    "},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0033, "rule 33: statement <- IF %error    "},
-    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0034, "rule 34: statement <- RETURN exp ';'     %prec CORRECT"},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0035, "rule 35: statement <- RETURN ';'     %prec CORRECT"},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0036, "rule 36: statement <- RETURN %error    "},
-    {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0037, "rule 37: statement <- RETURN    "},
-    {            Token::statement__,  6, &SteelParser::ReductionRuleHandler0038, "rule 38: statement <- FOR '(' exp_statement exp_statement ')' statement     %prec CORRECT"},
-    {            Token::statement__,  7, &SteelParser::ReductionRuleHandler0039, "rule 39: statement <- FOR '(' exp_statement exp_statement exp ')' statement     %prec CORRECT"},
-    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0040, "rule 40: statement <- FOR '(' %error    "},
-    {            Token::statement__,  4, &SteelParser::ReductionRuleHandler0041, "rule 41: statement <- FOR '(' exp_statement %error    "},
-    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0042, "rule 42: statement <- FOR '(' exp_statement exp_statement %error    "},
-    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0043, "rule 43: statement <- FOR '(' exp_statement exp_statement exp    "},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0044, "rule 44: statement <- FOR %error    "},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0045, "rule 45: statement <- BREAK ';'     %prec CORRECT"},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0046, "rule 46: statement <- BREAK %error    "},
-    {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0047, "rule 47: statement <- BREAK    "},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0048, "rule 48: statement <- CONTINUE ';'     %prec CORRECT"},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0049, "rule 49: statement <- CONTINUE %error    "},
-    {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0050, "rule 50: statement <- CONTINUE    "},
-    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0051, "rule 51: exp <- call    "},
-    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0052, "rule 52: exp <- INT    "},
-    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0053, "rule 53: exp <- FLOAT    "},
-    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0054, "rule 54: exp <- STRING    "},
-    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0055, "rule 55: exp <- var_identifier    "},
-    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0056, "rule 56: exp <- array_identifier    "},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0057, "rule 57: exp <- exp '+' exp    %left %prec ADD_SUB"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0058, "rule 58: exp <- exp '+'     %prec ADD_SUB"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0059, "rule 59: exp <- exp '-'     %prec ADD_SUB"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0060, "rule 60: exp <- exp '*'     %prec MULT_DIV_MOD"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0061, "rule 61: exp <- '*' exp     %prec MULT_DIV_MOD"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0062, "rule 62: exp <- exp '-' exp    %left %prec ADD_SUB"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0063, "rule 63: exp <- exp '*' exp    %left %prec MULT_DIV_MOD"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0064, "rule 64: exp <- exp '/' exp    %left %prec MULT_DIV_MOD"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0065, "rule 65: exp <- exp '%' exp    %left %prec MULT_DIV_MOD"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0066, "rule 66: exp <- exp D exp    %left %prec POW"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0067, "rule 67: exp <- exp '=' exp    %right %prec ASSIGNMENT"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0068, "rule 68: exp <- exp '^' exp    %right %prec POW"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0069, "rule 69: exp <- exp OR exp    %left %prec OR"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0070, "rule 70: exp <- exp AND exp    %left %prec AND"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0071, "rule 71: exp <- exp EQ exp    %left %prec EQ_NE"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0072, "rule 72: exp <- exp NE exp    %left %prec EQ_NE"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0073, "rule 73: exp <- exp LT exp    %left %prec COMPARATOR"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0074, "rule 74: exp <- exp GT exp    %left %prec COMPARATOR"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0075, "rule 75: exp <- exp LTE exp    %left %prec COMPARATOR"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0076, "rule 76: exp <- exp GTE exp    %left %prec COMPARATOR"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0077, "rule 77: exp <- exp CAT exp    %left %prec ADD_SUB"},
-    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0078, "rule 78: exp <- '(' exp ')'     %prec PAREN"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0079, "rule 79: exp <- '-' exp     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0080, "rule 80: exp <- '+' exp     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0081, "rule 81: exp <- NOT %error     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0082, "rule 82: exp <- CAT %error     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0083, "rule 83: exp <- NOT exp     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0084, "rule 84: exp <- CAT exp     %prec UNARY"},
-    {                  Token::exp__,  4, &SteelParser::ReductionRuleHandler0085, "rule 85: exp <- exp '[' exp ']'     %prec PAREN"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0086, "rule 86: exp <- INCREMENT exp     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0087, "rule 87: exp <- INCREMENT %error     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0088, "rule 88: exp <- %error INCREMENT     %prec PAREN"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0089, "rule 89: exp <- exp INCREMENT     %prec PAREN"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0090, "rule 90: exp <- DECREMENT exp     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0091, "rule 91: exp <- DECREMENT %error     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0092, "rule 92: exp <- exp DECREMENT     %prec PAREN"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0093, "rule 93: exp <- %error DECREMENT     %prec PAREN"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0094, "rule 94: exp <- POP exp     %prec UNARY"},
-    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0095, "rule 95: exp <- POP %error     %prec UNARY"},
-    {        Token::exp_statement__,  1, &SteelParser::ReductionRuleHandler0096, "rule 96: exp_statement <- ';'    "},
-    {        Token::exp_statement__,  2, &SteelParser::ReductionRuleHandler0097, "rule 97: exp_statement <- exp ';'    "},
-    {          Token::int_literal__,  1, &SteelParser::ReductionRuleHandler0098, "rule 98: int_literal <- INT    "},
-    {       Token::var_identifier__,  1, &SteelParser::ReductionRuleHandler0099, "rule 99: var_identifier <- VAR_IDENTIFIER    "},
-    {      Token::func_identifier__,  1, &SteelParser::ReductionRuleHandler0100, "rule 100: func_identifier <- FUNC_IDENTIFIER    "},
-    {     Token::array_identifier__,  1, &SteelParser::ReductionRuleHandler0101, "rule 101: array_identifier <- ARRAY_IDENTIFIER    "},
-    {                 Token::call__,  3, &SteelParser::ReductionRuleHandler0102, "rule 102: call <- func_identifier '(' ')'     %prec CORRECT"},
-    {                 Token::call__,  4, &SteelParser::ReductionRuleHandler0103, "rule 103: call <- func_identifier '(' param_list ')'     %prec CORRECT"},
-    {                 Token::call__,  3, &SteelParser::ReductionRuleHandler0104, "rule 104: call <- func_identifier '(' param_list    "},
-    {                 Token::call__,  2, &SteelParser::ReductionRuleHandler0105, "rule 105: call <- func_identifier '('    "},
-    {                 Token::call__,  3, &SteelParser::ReductionRuleHandler0106, "rule 106: call <- func_identifier %error ')'    "},
-    {                 Token::call__,  2, &SteelParser::ReductionRuleHandler0107, "rule 107: call <- func_identifier %error    "},
-    {                 Token::call__,  1, &SteelParser::ReductionRuleHandler0108, "rule 108: call <- func_identifier    "},
-    {              Token::vardecl__,  2, &SteelParser::ReductionRuleHandler0109, "rule 109: vardecl <- VAR var_identifier    "},
-    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0110, "rule 110: vardecl <- VAR var_identifier '=' exp    "},
-    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0111, "rule 111: vardecl <- CONST var_identifier '=' exp    "},
-    {              Token::vardecl__,  5, &SteelParser::ReductionRuleHandler0112, "rule 112: vardecl <- VAR array_identifier '[' exp ']'    "},
-    {              Token::vardecl__,  2, &SteelParser::ReductionRuleHandler0113, "rule 113: vardecl <- VAR array_identifier    "},
-    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0114, "rule 114: vardecl <- VAR array_identifier '=' exp    "},
-    {           Token::param_list__,  1, &SteelParser::ReductionRuleHandler0115, "rule 115: param_list <- exp    "},
-    {           Token::param_list__,  3, &SteelParser::ReductionRuleHandler0116, "rule 116: param_list <- param_list ',' exp    "},
+    {            Token::statement__,  6, &SteelParser::ReductionRuleHandler0028, "rule 28: statement <- DO statement WHILE '(' exp ')'     %prec CORRECT"},
+    {            Token::statement__,  6, &SteelParser::ReductionRuleHandler0029, "rule 29: statement <- DO statement WHILE '(' %error ')'    "},
+    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0030, "rule 30: statement <- DO statement %error    "},
+    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0031, "rule 31: statement <- DO statement WHILE '(' %error    "},
+    {            Token::statement__,  7, &SteelParser::ReductionRuleHandler0032, "rule 32: statement <- IF '(' exp ')' statement ELSE statement     %prec ELSE"},
+    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0033, "rule 33: statement <- IF '(' exp ')' statement     %prec NON_ELSE"},
+    {            Token::statement__,  7, &SteelParser::ReductionRuleHandler0034, "rule 34: statement <- IF '(' %error ')' statement ELSE statement     %prec ELSE"},
+    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0035, "rule 35: statement <- IF '(' %error ')' statement     %prec NON_ELSE"},
+    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0036, "rule 36: statement <- IF '(' %error    "},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0037, "rule 37: statement <- IF %error    "},
+    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0038, "rule 38: statement <- RETURN exp ';'     %prec CORRECT"},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0039, "rule 39: statement <- RETURN ';'     %prec CORRECT"},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0040, "rule 40: statement <- RETURN %error    "},
+    {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0041, "rule 41: statement <- RETURN    "},
+    {            Token::statement__,  6, &SteelParser::ReductionRuleHandler0042, "rule 42: statement <- FOR '(' exp_statement exp_statement ')' statement     %prec CORRECT"},
+    {            Token::statement__,  7, &SteelParser::ReductionRuleHandler0043, "rule 43: statement <- FOR '(' exp_statement exp_statement exp ')' statement     %prec CORRECT"},
+    {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0044, "rule 44: statement <- FOR '(' %error    "},
+    {            Token::statement__,  4, &SteelParser::ReductionRuleHandler0045, "rule 45: statement <- FOR '(' exp_statement %error    "},
+    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0046, "rule 46: statement <- FOR '(' exp_statement exp_statement %error    "},
+    {            Token::statement__,  5, &SteelParser::ReductionRuleHandler0047, "rule 47: statement <- FOR '(' exp_statement exp_statement exp    "},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0048, "rule 48: statement <- FOR %error    "},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0049, "rule 49: statement <- BREAK ';'     %prec CORRECT"},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0050, "rule 50: statement <- BREAK %error    "},
+    {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0051, "rule 51: statement <- BREAK    "},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0052, "rule 52: statement <- CONTINUE ';'     %prec CORRECT"},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0053, "rule 53: statement <- CONTINUE %error    "},
+    {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0054, "rule 54: statement <- CONTINUE    "},
+    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0055, "rule 55: exp <- call    "},
+    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0056, "rule 56: exp <- INT    "},
+    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0057, "rule 57: exp <- FLOAT    "},
+    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0058, "rule 58: exp <- STRING    "},
+    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0059, "rule 59: exp <- var_identifier    "},
+    {                  Token::exp__,  1, &SteelParser::ReductionRuleHandler0060, "rule 60: exp <- array_identifier    "},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0061, "rule 61: exp <- exp '+' exp    %left %prec ADD_SUB"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0062, "rule 62: exp <- exp '+'     %prec ADD_SUB"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0063, "rule 63: exp <- exp '-'     %prec ADD_SUB"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0064, "rule 64: exp <- exp '*'     %prec MULT_DIV_MOD"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0065, "rule 65: exp <- '*' exp     %prec MULT_DIV_MOD"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0066, "rule 66: exp <- exp '-' exp    %left %prec ADD_SUB"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0067, "rule 67: exp <- exp '*' exp    %left %prec MULT_DIV_MOD"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0068, "rule 68: exp <- exp '/' exp    %left %prec MULT_DIV_MOD"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0069, "rule 69: exp <- exp '%' exp    %left %prec MULT_DIV_MOD"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0070, "rule 70: exp <- exp D exp    %left %prec POW"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0071, "rule 71: exp <- exp '=' exp    %right %prec ASSIGNMENT"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0072, "rule 72: exp <- exp '^' exp    %right %prec POW"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0073, "rule 73: exp <- exp OR exp    %left %prec OR"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0074, "rule 74: exp <- exp AND exp    %left %prec AND"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0075, "rule 75: exp <- exp EQ exp    %left %prec EQ_NE"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0076, "rule 76: exp <- exp NE exp    %left %prec EQ_NE"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0077, "rule 77: exp <- exp LT exp    %left %prec COMPARATOR"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0078, "rule 78: exp <- exp GT exp    %left %prec COMPARATOR"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0079, "rule 79: exp <- exp LTE exp    %left %prec COMPARATOR"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0080, "rule 80: exp <- exp GTE exp    %left %prec COMPARATOR"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0081, "rule 81: exp <- exp CAT exp    %left %prec ADD_SUB"},
+    {                  Token::exp__,  3, &SteelParser::ReductionRuleHandler0082, "rule 82: exp <- '(' exp ')'     %prec PAREN"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0083, "rule 83: exp <- '-' exp     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0084, "rule 84: exp <- '+' exp     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0085, "rule 85: exp <- NOT %error     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0086, "rule 86: exp <- CAT %error     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0087, "rule 87: exp <- NOT exp     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0088, "rule 88: exp <- CAT exp     %prec UNARY"},
+    {                  Token::exp__,  4, &SteelParser::ReductionRuleHandler0089, "rule 89: exp <- exp '[' exp ']'     %prec PAREN"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0090, "rule 90: exp <- INCREMENT exp     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0091, "rule 91: exp <- INCREMENT %error     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0092, "rule 92: exp <- %error INCREMENT     %prec PAREN"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0093, "rule 93: exp <- exp INCREMENT     %prec PAREN"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0094, "rule 94: exp <- DECREMENT exp     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0095, "rule 95: exp <- DECREMENT %error     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0096, "rule 96: exp <- exp DECREMENT     %prec PAREN"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0097, "rule 97: exp <- %error DECREMENT     %prec PAREN"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0098, "rule 98: exp <- POP exp     %prec UNARY"},
+    {                  Token::exp__,  2, &SteelParser::ReductionRuleHandler0099, "rule 99: exp <- POP %error     %prec UNARY"},
+    {        Token::exp_statement__,  1, &SteelParser::ReductionRuleHandler0100, "rule 100: exp_statement <- ';'    "},
+    {        Token::exp_statement__,  2, &SteelParser::ReductionRuleHandler0101, "rule 101: exp_statement <- exp ';'    "},
+    {          Token::int_literal__,  1, &SteelParser::ReductionRuleHandler0102, "rule 102: int_literal <- INT    "},
+    {       Token::var_identifier__,  1, &SteelParser::ReductionRuleHandler0103, "rule 103: var_identifier <- VAR_IDENTIFIER    "},
+    {      Token::func_identifier__,  1, &SteelParser::ReductionRuleHandler0104, "rule 104: func_identifier <- FUNC_IDENTIFIER    "},
+    {     Token::array_identifier__,  1, &SteelParser::ReductionRuleHandler0105, "rule 105: array_identifier <- ARRAY_IDENTIFIER    "},
+    {                 Token::call__,  3, &SteelParser::ReductionRuleHandler0106, "rule 106: call <- func_identifier '(' ')'     %prec CORRECT"},
+    {                 Token::call__,  4, &SteelParser::ReductionRuleHandler0107, "rule 107: call <- func_identifier '(' param_list ')'     %prec CORRECT"},
+    {                 Token::call__,  3, &SteelParser::ReductionRuleHandler0108, "rule 108: call <- func_identifier '(' param_list    "},
+    {                 Token::call__,  2, &SteelParser::ReductionRuleHandler0109, "rule 109: call <- func_identifier '('    "},
+    {                 Token::call__,  3, &SteelParser::ReductionRuleHandler0110, "rule 110: call <- func_identifier %error ')'    "},
+    {                 Token::call__,  2, &SteelParser::ReductionRuleHandler0111, "rule 111: call <- func_identifier %error    "},
+    {                 Token::call__,  1, &SteelParser::ReductionRuleHandler0112, "rule 112: call <- func_identifier    "},
+    {              Token::vardecl__,  2, &SteelParser::ReductionRuleHandler0113, "rule 113: vardecl <- VAR var_identifier    "},
+    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0114, "rule 114: vardecl <- VAR var_identifier '=' exp    "},
+    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0115, "rule 115: vardecl <- CONST var_identifier '=' exp    "},
+    {              Token::vardecl__,  5, &SteelParser::ReductionRuleHandler0116, "rule 116: vardecl <- VAR array_identifier '[' exp ']'    "},
+    {              Token::vardecl__,  2, &SteelParser::ReductionRuleHandler0117, "rule 117: vardecl <- VAR array_identifier    "},
+    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0118, "rule 118: vardecl <- VAR array_identifier '=' exp    "},
+    {           Token::param_list__,  1, &SteelParser::ReductionRuleHandler0119, "rule 119: param_list <- exp    "},
+    {           Token::param_list__,  3, &SteelParser::ReductionRuleHandler0120, "rule 120: param_list <- param_list ',' exp    "},
 
     // special error panic reduction rule
     {                 Token::ERROR_,  1,                                     NULL, "* -> error"}
@@ -2182,214 +2244,223 @@ SteelParser::State const SteelParser::ms_state[] =
 {
     {   0,    0,    1,    2,    2}, // state    0
     {   4,    1,    0,    0,    0}, // state    1
-    {   5,   29,    0,   34,    9}, // state    2
-    {   0,    0,   43,    0,    0}, // state    3
-    {  44,    4,   48,   49,    1}, // state    4
-    {   0,    0,   50,    0,    0}, // state    5
-    {  51,   16,    0,   67,    5}, // state    6
-    {  72,    1,   73,   74,    1}, // state    7
-    {  75,   16,    0,   91,    5}, // state    8
-    {  96,   16,    0,  112,    5}, // state    9
-    { 117,   16,    0,  133,    5}, // state   10
-    { 138,   16,    0,  154,    5}, // state   11
-    { 159,    2,    0,    0,    0}, // state   12
-    { 161,   31,    0,    0,    0}, // state   13
-    { 192,   31,    0,    0,    0}, // state   14
-    { 223,   31,    0,  254,    5}, // state   15
-    { 259,    2,    0,    0,    0}, // state   16
-    { 261,    2,    0,    0,    0}, // state   17
-    {   0,    0,  263,    0,    0}, // state   18
-    {   0,    0,  264,    0,    0}, // state   19
-    {   0,    0,  265,    0,    0}, // state   20
-    { 266,    2,    0,    0,    0}, // state   21
-    { 268,    2,    0,  270,    2}, // state   22
-    {   0,    0,  272,    0,    0}, // state   23
-    {   0,    0,  273,    0,    0}, // state   24
-    {   0,    0,  274,    0,    0}, // state   25
-    { 275,   16,    0,  291,    5}, // state   26
-    { 296,   16,    0,  312,    5}, // state   27
-    { 317,   16,    0,  333,    5}, // state   28
-    { 338,   16,    0,  354,    5}, // state   29
-    { 359,    1,    0,    0,    0}, // state   30
-    { 360,    1,    0,  361,    1}, // state   31
-    {   0,    0,  362,    0,    0}, // state   32
-    {   0,    0,  363,    0,    0}, // state   33
-    { 364,   21,    0,    0,    0}, // state   34
-    {   0,    0,  385,    0,    0}, // state   35
-    {   0,    0,  386,    0,    0}, // state   36
-    { 387,   48,    0,    0,    0}, // state   37
-    {   0,    0,  435,    0,    0}, // state   38
-    {   0,    0,  436,    0,    0}, // state   39
-    { 437,    2,    0,    0,    0}, // state   40
-    {   0,    0,  439,    0,    0}, // state   41
-    {   0,    0,  440,    0,    0}, // state   42
-    {   0,    0,  441,    0,    0}, // state   43
-    { 442,    2,    0,    0,    0}, // state   44
-    { 444,   21,    0,    0,    0}, // state   45
-    {   0,    0,  465,    0,    0}, // state   46
-    { 466,   29,    0,  495,    9}, // state   47
-    { 504,    5,  509,    0,    0}, // state   48
-    { 510,    5,  515,    0,    0}, // state   49
-    { 516,    8,  524,    0,    0}, // state   50
-    { 525,    2,  527,    0,    0}, // state   51
-    { 528,    5,  533,    0,    0}, // state   52
-    {   0,    0,  534,    0,    0}, // state   53
-    { 535,   31,    0,  566,    5}, // state   54
-    {   0,    0,  571,    0,    0}, // state   55
-    {   0,    0,  572,    0,    0}, // state   56
-    {   0,    0,  573,    0,    0}, // state   57
-    {   0,    0,  574,    0,    0}, // state   58
-    { 575,    2,  577,    0,    0}, // state   59
-    {   0,    0,  578,    0,    0}, // state   60
-    { 579,   21,    0,    0,    0}, // state   61
-    {   0,    0,  600,    0,    0}, // state   62
-    { 601,   16,    0,  617,    5}, // state   63
-    { 622,    1,    0,    0,    0}, // state   64
-    { 623,    1,    0,    0,    0}, // state   65
-    {   0,    0,  624,    0,    0}, // state   66
-    { 625,   17,    0,  642,    6}, // state   67
-    { 648,    1,  649,    0,    0}, // state   68
-    { 650,    2,  652,    0,    0}, // state   69
-    { 653,    2,  655,    0,    0}, // state   70
-    { 656,    5,  661,    0,    0}, // state   71
-    { 662,    2,  664,    0,    0}, // state   72
-    { 665,    5,  670,    0,    0}, // state   73
-    { 671,    2,  673,    0,    0}, // state   74
-    { 674,    5,  679,    0,    0}, // state   75
-    { 680,    2,  682,    0,    0}, // state   76
-    { 683,    5,  688,    0,    0}, // state   77
-    { 689,    2,    0,    0,    0}, // state   78
-    { 691,    1,    0,    0,    0}, // state   79
-    {   0,    0,  692,    0,    0}, // state   80
-    { 693,   16,    0,  709,    5}, // state   81
-    { 714,   16,    0,  730,    5}, // state   82
-    { 735,   48,    0,  783,    5}, // state   83
-    { 788,   48,    0,  836,    5}, // state   84
-    { 841,   48,    0,  889,    5}, // state   85
-    { 894,   16,    0,  910,    5}, // state   86
-    { 915,   16,    0,  931,    5}, // state   87
-    { 936,   16,    0,  952,    5}, // state   88
-    { 957,   16,    0,  973,    5}, // state   89
-    { 978,   16,    0,  994,    5}, // state   90
-    { 999,   16,    0, 1015,    5}, // state   91
-    {1020,   16,    0, 1036,    5}, // state   92
-    {1041,   16,    0, 1057,    5}, // state   93
-    {1062,   16,    0, 1078,    5}, // state   94
-    {1083,   16,    0, 1099,    5}, // state   95
-    {1104,   16,    0, 1120,    5}, // state   96
-    {1125,   16,    0, 1141,    5}, // state   97
-    {   0,    0, 1146,    0,    0}, // state   98
-    {   0,    0, 1147,    0,    0}, // state   99
-    {1148,   16,    0, 1164,    5}, // state  100
-    {1169,    1, 1170,    0,    0}, // state  101
-    {1171,   48,    0, 1219,    6}, // state  102
-    {1225,    1,    0,    0,    0}, // state  103
-    {   0,    0, 1226,    0,    0}, // state  104
-    {   0,    0, 1227,    0,    0}, // state  105
-    {   0,    0, 1228,    0,    0}, // state  106
-    {1229,    3,    0,    0,    0}, // state  107
-    {1232,   21,    0,    0,    0}, // state  108
-    {   0,    0, 1253,    0,    0}, // state  109
-    {1254,    3, 1257,    0,    0}, // state  110
-    {1258,   21,    0,    0,    0}, // state  111
-    {1279,    2, 1281, 1282,    2}, // state  112
-    {1284,    5,    0, 1289,    2}, // state  113
-    {1291,    2, 1293,    0,    0}, // state  114
-    {1294,   17,    0, 1311,    6}, // state  115
-    {1317,   16,    0, 1333,    5}, // state  116
-    {1338,   16,    0, 1354,    5}, // state  117
-    {1359,   16,    0, 1375,    5}, // state  118
-    {1380,    1,    0,    0,    0}, // state  119
-    {1381,    1,    0,    0,    0}, // state  120
-    {1382,   16,    0, 1398,    5}, // state  121
-    {1403,   20, 1423,    0,    0}, // state  122
-    {1424,   21,    0,    0,    0}, // state  123
-    {1445,    9, 1454,    0,    0}, // state  124
-    {1455,    9, 1464,    0,    0}, // state  125
-    {1465,    6, 1471,    0,    0}, // state  126
-    {1472,    6, 1478,    0,    0}, // state  127
-    {1479,    4, 1483,    0,    0}, // state  128
-    {1484,    6, 1490,    0,    0}, // state  129
-    {1491,    4, 1495,    0,    0}, // state  130
-    {1496,   11, 1507,    0,    0}, // state  131
-    {1508,   11, 1519,    0,    0}, // state  132
-    {1520,   15, 1535,    0,    0}, // state  133
-    {1536,   15, 1551,    0,    0}, // state  134
-    {1552,   11, 1563,    0,    0}, // state  135
-    {1564,   11, 1575,    0,    0}, // state  136
-    {1576,   17, 1593,    0,    0}, // state  137
-    {1594,   18, 1612,    0,    0}, // state  138
-    {1613,    9, 1622,    0,    0}, // state  139
-    {   0,    0, 1623,    0,    0}, // state  140
-    {   0,    0, 1624,    0,    0}, // state  141
-    {1625,   20, 1645,    0,    0}, // state  142
-    {1646,    2, 1648,    0,    0}, // state  143
-    {   0,    0, 1649,    0,    0}, // state  144
-    {1650,   28,    0, 1678,    9}, // state  145
-    {1687,   28,    0, 1715,    9}, // state  146
-    {1724,   28,    0, 1752,    9}, // state  147
-    {1761,   28,    0, 1789,    9}, // state  148
-    {1798,    3,    0,    0,    0}, // state  149
-    {   0,    0, 1801,    0,    0}, // state  150
-    {1802,    1,    0,    0,    0}, // state  151
-    {1803,    3,    0,    0,    0}, // state  152
-    {1806,    2, 1808,    0,    0}, // state  153
-    {1809,   17,    0, 1826,    5}, // state  154
-    {1831,   20, 1851,    0,    0}, // state  155
-    {1852,   20, 1872,    0,    0}, // state  156
-    {1873,   21,    0,    0,    0}, // state  157
-    {1894,    2, 1896, 1897,    2}, // state  158
-    {1899,    5,    0, 1904,    2}, // state  159
-    {1906,   20, 1926,    0,    0}, // state  160
-    {   0,    0, 1927,    0,    0}, // state  161
-    {   0,    0, 1928,    0,    0}, // state  162
-    {1929,   16,    0, 1945,    5}, // state  163
-    {   0,    0, 1950,    0,    0}, // state  164
-    {   0,    0, 1951,    0,    0}, // state  165
-    {1952,    1, 1953,    0,    0}, // state  166
-    {1954,    1, 1955,    0,    0}, // state  167
-    {   0,    0, 1956,    0,    0}, // state  168
-    {1957,    1,    0,    0,    0}, // state  169
-    {1958,    2,    0, 1960,    1}, // state  170
-    {1961,    1,    0,    0,    0}, // state  171
-    {1962,    1,    0,    0,    0}, // state  172
-    {1963,    2, 1965,    0,    0}, // state  173
-    {1966,   28,    0, 1994,    9}, // state  174
-    {2003,   21, 2024,    0,    0}, // state  175
-    {   0,    0, 2025,    0,    0}, // state  176
-    {2026,    3,    0,    0,    0}, // state  177
-    {2029,    1,    0,    0,    0}, // state  178
-    {2030,    3,    0,    0,    0}, // state  179
-    {2033,   20, 2053,    0,    0}, // state  180
-    {2054,   28,    0, 2082,    9}, // state  181
-    {2091,   28,    0, 2119,    9}, // state  182
-    {   0,    0, 2128, 2129,    1}, // state  183
-    {   0,    0, 2130,    0,    0}, // state  184
-    {   0,    0, 2131, 2132,    1}, // state  185
-    {   0,    0, 2133, 2134,    1}, // state  186
-    {   0,    0, 2135,    0,    0}, // state  187
-    {2136,   28,    0, 2164,    9}, // state  188
-    {2173,    1,    0,    0,    0}, // state  189
-    {2174,    1,    0,    0,    0}, // state  190
-    {2175,    1,    0,    0,    0}, // state  191
-    {   0,    0, 2176,    0,    0}, // state  192
-    {   0,    0, 2177,    0,    0}, // state  193
-    {2178,   29,    0, 2207,    9}, // state  194
-    {2216,   29,    0, 2245,    9}, // state  195
-    {2254,   29,    0, 2283,    9}, // state  196
-    {   0,    0, 2292,    0,    0}, // state  197
-    {   0,    0, 2293, 2294,    1}, // state  198
-    {   0,    0, 2295, 2296,    1}, // state  199
-    {   0,    0, 2297, 2298,    1}, // state  200
-    {   0,    0, 2299,    0,    0}, // state  201
-    {   0,    0, 2300,    0,    0}, // state  202
-    {   0,    0, 2301,    0,    0}, // state  203
-    {2302,   29,    0, 2331,    9}, // state  204
-    {2340,   29,    0, 2369,    9}, // state  205
-    {2378,   29,    0, 2407,    9}, // state  206
-    {   0,    0, 2416,    0,    0}, // state  207
-    {   0,    0, 2417,    0,    0}, // state  208
-    {   0,    0, 2418,    0,    0}  // state  209
+    {   5,   30,    0,   35,    9}, // state    2
+    {   0,    0,   44,    0,    0}, // state    3
+    {  45,    4,   49,   50,    1}, // state    4
+    {   0,    0,   51,    0,    0}, // state    5
+    {  52,   16,    0,   68,    5}, // state    6
+    {  73,    1,   74,   75,    1}, // state    7
+    {  76,   16,    0,   92,    5}, // state    8
+    {  97,   16,    0,  113,    5}, // state    9
+    { 118,   16,    0,  134,    5}, // state   10
+    { 139,   16,    0,  155,    5}, // state   11
+    { 160,    2,    0,    0,    0}, // state   12
+    { 162,   32,    0,    0,    0}, // state   13
+    { 194,   32,    0,    0,    0}, // state   14
+    { 226,   32,    0,  258,    5}, // state   15
+    { 263,    2,    0,    0,    0}, // state   16
+    { 265,    2,    0,    0,    0}, // state   17
+    {   0,    0,  267,    0,    0}, // state   18
+    {   0,    0,  268,    0,    0}, // state   19
+    {   0,    0,  269,    0,    0}, // state   20
+    { 270,    2,    0,    0,    0}, // state   21
+    { 272,    2,    0,  274,    2}, // state   22
+    {   0,    0,  276,    0,    0}, // state   23
+    {   0,    0,  277,    0,    0}, // state   24
+    {   0,    0,  278,    0,    0}, // state   25
+    { 279,   16,    0,  295,    5}, // state   26
+    { 300,   16,    0,  316,    5}, // state   27
+    { 321,   16,    0,  337,    5}, // state   28
+    { 342,   16,    0,  358,    5}, // state   29
+    { 363,    1,    0,    0,    0}, // state   30
+    { 364,    1,    0,  365,    1}, // state   31
+    { 366,   29,    0,  395,    9}, // state   32
+    {   0,    0,  404,    0,    0}, // state   33
+    {   0,    0,  405,    0,    0}, // state   34
+    { 406,   21,    0,    0,    0}, // state   35
+    {   0,    0,  427,    0,    0}, // state   36
+    {   0,    0,  428,    0,    0}, // state   37
+    { 429,   49,    0,    0,    0}, // state   38
+    {   0,    0,  478,    0,    0}, // state   39
+    {   0,    0,  479,    0,    0}, // state   40
+    { 480,    2,    0,    0,    0}, // state   41
+    {   0,    0,  482,    0,    0}, // state   42
+    {   0,    0,  483,    0,    0}, // state   43
+    {   0,    0,  484,    0,    0}, // state   44
+    { 485,    2,    0,    0,    0}, // state   45
+    { 487,   21,    0,    0,    0}, // state   46
+    {   0,    0,  508,    0,    0}, // state   47
+    { 509,   30,    0,  539,    9}, // state   48
+    { 548,    5,  553,    0,    0}, // state   49
+    { 554,    5,  559,    0,    0}, // state   50
+    { 560,    8,  568,    0,    0}, // state   51
+    { 569,    2,  571,    0,    0}, // state   52
+    { 572,    5,  577,    0,    0}, // state   53
+    {   0,    0,  578,    0,    0}, // state   54
+    { 579,   32,    0,  611,    5}, // state   55
+    {   0,    0,  616,    0,    0}, // state   56
+    {   0,    0,  617,    0,    0}, // state   57
+    {   0,    0,  618,    0,    0}, // state   58
+    {   0,    0,  619,    0,    0}, // state   59
+    { 620,    2,  622,    0,    0}, // state   60
+    {   0,    0,  623,    0,    0}, // state   61
+    { 624,   21,    0,    0,    0}, // state   62
+    {   0,    0,  645,    0,    0}, // state   63
+    { 646,   16,    0,  662,    5}, // state   64
+    { 667,    1,    0,    0,    0}, // state   65
+    { 668,    1,    0,    0,    0}, // state   66
+    {   0,    0,  669,    0,    0}, // state   67
+    { 670,   17,    0,  687,    6}, // state   68
+    { 693,    1,  694,    0,    0}, // state   69
+    { 695,    2,  697,    0,    0}, // state   70
+    { 698,    2,  700,    0,    0}, // state   71
+    { 701,    5,  706,    0,    0}, // state   72
+    { 707,    2,  709,    0,    0}, // state   73
+    { 710,    5,  715,    0,    0}, // state   74
+    { 716,    2,  718,    0,    0}, // state   75
+    { 719,    5,  724,    0,    0}, // state   76
+    { 725,    2,  727,    0,    0}, // state   77
+    { 728,    5,  733,    0,    0}, // state   78
+    { 734,    2,    0,    0,    0}, // state   79
+    { 736,    1,    0,    0,    0}, // state   80
+    { 737,    2,    0,    0,    0}, // state   81
+    {   0,    0,  739,    0,    0}, // state   82
+    { 740,   16,    0,  756,    5}, // state   83
+    { 761,   16,    0,  777,    5}, // state   84
+    { 782,   49,    0,  831,    5}, // state   85
+    { 836,   49,    0,  885,    5}, // state   86
+    { 890,   49,    0,  939,    5}, // state   87
+    { 944,   16,    0,  960,    5}, // state   88
+    { 965,   16,    0,  981,    5}, // state   89
+    { 986,   16,    0, 1002,    5}, // state   90
+    {1007,   16,    0, 1023,    5}, // state   91
+    {1028,   16,    0, 1044,    5}, // state   92
+    {1049,   16,    0, 1065,    5}, // state   93
+    {1070,   16,    0, 1086,    5}, // state   94
+    {1091,   16,    0, 1107,    5}, // state   95
+    {1112,   16,    0, 1128,    5}, // state   96
+    {1133,   16,    0, 1149,    5}, // state   97
+    {1154,   16,    0, 1170,    5}, // state   98
+    {1175,   16,    0, 1191,    5}, // state   99
+    {   0,    0, 1196,    0,    0}, // state  100
+    {   0,    0, 1197,    0,    0}, // state  101
+    {1198,   16,    0, 1214,    5}, // state  102
+    {1219,    1, 1220,    0,    0}, // state  103
+    {1221,   49,    0, 1270,    6}, // state  104
+    {1276,    1,    0,    0,    0}, // state  105
+    {   0,    0, 1277,    0,    0}, // state  106
+    {   0,    0, 1278,    0,    0}, // state  107
+    {   0,    0, 1279,    0,    0}, // state  108
+    {1280,    3,    0,    0,    0}, // state  109
+    {1283,   21,    0,    0,    0}, // state  110
+    {   0,    0, 1304,    0,    0}, // state  111
+    {1305,    3, 1308,    0,    0}, // state  112
+    {1309,   21,    0,    0,    0}, // state  113
+    {1330,    2, 1332, 1333,    2}, // state  114
+    {1335,    5,    0, 1340,    2}, // state  115
+    {1342,    2, 1344,    0,    0}, // state  116
+    {1345,   17,    0, 1362,    6}, // state  117
+    {1368,   16,    0, 1384,    5}, // state  118
+    {1389,   16,    0, 1405,    5}, // state  119
+    {1410,   16,    0, 1426,    5}, // state  120
+    {1431,    1,    0,    0,    0}, // state  121
+    {1432,    1,    0,    0,    0}, // state  122
+    {1433,   16,    0, 1449,    5}, // state  123
+    {   0,    0, 1454,    0,    0}, // state  124
+    {1455,    1,    0,    0,    0}, // state  125
+    {1456,   20, 1476,    0,    0}, // state  126
+    {1477,   21,    0,    0,    0}, // state  127
+    {1498,    9, 1507,    0,    0}, // state  128
+    {1508,    9, 1517,    0,    0}, // state  129
+    {1518,    6, 1524,    0,    0}, // state  130
+    {1525,    6, 1531,    0,    0}, // state  131
+    {1532,    4, 1536,    0,    0}, // state  132
+    {1537,    6, 1543,    0,    0}, // state  133
+    {1544,    4, 1548,    0,    0}, // state  134
+    {1549,   11, 1560,    0,    0}, // state  135
+    {1561,   11, 1572,    0,    0}, // state  136
+    {1573,   15, 1588,    0,    0}, // state  137
+    {1589,   15, 1604,    0,    0}, // state  138
+    {1605,   11, 1616,    0,    0}, // state  139
+    {1617,   11, 1628,    0,    0}, // state  140
+    {1629,   17, 1646,    0,    0}, // state  141
+    {1647,   18, 1665,    0,    0}, // state  142
+    {1666,    9, 1675,    0,    0}, // state  143
+    {   0,    0, 1676,    0,    0}, // state  144
+    {   0,    0, 1677,    0,    0}, // state  145
+    {1678,   20, 1698,    0,    0}, // state  146
+    {1699,    2, 1701,    0,    0}, // state  147
+    {   0,    0, 1702,    0,    0}, // state  148
+    {1703,   29,    0, 1732,    9}, // state  149
+    {1741,   29,    0, 1770,    9}, // state  150
+    {1779,   29,    0, 1808,    9}, // state  151
+    {1817,   29,    0, 1846,    9}, // state  152
+    {1855,    3,    0,    0,    0}, // state  153
+    {   0,    0, 1858,    0,    0}, // state  154
+    {1859,    1,    0,    0,    0}, // state  155
+    {1860,    3,    0,    0,    0}, // state  156
+    {1863,    2, 1865,    0,    0}, // state  157
+    {1866,   17,    0, 1883,    5}, // state  158
+    {1888,   20, 1908,    0,    0}, // state  159
+    {1909,   20, 1929,    0,    0}, // state  160
+    {1930,   21,    0,    0,    0}, // state  161
+    {1951,    2, 1953, 1954,    2}, // state  162
+    {1956,    5,    0, 1961,    2}, // state  163
+    {1963,   20, 1983,    0,    0}, // state  164
+    {1984,   16,    0, 2000,    5}, // state  165
+    {   0,    0, 2005,    0,    0}, // state  166
+    {   0,    0, 2006,    0,    0}, // state  167
+    {2007,   16,    0, 2023,    5}, // state  168
+    {   0,    0, 2028,    0,    0}, // state  169
+    {   0,    0, 2029,    0,    0}, // state  170
+    {2030,    1, 2031,    0,    0}, // state  171
+    {2032,    1, 2033,    0,    0}, // state  172
+    {   0,    0, 2034,    0,    0}, // state  173
+    {2035,    1,    0,    0,    0}, // state  174
+    {2036,    2,    0, 2038,    1}, // state  175
+    {2039,    1,    0,    0,    0}, // state  176
+    {2040,    1,    0,    0,    0}, // state  177
+    {2041,    2, 2043,    0,    0}, // state  178
+    {2044,   29,    0, 2073,    9}, // state  179
+    {2082,   21, 2103,    0,    0}, // state  180
+    {   0,    0, 2104,    0,    0}, // state  181
+    {2105,    3,    0,    0,    0}, // state  182
+    {2108,    1,    0,    0,    0}, // state  183
+    {2109,    3,    0,    0,    0}, // state  184
+    {2112,    3, 2115,    0,    0}, // state  185
+    {2116,   21,    0,    0,    0}, // state  186
+    {2137,   20, 2157,    0,    0}, // state  187
+    {2158,   29,    0, 2187,    9}, // state  188
+    {2196,   29,    0, 2225,    9}, // state  189
+    {   0,    0, 2234, 2235,    1}, // state  190
+    {   0,    0, 2236,    0,    0}, // state  191
+    {   0,    0, 2237, 2238,    1}, // state  192
+    {   0,    0, 2239, 2240,    1}, // state  193
+    {   0,    0, 2241,    0,    0}, // state  194
+    {2242,   29,    0, 2271,    9}, // state  195
+    {2280,    1,    0,    0,    0}, // state  196
+    {2281,    1,    0,    0,    0}, // state  197
+    {2282,    1,    0,    0,    0}, // state  198
+    {   0,    0, 2283,    0,    0}, // state  199
+    {   0,    0, 2284,    0,    0}, // state  200
+    {   0,    0, 2285,    0,    0}, // state  201
+    {   0,    0, 2286,    0,    0}, // state  202
+    {2287,   30,    0, 2317,    9}, // state  203
+    {2326,   30,    0, 2356,    9}, // state  204
+    {2365,   30,    0, 2395,    9}, // state  205
+    {   0,    0, 2404,    0,    0}, // state  206
+    {   0,    0, 2405, 2406,    1}, // state  207
+    {   0,    0, 2407, 2408,    1}, // state  208
+    {   0,    0, 2409, 2410,    1}, // state  209
+    {   0,    0, 2411,    0,    0}, // state  210
+    {   0,    0, 2412,    0,    0}, // state  211
+    {   0,    0, 2413,    0,    0}, // state  212
+    {2414,   30,    0, 2444,    9}, // state  213
+    {2453,   30,    0, 2483,    9}, // state  214
+    {2492,   30,    0, 2522,    9}, // state  215
+    {   0,    0, 2531,    0,    0}, // state  216
+    {   0,    0, 2532,    0,    0}, // state  217
+    {   0,    0, 2533,    0,    0}  // state  218
 
 };
 
@@ -2454,16 +2525,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state    3
@@ -2476,25 +2548,25 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   16}},
     // nonterminal transitions
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   43}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   44}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state    5
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   96}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  100}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state    6
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2511,54 +2583,27 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   45}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   46}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state    7
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,   46}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,   47}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
     // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,   47}},
+    {       Token::statement_list__, {                  TA_PUSH_STATE,   48}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state    8
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   48}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state    9
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2576,16 +2621,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,   49}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   10
+// state    9
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2603,16 +2648,43 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,   50}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   10
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,   51}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   11
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   51}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   52}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2629,117 +2701,119 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   52}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   53}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   12
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   53}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,   54}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   54}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,   55}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   13
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,   47}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   55}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   56}},
-    {              Token::Type('('), {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::Type('-'), {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::Type('+'), {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::Type('*'), {           TA_REDUCE_USING_RULE,   47}},
-    {                    Token::NOT, {           TA_REDUCE_USING_RULE,   47}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   47}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   47}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   47}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   47}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,   47}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   47}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   47}},
-    {        Token::FUNC_IDENTIFIER, {           TA_REDUCE_USING_RULE,   47}},
-    {         Token::VAR_IDENTIFIER, {           TA_REDUCE_USING_RULE,   47}},
-    {       Token::ARRAY_IDENTIFIER, {           TA_REDUCE_USING_RULE,   47}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   47}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   47}},
-    {                    Token::INT, {           TA_REDUCE_USING_RULE,   47}},
-    {                  Token::FLOAT, {           TA_REDUCE_USING_RULE,   47}},
-    {                 Token::STRING, {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::INCREMENT, {           TA_REDUCE_USING_RULE,   47}},
-    {              Token::DECREMENT, {           TA_REDUCE_USING_RULE,   47}},
-    {                    Token::CAT, {           TA_REDUCE_USING_RULE,   47}},
-    {                    Token::POP, {           TA_REDUCE_USING_RULE,   47}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   47}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   47}},
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,   51}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   56}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   57}},
+    {              Token::Type('('), {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::Type('-'), {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::Type('+'), {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::Type('*'), {           TA_REDUCE_USING_RULE,   51}},
+    {                    Token::NOT, {           TA_REDUCE_USING_RULE,   51}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   51}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   51}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   51}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   51}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,   51}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   51}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   51}},
+    {        Token::FUNC_IDENTIFIER, {           TA_REDUCE_USING_RULE,   51}},
+    {         Token::VAR_IDENTIFIER, {           TA_REDUCE_USING_RULE,   51}},
+    {       Token::ARRAY_IDENTIFIER, {           TA_REDUCE_USING_RULE,   51}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   51}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   51}},
+    {                    Token::INT, {           TA_REDUCE_USING_RULE,   51}},
+    {                  Token::FLOAT, {           TA_REDUCE_USING_RULE,   51}},
+    {                 Token::STRING, {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::INCREMENT, {           TA_REDUCE_USING_RULE,   51}},
+    {              Token::DECREMENT, {           TA_REDUCE_USING_RULE,   51}},
+    {                    Token::CAT, {           TA_REDUCE_USING_RULE,   51}},
+    {                    Token::POP, {           TA_REDUCE_USING_RULE,   51}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   51}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   51}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   51}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   14
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,   50}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   57}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   58}},
-    {              Token::Type('('), {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::Type('-'), {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::Type('+'), {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::Type('*'), {           TA_REDUCE_USING_RULE,   50}},
-    {                    Token::NOT, {           TA_REDUCE_USING_RULE,   50}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   50}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   50}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   50}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   50}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,   50}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   50}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   50}},
-    {        Token::FUNC_IDENTIFIER, {           TA_REDUCE_USING_RULE,   50}},
-    {         Token::VAR_IDENTIFIER, {           TA_REDUCE_USING_RULE,   50}},
-    {       Token::ARRAY_IDENTIFIER, {           TA_REDUCE_USING_RULE,   50}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   50}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   50}},
-    {                    Token::INT, {           TA_REDUCE_USING_RULE,   50}},
-    {                  Token::FLOAT, {           TA_REDUCE_USING_RULE,   50}},
-    {                 Token::STRING, {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::INCREMENT, {           TA_REDUCE_USING_RULE,   50}},
-    {              Token::DECREMENT, {           TA_REDUCE_USING_RULE,   50}},
-    {                    Token::CAT, {           TA_REDUCE_USING_RULE,   50}},
-    {                    Token::POP, {           TA_REDUCE_USING_RULE,   50}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   50}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   50}},
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,   54}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   58}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   59}},
+    {              Token::Type('('), {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::Type('-'), {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::Type('+'), {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::Type('*'), {           TA_REDUCE_USING_RULE,   54}},
+    {                    Token::NOT, {           TA_REDUCE_USING_RULE,   54}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   54}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   54}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   54}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   54}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,   54}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   54}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   54}},
+    {        Token::FUNC_IDENTIFIER, {           TA_REDUCE_USING_RULE,   54}},
+    {         Token::VAR_IDENTIFIER, {           TA_REDUCE_USING_RULE,   54}},
+    {       Token::ARRAY_IDENTIFIER, {           TA_REDUCE_USING_RULE,   54}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   54}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   54}},
+    {                    Token::INT, {           TA_REDUCE_USING_RULE,   54}},
+    {                  Token::FLOAT, {           TA_REDUCE_USING_RULE,   54}},
+    {                 Token::STRING, {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::INCREMENT, {           TA_REDUCE_USING_RULE,   54}},
+    {              Token::DECREMENT, {           TA_REDUCE_USING_RULE,   54}},
+    {                    Token::CAT, {           TA_REDUCE_USING_RULE,   54}},
+    {                    Token::POP, {           TA_REDUCE_USING_RULE,   54}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   54}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   54}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   54}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   15
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,   37}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   59}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   60}},
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,   41}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   60}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   61}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   37}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   37}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   41}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   41}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
     {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   37}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   37}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   37}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   37}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,   37}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   37}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   37}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   41}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   41}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   41}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   41}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,   41}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   41}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   41}},
     {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   37}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   37}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   41}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   41}},
     {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
     {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
     {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
@@ -2747,53 +2821,54 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   37}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   37}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   41}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   41}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   41}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   61}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   62}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   16
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   62}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,   63}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   63}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,   64}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   17
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   64}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   65}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   65}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   66}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   18
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  100}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  104}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   19
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   99}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  103}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   20
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  101}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  105}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   21
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   66}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,   67}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   67}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,   68}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   22
@@ -2802,32 +2877,32 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
     // nonterminal transitions
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   68}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   69}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   69}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   70}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   23
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   52}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   56}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   24
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   53}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   57}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   25
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   54}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   58}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   26
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   70}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   71}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2844,17 +2919,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   71}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   72}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   27
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   72}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   73}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2871,17 +2946,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   73}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   74}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   28
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   74}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   75}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2898,17 +2973,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   75}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   76}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   29
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   76}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   77}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -2925,17 +3000,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   77}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   78}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   30
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   78}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   79}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   31
@@ -2943,196 +3018,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     // terminal transitions
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     // nonterminal transitions
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   79}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   80}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   32
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   18}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   33
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   15}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   34
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   80}},
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   35
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   17}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   36
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   55}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   37
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,  108}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  101}},
-    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  102}},
-    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('='), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('['), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('-'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('+'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('*'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,  108}},
-    {                      Token::D, {           TA_REDUCE_USING_RULE,  108}},
-    {                     Token::GT, {           TA_REDUCE_USING_RULE,  108}},
-    {                     Token::LT, {           TA_REDUCE_USING_RULE,  108}},
-    {                     Token::EQ, {           TA_REDUCE_USING_RULE,  108}},
-    {                     Token::NE, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::GTE, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::LTE, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::AND, {           TA_REDUCE_USING_RULE,  108}},
-    {                     Token::OR, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::NOT, {           TA_REDUCE_USING_RULE,  108}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,  108}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,  108}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,  108}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,  108}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,  108}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,  108}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,  108}},
-    {        Token::FUNC_IDENTIFIER, {           TA_REDUCE_USING_RULE,  108}},
-    {         Token::VAR_IDENTIFIER, {           TA_REDUCE_USING_RULE,  108}},
-    {       Token::ARRAY_IDENTIFIER, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::INT, {           TA_REDUCE_USING_RULE,  108}},
-    {                  Token::FLOAT, {           TA_REDUCE_USING_RULE,  108}},
-    {                 Token::STRING, {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::INCREMENT, {           TA_REDUCE_USING_RULE,  108}},
-    {              Token::DECREMENT, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::CAT, {           TA_REDUCE_USING_RULE,  108}},
-    {                    Token::POP, {           TA_REDUCE_USING_RULE,  108}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,  108}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,  108}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   38
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   56}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   39
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   51}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   40
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  103}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,  104}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   41
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   88}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   42
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   93}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   43
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   22}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   44
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   45
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  105}},
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   46
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   20}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   47
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  106}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -3157,89 +3052,315 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   81}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   33
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   18}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   34
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   15}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   35
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,   82}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   36
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   17}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   37
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   59}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   38
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,  112}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  103}},
+    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  104}},
+    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('='), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('['), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('-'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('+'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('*'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,  112}},
+    {                      Token::D, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::GT, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::LT, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::EQ, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::NE, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::GTE, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::LTE, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::AND, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::OR, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::NOT, {           TA_REDUCE_USING_RULE,  112}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,  112}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,  112}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,  112}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,  112}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,  112}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,  112}},
+    {        Token::FUNC_IDENTIFIER, {           TA_REDUCE_USING_RULE,  112}},
+    {         Token::VAR_IDENTIFIER, {           TA_REDUCE_USING_RULE,  112}},
+    {       Token::ARRAY_IDENTIFIER, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::INT, {           TA_REDUCE_USING_RULE,  112}},
+    {                  Token::FLOAT, {           TA_REDUCE_USING_RULE,  112}},
+    {                 Token::STRING, {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::INCREMENT, {           TA_REDUCE_USING_RULE,  112}},
+    {              Token::DECREMENT, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::CAT, {           TA_REDUCE_USING_RULE,  112}},
+    {                    Token::POP, {           TA_REDUCE_USING_RULE,  112}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,  112}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,  112}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,  112}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   39
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   60}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   40
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   55}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   41
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  105}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,  106}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   42
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   92}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   43
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   97}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   44
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   22}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   45
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   46
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  107}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   47
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   20}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   48
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   79}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  108}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   49
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   80}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   83}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   50
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   61}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   84}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   51
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   81}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   65}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   52
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   83}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   85}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   53
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   87}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   54
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   26}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   54
+// state   55
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                   Token::END_, {           TA_REDUCE_USING_RULE,   25}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  107}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  109}},
     {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   25}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   25}},
@@ -3269,24 +3390,19 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   25}},
     {                  Token::CONST, {           TA_REDUCE_USING_RULE,   25}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   25}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  108}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   55
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   46}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,  110}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   56
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   45}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   50}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   57
@@ -3298,60 +3414,66 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // state   58
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   48}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   53}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   59
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   36}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   52}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   60
 // ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   35}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   61
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,  109}},
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   39}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   62
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   33}},
+    // terminal transitions
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,  111}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   63
 // ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   37}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   64
+// ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  110}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  112}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -3368,35 +3490,35 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  111}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   64
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  112}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,  113}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   65
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  113}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  114}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   66
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   44}},
+    // terminal transitions
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  115}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   67
 // ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   48}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   68
+// ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  114}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  116}},
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
@@ -3414,27 +3536,18 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,  115}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   68
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,  116}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  109}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,  117}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   69
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,  117}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,  118}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,  118}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  113}},
 
@@ -3442,202 +3555,134 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // state   70
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,  119}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,  120}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   87}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  117}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   71
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   86}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   91}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   72
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   91}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   90}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   73
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   90}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   95}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   74
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   82}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   94}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   75
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   84}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   86}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   76
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   95}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   88}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   77
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   94}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   99}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   78
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  119}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,  120}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   98}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   79
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,  121}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  121}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,  122}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   80
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   97}},
+    // terminal transitions
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,  123}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   81
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  122}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  124}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,  125}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   82
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  123}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  101}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   83
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,   59}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   59}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type('='), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type('['), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   59}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,   59}},
-    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,   59}},
-    {                      Token::D, {           TA_REDUCE_USING_RULE,   59}},
-    {                     Token::GT, {           TA_REDUCE_USING_RULE,   59}},
-    {                     Token::LT, {           TA_REDUCE_USING_RULE,   59}},
-    {                     Token::EQ, {           TA_REDUCE_USING_RULE,   59}},
-    {                     Token::NE, {           TA_REDUCE_USING_RULE,   59}},
-    {                    Token::GTE, {           TA_REDUCE_USING_RULE,   59}},
-    {                    Token::LTE, {           TA_REDUCE_USING_RULE,   59}},
-    {                    Token::AND, {           TA_REDUCE_USING_RULE,   59}},
-    {                     Token::OR, {           TA_REDUCE_USING_RULE,   59}},
     {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   59}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   59}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   59}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   59}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,   59}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   59}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   59}},
     {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   59}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   59}},
     {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
     {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
     {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
@@ -3645,138 +3690,18 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   59}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   59}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  124}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,  126}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   84
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,   58}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('='), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('['), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,   58}},
-    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,   58}},
-    {                      Token::D, {           TA_REDUCE_USING_RULE,   58}},
-    {                     Token::GT, {           TA_REDUCE_USING_RULE,   58}},
-    {                     Token::LT, {           TA_REDUCE_USING_RULE,   58}},
-    {                     Token::EQ, {           TA_REDUCE_USING_RULE,   58}},
-    {                     Token::NE, {           TA_REDUCE_USING_RULE,   58}},
-    {                    Token::GTE, {           TA_REDUCE_USING_RULE,   58}},
-    {                    Token::LTE, {           TA_REDUCE_USING_RULE,   58}},
-    {                    Token::AND, {           TA_REDUCE_USING_RULE,   58}},
-    {                     Token::OR, {           TA_REDUCE_USING_RULE,   58}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   58}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   58}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   58}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   58}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,   58}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   58}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   58}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   58}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   58}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   58}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   58}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  125}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   85
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,   60}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('='), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('['), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,   60}},
-    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,   60}},
-    {                      Token::D, {           TA_REDUCE_USING_RULE,   60}},
-    {                     Token::GT, {           TA_REDUCE_USING_RULE,   60}},
-    {                     Token::LT, {           TA_REDUCE_USING_RULE,   60}},
-    {                     Token::EQ, {           TA_REDUCE_USING_RULE,   60}},
-    {                     Token::NE, {           TA_REDUCE_USING_RULE,   60}},
-    {                    Token::GTE, {           TA_REDUCE_USING_RULE,   60}},
-    {                    Token::LTE, {           TA_REDUCE_USING_RULE,   60}},
-    {                    Token::AND, {           TA_REDUCE_USING_RULE,   60}},
-    {                     Token::OR, {           TA_REDUCE_USING_RULE,   60}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   60}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   60}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   60}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   60}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,   60}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   60}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   60}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   60}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   60}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   60}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   60}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  126}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   86
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -3794,24 +3719,174 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  127}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   85
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,   63}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('='), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('['), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,   63}},
+    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,   63}},
+    {                      Token::D, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::GT, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::LT, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::EQ, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::NE, {           TA_REDUCE_USING_RULE,   63}},
+    {                    Token::GTE, {           TA_REDUCE_USING_RULE,   63}},
+    {                    Token::LTE, {           TA_REDUCE_USING_RULE,   63}},
+    {                    Token::AND, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::OR, {           TA_REDUCE_USING_RULE,   63}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   63}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   63}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   63}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,   63}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   63}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   63}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   63}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   63}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   63}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   63}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   63}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  128}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   86
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,   62}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('='), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('['), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,   62}},
+    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,   62}},
+    {                      Token::D, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::GT, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::LT, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::EQ, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::NE, {           TA_REDUCE_USING_RULE,   62}},
+    {                    Token::GTE, {           TA_REDUCE_USING_RULE,   62}},
+    {                    Token::LTE, {           TA_REDUCE_USING_RULE,   62}},
+    {                    Token::AND, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::OR, {           TA_REDUCE_USING_RULE,   62}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   62}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   62}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   62}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,   62}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   62}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   62}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   62}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   62}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   62}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   62}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   62}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  129}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   87
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,   64}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,   64}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('='), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('['), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   64}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,   64}},
+    {                      Token::D, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::GT, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::LT, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::EQ, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::NE, {           TA_REDUCE_USING_RULE,   64}},
+    {                    Token::GTE, {           TA_REDUCE_USING_RULE,   64}},
+    {                    Token::LTE, {           TA_REDUCE_USING_RULE,   64}},
+    {                    Token::AND, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::OR, {           TA_REDUCE_USING_RULE,   64}},
     {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,   64}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,   64}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,   64}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,   64}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,   64}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,   64}},
     {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,   64}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,   64}},
     {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
     {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
     {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
@@ -3819,72 +3894,21 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   64}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   64}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,   64}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  128}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,  130}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   88
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  129}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   89
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  130}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   90
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -3902,16 +3926,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  131}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   91
+// state   89
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -3929,16 +3953,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  132}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   92
+// state   90
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -3956,16 +3980,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  133}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   93
+// state   91
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -3983,16 +4007,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  134}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   94
+// state   92
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4010,16 +4034,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  135}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   95
+// state   93
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4037,16 +4061,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  136}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   96
+// state   94
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4064,16 +4088,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  137}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   97
+// state   95
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4091,28 +4115,16 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  138}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state   98
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   89}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state   99
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   92}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  100
+// state   96
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4130,62 +4142,24 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  139}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state  101
+// state   97
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  140}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  107}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  102
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                   Token::END_, {           TA_REDUCE_USING_RULE,  105}},
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,  105}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  141}},
-    {              Token::Type('='), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type('['), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,  105}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,  105}},
-    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,  105}},
-    {                      Token::D, {           TA_REDUCE_USING_RULE,  105}},
-    {                     Token::GT, {           TA_REDUCE_USING_RULE,  105}},
-    {                     Token::LT, {           TA_REDUCE_USING_RULE,  105}},
-    {                     Token::EQ, {           TA_REDUCE_USING_RULE,  105}},
-    {                     Token::NE, {           TA_REDUCE_USING_RULE,  105}},
-    {                    Token::GTE, {           TA_REDUCE_USING_RULE,  105}},
-    {                    Token::LTE, {           TA_REDUCE_USING_RULE,  105}},
-    {                    Token::AND, {           TA_REDUCE_USING_RULE,  105}},
-    {                     Token::OR, {           TA_REDUCE_USING_RULE,  105}},
     {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,  105}},
-    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,  105}},
-    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,  105}},
-    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,  105}},
-    {                     Token::IF, {           TA_REDUCE_USING_RULE,  105}},
-    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,  105}},
-    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,  105}},
     {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {           TA_REDUCE_USING_RULE,  105}},
-    {                    Token::VAR, {           TA_REDUCE_USING_RULE,  105}},
     {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
     {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
     {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
@@ -4193,118 +4167,277 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,  105}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,  105}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  140}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   98
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  141}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state   99
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  142}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {           Token::param_list__, {                  TA_PUSH_STATE,  143}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  100
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   93}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  101
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   96}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  102
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  143}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  103
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,  144}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  144}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  111}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  104
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   21}},
+    // terminal transitions
+    {                   Token::END_, {           TA_REDUCE_USING_RULE,  109}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type(';'), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  145}},
+    {              Token::Type('='), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('{'), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('}'), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('['), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type(']'), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {              Token::Type('/'), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('^'), {           TA_REDUCE_USING_RULE,  109}},
+    {              Token::Type('%'), {           TA_REDUCE_USING_RULE,  109}},
+    {                      Token::D, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::GT, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::LT, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::EQ, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::NE, {           TA_REDUCE_USING_RULE,  109}},
+    {                    Token::GTE, {           TA_REDUCE_USING_RULE,  109}},
+    {                    Token::LTE, {           TA_REDUCE_USING_RULE,  109}},
+    {                    Token::AND, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::OR, {           TA_REDUCE_USING_RULE,  109}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {           TA_REDUCE_USING_RULE,  109}},
+    {                  Token::BREAK, {           TA_REDUCE_USING_RULE,  109}},
+    {               Token::CONTINUE, {           TA_REDUCE_USING_RULE,  109}},
+    {                 Token::RETURN, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::IF, {           TA_REDUCE_USING_RULE,  109}},
+    {                   Token::ELSE, {           TA_REDUCE_USING_RULE,  109}},
+    {               Token::FUNCTION, {           TA_REDUCE_USING_RULE,  109}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {           TA_REDUCE_USING_RULE,  109}},
+    {                    Token::VAR, {           TA_REDUCE_USING_RULE,  109}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {           TA_REDUCE_USING_RULE,  109}},
+    {                  Token::CONST, {           TA_REDUCE_USING_RULE,  109}},
+    {                     Token::DO, {           TA_REDUCE_USING_RULE,  109}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  146}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {           Token::param_list__, {                  TA_PUSH_STATE,  147}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  105
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   78}},
+    // terminal transitions
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,  148}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  106
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   19}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   21}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  107
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  145}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   82}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  108
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  146}},
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   19}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  109
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   34}},
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  149}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  110
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  147}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   32}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  150}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  111
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  148}},
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   38}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  112
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  151}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   36}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  113
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  152}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  114
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
@@ -4312,36 +4445,36 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   10}},
     // nonterminal transitions
-    {     Token::param_definition__, {                  TA_PUSH_STATE,  149}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,  150}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  113
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  151}},
-    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   10}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   10}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {     Token::param_definition__, {                  TA_PUSH_STATE,  152}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,  150}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  114
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   40}},
+    {     Token::param_definition__, {                  TA_PUSH_STATE,  153}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,  154}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  115
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  153}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  155}},
+    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   10}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   10}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    // nonterminal transitions
+    {     Token::param_definition__, {                  TA_PUSH_STATE,  156}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,  154}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  116
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   44}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  117
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  157}},
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
@@ -4359,72 +4492,18 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,  154}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  116
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  155}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  117
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  156}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,  158}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  118
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4441,29 +4520,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  157}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,  159}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  119
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  158}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  120
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  159}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  121
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
@@ -4481,615 +4548,493 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  160}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  120
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  161}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  121
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  162}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  122
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   67}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  163}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  123
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type(']'), {        TA_SHIFT_AND_PUSH_STATE,  161}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  164}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  124
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   62}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   30}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  125
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   57}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,  165}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  126
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   63}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   71}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  127
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   64}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type(']'), {        TA_SHIFT_AND_PUSH_STATE,  166}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  128
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   68}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   66}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  129
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   65}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   61}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  130
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   66}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   67}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  131
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   74}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   68}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  132
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   73}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   72}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  133
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   71}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   69}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  134
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   72}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   70}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  135
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   76}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   78}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  136
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   75}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   77}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  137
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   70}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   75}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  138
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   69}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   76}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  139
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   77}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   80}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  140
 // ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  106}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   79}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  141
 // ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  102}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   74}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  142
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  115}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   73}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  143
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  162}},
-    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  163}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  104}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   81}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  144
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   23}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  110}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  145
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  164}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  106}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  146
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  165}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  119}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  147
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  166}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  167}},
+    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  168}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  108}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  148
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  167}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   23}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  149
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  168}},
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  169}},
-    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  170}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  150
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   11}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  151
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  171}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  152
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  168}},
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  172}},
-    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  170}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  153
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   41}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  154
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  173}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  174}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
     {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
     {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
     {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
     {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
     {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
     {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
     {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
@@ -5097,163 +5042,196 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,  175}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  169}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  150
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  170}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  151
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  171}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  152
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  172}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  153
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  173}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  174}},
+    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  175}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  154
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   11}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  155
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  110}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  176}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  156
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  114}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  173}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  177}},
+    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  175}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  157
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type(']'), {        TA_SHIFT_AND_PUSH_STATE,  176}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   45}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  158
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   10}},
-    // nonterminal transitions
-    {     Token::param_definition__, {                  TA_PUSH_STATE,  177}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,  150}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  159
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
     {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  178}},
-    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   10}},
-    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   10}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {     Token::param_definition__, {                  TA_PUSH_STATE,  179}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,  150}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  160
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  111}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  161
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   85}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  162
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  103}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  163
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   44}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  179}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5270,328 +5248,441 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  180}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  159
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  114}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  160
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  118}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  161
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type(']'), {        TA_SHIFT_AND_PUSH_STATE,  181}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  162
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   10}},
+    // nonterminal transitions
+    {     Token::param_definition__, {                  TA_PUSH_STATE,  182}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,  154}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  163
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  183}},
+    {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   10}},
+    {              Token::Type(','), {           TA_REDUCE_USING_RULE,   10}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    // nonterminal transitions
+    {     Token::param_definition__, {                  TA_PUSH_STATE,  184}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,  154}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  164
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  115}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  165
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  185}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  186}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  166
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   89}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  167
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  107}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  168
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   45}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    // nonterminal transitions
+    {                  Token::exp__, {                  TA_PUSH_STATE,  187}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  169
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   27}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state  165
+// state  170
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   24}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state  166
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                   Token::ELSE, {        TA_SHIFT_AND_PUSH_STATE,  181}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   31}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  167
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                   Token::ELSE, {        TA_SHIFT_AND_PUSH_STATE,  182}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   29}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  168
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   13}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  169
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  183}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  170
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {              Token::vardecl__, {                  TA_PUSH_STATE,  184}},
-
-// ///////////////////////////////////////////////////////////////////////////
 // state  171
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  185}},
+    {                   Token::ELSE, {        TA_SHIFT_AND_PUSH_STATE,  188}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   35}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  172
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  186}},
+    {                   Token::ELSE, {        TA_SHIFT_AND_PUSH_STATE,  189}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   33}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  173
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   41}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   42}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   13}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  174
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  187}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  190}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  175
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  188}},
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   43}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    // nonterminal transitions
+    {              Token::vardecl__, {                  TA_PUSH_STATE,  191}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  176
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  112}},
+    // terminal transitions
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  192}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  177
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  168}},
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  189}},
-    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  170}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  193}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  178
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  190}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   46}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  179
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  168}},
-    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  191}},
-    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  170}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  194}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  180
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   81}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   82}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   83}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   84}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  195}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  116}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   47}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  181
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  192}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  116}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  182
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
-    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
-    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
-    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
-    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
-    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
-    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
-    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
-    // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  193}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  173}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  196}},
+    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  175}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  183
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
-    // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,  194}},
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  197}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  184
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   12}},
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,  173}},
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  198}},
+    {              Token::Type(','), {        TA_SHIFT_AND_PUSH_STATE,  175}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  185
 // ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  199}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
-    // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,  195}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   31}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  186
 // ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
-    // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,  196}},
+    // terminal transitions
+    {              Token::Type(')'), {        TA_SHIFT_AND_PUSH_STATE,  200}},
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  187
 // ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   83}},
+    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   84}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   85}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   86}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   87}},
+    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
+    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
+    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
+    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   91}},
+    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   92}},
+    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   93}},
+    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   94}},
+    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   95}},
+    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   96}},
+    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,   97}},
+    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,   98}},
+    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,   99}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  100}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  101}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  102}},
     // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   38}},
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,  120}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  188
@@ -5625,56 +5716,26 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,  197}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  201}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  189
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  198}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  190
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  199}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  191
-// ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  200}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  192
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   30}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  193
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   28}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  194
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  201}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5699,16 +5760,53 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  202}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  190
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
+    // nonterminal transitions
+    {       Token::statement_list__, {                  TA_PUSH_STATE,  203}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  191
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   12}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  192
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
+    // nonterminal transitions
+    {       Token::statement_list__, {                  TA_PUSH_STATE,  204}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  193
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
+    // nonterminal transitions
+    {       Token::statement_list__, {                  TA_PUSH_STATE,  205}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  194
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   42}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  195
@@ -5718,7 +5816,6 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  202}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5743,26 +5840,69 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,  206}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  196
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  207}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  197
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  208}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  198
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,  209}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  199
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   29}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  200
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   28}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  201
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   34}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  202
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   32}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  203
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  203}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  210}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5787,64 +5927,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  197
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   39}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  198
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
-    // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,  204}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  199
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
-    // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,  205}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  200
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
-    // nonterminal transitions
-    {       Token::statement_list__, {                  TA_PUSH_STATE,  206}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  201
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    5}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  202
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    3}},
-
-// ///////////////////////////////////////////////////////////////////////////
-// state  203
-// ///////////////////////////////////////////////////////////////////////////
-    // default transition
-    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    2}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  204
@@ -5854,7 +5947,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  207}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  211}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5879,16 +5972,17 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  205
@@ -5898,7 +5992,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  208}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  212}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5923,26 +6017,75 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state  206
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   43}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  207
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
+    // nonterminal transitions
+    {       Token::statement_list__, {                  TA_PUSH_STATE,  213}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  208
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
+    // nonterminal transitions
+    {       Token::statement_list__, {                  TA_PUSH_STATE,  214}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  209
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   14}},
+    // nonterminal transitions
+    {       Token::statement_list__, {                  TA_PUSH_STATE,  215}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  210
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    5}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  211
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    3}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  212
+// ///////////////////////////////////////////////////////////////////////////
+    // default transition
+    {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    2}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  213
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
     {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
     {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
     {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
-    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  209}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  216}},
     {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
     {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
     {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
@@ -5967,31 +6110,122 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
     {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
-    {      Token::func_definition__, {                  TA_PUSH_STATE,   32}},
-    {            Token::statement__, {                  TA_PUSH_STATE,   33}},
-    {                  Token::exp__, {                  TA_PUSH_STATE,   34}},
-    {        Token::exp_statement__, {                  TA_PUSH_STATE,   35}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   36}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   37}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   38}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   39}},
-    {              Token::vardecl__, {                  TA_PUSH_STATE,   40}},
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state  207
+// state  214
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  217}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  215
+// ///////////////////////////////////////////////////////////////////////////
+    // terminal transitions
+    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,    4}},
+    {              Token::Type(';'), {        TA_SHIFT_AND_PUSH_STATE,    5}},
+    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
+    {              Token::Type('{'), {        TA_SHIFT_AND_PUSH_STATE,    7}},
+    {              Token::Type('}'), {        TA_SHIFT_AND_PUSH_STATE,  218}},
+    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
+    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
+    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
+    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
+    {                  Token::WHILE, {        TA_SHIFT_AND_PUSH_STATE,   12}},
+    {                  Token::BREAK, {        TA_SHIFT_AND_PUSH_STATE,   13}},
+    {               Token::CONTINUE, {        TA_SHIFT_AND_PUSH_STATE,   14}},
+    {                 Token::RETURN, {        TA_SHIFT_AND_PUSH_STATE,   15}},
+    {                     Token::IF, {        TA_SHIFT_AND_PUSH_STATE,   16}},
+    {               Token::FUNCTION, {        TA_SHIFT_AND_PUSH_STATE,   17}},
+    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
+    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
+    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
+    {                    Token::FOR, {        TA_SHIFT_AND_PUSH_STATE,   21}},
+    {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
+    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
+    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
+    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   26}},
+    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
+    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
+    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
+    {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
+    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
+    // nonterminal transitions
+    {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
+    {            Token::statement__, {                  TA_PUSH_STATE,   34}},
+    {                  Token::exp__, {                  TA_PUSH_STATE,   35}},
+    {        Token::exp_statement__, {                  TA_PUSH_STATE,   36}},
+    {       Token::var_identifier__, {                  TA_PUSH_STATE,   37}},
+    {      Token::func_identifier__, {                  TA_PUSH_STATE,   38}},
+    {     Token::array_identifier__, {                  TA_PUSH_STATE,   39}},
+    {                 Token::call__, {                  TA_PUSH_STATE,   40}},
+    {              Token::vardecl__, {                  TA_PUSH_STATE,   41}},
+
+// ///////////////////////////////////////////////////////////////////////////
+// state  216
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    6}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state  208
+// state  217
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    4}},
 
 // ///////////////////////////////////////////////////////////////////////////
-// state  209
+// state  218
 // ///////////////////////////////////////////////////////////////////////////
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,    7}}
@@ -6026,5 +6260,5 @@ SteelParser::Token::Type SteelParser::Scan ()
 	return m_scanner->Scan(&m_lookahead_token);
 }
 
-#line 6030 "SteelParser.cpp"
+#line 6264 "SteelParser.cpp"
 

@@ -290,6 +290,40 @@ ostream & AstWhileStatement::print(std::ostream &out)
     return out;
 }
 
+
+AstDoStatement::AstDoStatement(unsigned int line, const std::string &script, AstExpression *pExp, AstStatement *pStmt)
+    :AstStatement(line,script),m_pCondition(pExp),m_pStatement(pStmt)
+{
+}
+AstDoStatement::~AstDoStatement()
+{
+    delete m_pCondition;
+    delete m_pStatement;
+}
+
+AstStatement::eStopType AstDoStatement::execute(SteelInterpreter *pInterpreter)
+{
+    // I expect it to cast to boolean
+    do {
+        eStopType stop = m_pStatement->execute(pInterpreter);
+        if(stop == BREAK) return COMPLETED;
+        else if(stop == RETURN) return RETURN;
+        // Note: if stop is CONTINUE,
+        // Then we just want to keep looping. So no action.
+    } while( m_pCondition->evaluate(pInterpreter) );
+    
+    return COMPLETED;
+}
+
+ostream & AstDoStatement::print(std::ostream &out)
+{
+    out << "do "<< *m_pStatement << "\n while (" << *m_pCondition << ")\n"
+        <<  std::endl;
+
+    return out;
+}
+
+
 AstIfStatement::AstIfStatement(unsigned int line, const std::string &script,
                                AstExpression *pExp, AstStatement *pStmt,
                                AstStatement *pElse)
