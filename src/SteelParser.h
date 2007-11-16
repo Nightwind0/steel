@@ -29,7 +29,7 @@ public:
             ARRAY_IDENTIFIER,
             BREAK,
             CAT,
-            CONST,
+            CONSTANT,
             CONTINUE,
             D,
             DECREMENT,

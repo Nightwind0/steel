@@ -410,7 +410,7 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token::Type token_
         "ARRAY_IDENTIFIER",
         "BREAK",
         "CAT",
-        "CONST",
+        "CONSTANT",
         "CONTINUE",
         "D",
         "DECREMENT",
@@ -2017,7 +2017,7 @@ AstBase* SteelParser::ReductionRuleHandler0114 ()
 #line 2018 "SteelParser.cpp"
 }
 
-// rule 115: vardecl <- CONST var_identifier:id '=' exp:exp    
+// rule 115: vardecl <- CONSTANT var_identifier:id '=' exp:exp    
 AstBase* SteelParser::ReductionRuleHandler0115 ()
 {
     assert(1 < m_reduction_rule_token_count);
@@ -2221,7 +2221,7 @@ SteelParser::ReductionRule const SteelParser::ms_reduction_rule[] =
     {                 Token::call__,  1, &SteelParser::ReductionRuleHandler0112, "rule 112: call <- func_identifier    "},
     {              Token::vardecl__,  2, &SteelParser::ReductionRuleHandler0113, "rule 113: vardecl <- VAR var_identifier    "},
     {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0114, "rule 114: vardecl <- VAR var_identifier '=' exp    "},
-    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0115, "rule 115: vardecl <- CONST var_identifier '=' exp    "},
+    {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0115, "rule 115: vardecl <- CONSTANT var_identifier '=' exp    "},
     {              Token::vardecl__,  5, &SteelParser::ReductionRuleHandler0116, "rule 116: vardecl <- VAR array_identifier '[' exp ']'    "},
     {              Token::vardecl__,  2, &SteelParser::ReductionRuleHandler0117, "rule 117: vardecl <- VAR array_identifier    "},
     {              Token::vardecl__,  4, &SteelParser::ReductionRuleHandler0118, "rule 118: vardecl <- VAR array_identifier '=' exp    "},
@@ -2524,7 +2524,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -2550,7 +2550,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
     {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   42}},
     {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   43}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   16}},
     // nonterminal transitions
@@ -2748,7 +2748,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {           TA_REDUCE_USING_RULE,   51}},
     {                    Token::POP, {           TA_REDUCE_USING_RULE,   51}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   51}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   51}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   51}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   51}},
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -2785,7 +2785,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {           TA_REDUCE_USING_RULE,   54}},
     {                    Token::POP, {           TA_REDUCE_USING_RULE,   54}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   54}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   54}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   54}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   54}},
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -2822,7 +2822,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   41}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   41}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   41}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   41}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,   62}},
@@ -3051,7 +3051,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -3165,7 +3165,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {           TA_REDUCE_USING_RULE,  112}},
     {                    Token::POP, {           TA_REDUCE_USING_RULE,  112}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,  112}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,  112}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,  112}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,  112}},
 
 // ///////////////////////////////////////////////////////////////////////////
@@ -3276,7 +3276,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -3389,7 +3389,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   25}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   25}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   25}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   25}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  110}},
@@ -3775,7 +3775,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   63}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   63}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   63}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   63}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  128}},
@@ -3835,7 +3835,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   62}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   62}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   62}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   62}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  129}},
@@ -3895,7 +3895,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,   64}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,   64}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,   64}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,   64}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  130}},
@@ -4326,7 +4326,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {           TA_REDUCE_USING_RULE,  109}},
-    {                  Token::CONST, {           TA_REDUCE_USING_RULE,  109}},
+    {               Token::CONSTANT, {           TA_REDUCE_USING_RULE,  109}},
     {                     Token::DO, {           TA_REDUCE_USING_RULE,  109}},
     // nonterminal transitions
     {                  Token::exp__, {                  TA_PUSH_STATE,  146}},
@@ -4441,7 +4441,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   10}},
     // nonterminal transitions
@@ -4456,7 +4456,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   10}},
     {              Token::Type(','), {           TA_REDUCE_USING_RULE,   10}},
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // nonterminal transitions
     {     Token::param_definition__, {                  TA_PUSH_STATE,  156}},
     {              Token::vardecl__, {                  TA_PUSH_STATE,  154}},
@@ -5043,7 +5043,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5087,7 +5087,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5131,7 +5131,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5175,7 +5175,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5338,7 +5338,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   10}},
     // nonterminal transitions
@@ -5353,7 +5353,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {              Token::Type(')'), {           TA_REDUCE_USING_RULE,   10}},
     {              Token::Type(','), {           TA_REDUCE_USING_RULE,   10}},
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // nonterminal transitions
     {     Token::param_definition__, {                  TA_PUSH_STATE,  184}},
     {              Token::vardecl__, {                  TA_PUSH_STATE,  154}},
@@ -5496,7 +5496,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
     {                    Token::VAR, {        TA_SHIFT_AND_PUSH_STATE,   22}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     // nonterminal transitions
     {              Token::vardecl__, {                  TA_PUSH_STATE,  191}},
 
@@ -5552,7 +5552,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5715,7 +5715,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5759,7 +5759,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5839,7 +5839,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5926,7 +5926,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -5971,7 +5971,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -6016,7 +6016,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -6109,7 +6109,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -6154,7 +6154,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
@@ -6199,7 +6199,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
     {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
     {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   29}},
     {                  Token::FINAL, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    {                  Token::CONST, {        TA_SHIFT_AND_PUSH_STATE,   31}},
+    {               Token::CONSTANT, {        TA_SHIFT_AND_PUSH_STATE,   31}},
     {                     Token::DO, {        TA_SHIFT_AND_PUSH_STATE,   32}},
     // nonterminal transitions
     {      Token::func_definition__, {                  TA_PUSH_STATE,   33}},
