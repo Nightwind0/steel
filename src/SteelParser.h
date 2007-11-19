@@ -27,6 +27,7 @@ public:
             // user-defined terminal, non-single-character tokens
             AND = 0x100,
             ARRAY_IDENTIFIER,
+            BOOLEAN,
             BREAK,
             CAT,
             CONSTANT,
@@ -125,7 +126,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 129 "SteelParser.h"
+#line 130 "SteelParser.h"
 
 private:
 
@@ -359,6 +360,7 @@ private:
     AstBase* ReductionRuleHandler0118 ();
     AstBase* ReductionRuleHandler0119 ();
     AstBase* ReductionRuleHandler0120 ();
+    AstBase* ReductionRuleHandler0121 ();
 
 }; // end of class SteelParser
 
@@ -369,4 +371,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token::Type token_
 
 	#endif // STEEL_PARSER_H
 
-#line 373 "SteelParser.h"
+#line 375 "SteelParser.h"

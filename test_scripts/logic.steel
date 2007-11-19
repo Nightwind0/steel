@@ -1,32 +1,32 @@
 
 
-if ( 1 and 1 ) println ( "TRUE" );
-else println ( "FALSE 1" );
+if ( true and true ) println ( "TRUE" );
+else println ( "FALSE true" );
 
-if ( 1 and 0 ) println ( "FALSE 2" );
+if ( true and false ) println ( "FALSE 2" );
 else println ( "TRUE" );
 
-if( 0 and 1 ) println ( "FALSE 3" );
+if( false and true ) println ( "FALSE 3" );
 else println ( "TRUE");
 
-if ( 0 or 1 ) println ( "TRUE" );
+if ( false or true ) println ( "TRUE" );
 else println ( "FALSE 4");
 
-if ( 1 or 0 ) println ( "TRUE" );
+if ( true or false ) println ( "TRUE" );
 else println ( "FALSE 5");
 
-if ( 0 or 0 ) println ( "FALSE 6");
+if ( false or false ) println ( "FALSE 6");
 else println ( "TRUE ");
 
-if ( 1 or 1 ) println ( "TRUE");
+if ( true or true ) println ( "TRUE");
 else println ( "FALSE 7");
 
-if ( 0 and 0 ) println ( "FALSE 8");
+if ( false and false ) println ( "FALSE 8");
 else println ( "TRUE" );
 
 
-if ( not 1 ) println ("FALSE 9");
+if ( not true ) println ("FALSE 9");
 else println ( "TRUE" );
 
-if ( not 0 ) println ("TRUE");
-else println ( "FALSE 10");
+if ( not false ) println ("TRUE");
+else println ( "FALSE 1false");

@@ -114,6 +114,30 @@ SteelType AstFloat::evaluate(SteelInterpreter *pInterpreter)
     return var;
 }
 
+AstBoolean::AstBoolean(unsigned int line,
+                       const std::string &script,
+                       bool value)
+    :AstExpression(line,script),m_bValue(value)
+{
+}
+
+ostream & AstBoolean::print(std::ostream &out)
+{
+    if(m_bValue) out << "true";
+    else out << "false";
+}
+
+SteelType AstBoolean::evaluate(SteelInterpreter *pInterpreter)
+{
+    SteelType var;
+    var.set(m_bValue);
+
+    return var;
+}
+
+
+
+
 AstIdentifier::AstIdentifier(unsigned int line,
                              const std::string &script,
                              const std::string &value)

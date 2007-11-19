@@ -165,6 +165,18 @@ AstBase **token
 		SetScannerState(State::STRING_LITERAL_GUTS);
 	}
 |
+	(true)
+	%language.cpp {
+		*token = new AstBoolean(m_line,m_script_name,true);
+		return SteelParser::Token::BOOLEAN;
+	}
+|
+	(false)
+	%language.cpp {
+		*token = new AstBoolean(m_line,m_script_name,false);
+		return SteelParser::Token::BOOLEAN;
+	}
+|
 	(pop)
 	%language.cpp {
 		*token = NULL;
@@ -289,7 +301,7 @@ AstBase **token
 		 return SteelParser::Token::OR;
 	 }
 |
-	(not)
+	(not|!)
 	 %language.cpp{
 		*token = NULL;
 		 return SteelParser::Token::NOT;

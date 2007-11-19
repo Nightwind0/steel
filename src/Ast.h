@@ -265,6 +265,21 @@ private:
     double m_value;
 };
 
+class AstBoolean : public AstExpression
+{
+public:
+    AstBoolean(unsigned int line,
+               const std::string &script,
+               bool value);
+    virtual ~AstBoolean(){}
+
+    virtual ostream & print(std::ostream &out);
+    virtual SteelType evaluate(SteelInterpreter *pInterpreter);
+    virtual SteelType * lvalue(SteelInterpreter *pInterpreter){ return NULL; }
+private:
+    bool m_bValue;
+};
+
 class AstIdentifier : public AstExpression
 {
 public:

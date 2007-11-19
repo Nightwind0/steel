@@ -102,6 +102,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token INT
 %token FLOAT
 %token STRING
+%token BOOLEAN
 %token INCREMENT
 %token DECREMENT
 %token CAT
@@ -502,6 +503,8 @@ exp %type "AstExpression*"
 	FLOAT:f { return f; }
 |
 	STRING:s { return s; }
+|
+	BOOLEAN:b { return b; }
 |
 	var_identifier:id { return id; }
 |
