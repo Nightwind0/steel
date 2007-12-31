@@ -125,6 +125,8 @@ ostream & AstBoolean::print(std::ostream &out)
 {
     if(m_bValue) out << "true";
     else out << "false";
+
+    return out;
 }
 
 SteelType AstBoolean::evaluate(SteelInterpreter *pInterpreter)
