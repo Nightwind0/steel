@@ -21,6 +21,7 @@ public:
     ParameterListItem(const std::string &name, int i);
     ParameterListItem(const std::string &name, bool b);
     ParameterListItem(const std::string &name, std::string &s);
+    ParameterListItem(const std::string &name, const SteelType &var);
 
     std::string getName() const { return m_name; }
     SteelType getValue() const { return m_value; }
@@ -38,6 +39,12 @@ public:
     virtual ~SteelInterpreter();
 
     void addFunction(const std::string &name, SteelFunctor *pFunc);
+    // Removes a function and returns the pointer to it
+    // (mostly so that you can deallocate it)
+    SteelFunctor *removeFunction(const std::string &name);
+
+    // Call a method with parameters.
+    // This method builds the Ast then executes it
     SteelType call(const std::string &name, const std::vector<SteelType> &pList);
 
     // This allows you to pre-parse a script and keep a pointer to it

@@ -34,6 +34,12 @@ ParameterListItem::ParameterListItem(const std::string &name, std::string &s)
     m_value.set(s);
 }
 
+ParameterListItem::ParameterListItem(const std::string &name, const SteelType &var)
+{
+    m_name = name;
+    m_value = var;
+}
+
 
 SteelInterpreter::SteelInterpreter()
 {
@@ -64,6 +70,15 @@ void SteelInterpreter::addFunction(const std::string &name,
     if(it != m_functions.end() && it->second->isFinal()) throw AlreadyDefined();
 
     m_functions[name] = pFunc;
+}
+
+SteelFunctor *SteelInterpreter::removeFunction(const std::string &name)
+{
+    std::map<std::string,SteelFunctor*>::iterator it = m_functions.find ( name );
+
+    m_functions.erase(it);
+
+    return it->second;
 }
 
 AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
