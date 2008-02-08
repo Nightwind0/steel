@@ -41,6 +41,8 @@ public:
     void addFunction(const std::string &name, SteelFunctor *pFunc);
     // Removes a function and returns the pointer to it
     // (mostly so that you can deallocate it)
+    // (but don't forget to check if it's an user function.. you don't
+    // want to delete those.)
     SteelFunctor *removeFunction(const std::string &name);
 
     // Call a method with parameters.
