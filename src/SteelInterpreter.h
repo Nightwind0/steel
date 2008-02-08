@@ -56,7 +56,7 @@ public:
                             const std::string &script);
 
     // After using prebuildAst, you can later run it using runAst
-    SteelType runAst(AstScript *pAst );
+    SteelType runAst(AstScript *pAst);
     // This allows you to supply some defined global level variables to your 
     // script.
     SteelType runAst(AstScript *pAst, const ParameterList &params);

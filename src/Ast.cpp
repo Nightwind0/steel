@@ -431,6 +431,9 @@ AstLoopStatement::~AstLoopStatement()
 
 AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter)
 {
+    // A for loop has its own scope like in C++
+    // (Beyond the scope that the body may have anyway)
+    pInterpreter->pushScope();
     for( m_pStart->evaluate( pInterpreter) ;
          m_pCondition->evaluate(pInterpreter) ;
          m_pIteration->evaluate( pInterpreter )
@@ -438,12 +441,21 @@ AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter
     {
         eStopType stop = m_pStatement->execute(pInterpreter);
 
-        if(stop == BREAK) return COMPLETED;
-        else if (stop == RETURN) return RETURN;
+        if(stop == BREAK) 
+        {
+            pInterpreter->popScope();
+            return COMPLETED;
+        }
+        else if (stop == RETURN) 
+        {
+            pInterpreter->popScope();
+            return RETURN;
+        }
 
         // For both CONTINUE and COMPLETED, we just keep going.
     }
 
+    pInterpreter->popScope();
     return COMPLETED;
 }
 
