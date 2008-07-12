@@ -38,17 +38,28 @@ public:
     SteelInterpreter();
     virtual ~SteelInterpreter();
 
+    static const char * kszGlobalNamespace;
+
+    // Add function to the global namespace
     void addFunction(const std::string &name, SteelFunctor *pFunc);
+
+    // Add a function with a namespace
+    void addFunction(const std::string &name, const std::string &ns, SteelFunctor *pFunc);
     // Removes a function and returns the pointer to it
     // (mostly so that you can deallocate it)
     // (but don't forget to check if it's an user function.. you don't
     // want to delete those.)
-    SteelFunctor *removeFunction(const std::string &name);
+    SteelFunctor *removeFunction(const std::string &name, const std::string &ns=kszGlobalNamespace);
+
+    // Removes all functions from a namespace
+    void removeFunctions(const std::string &ns);
 
     // Call a method with parameters.
     // This method builds the Ast then executes it
     SteelType call(const std::string &name, const std::vector<SteelType> &pList);
 
+    // Call with a funciton in a specific namespace
+    SteelType call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList);
     // This allows you to pre-parse a script and keep a pointer to it
     // around, which can be run over and over, and the deletion of it is
     // up to the user of SteelInterpreter
@@ -66,6 +77,8 @@ public:
     // Array element lookup
     SteelType lookup(SteelType *pVar, int index);
     SteelType *lookup_lvalue(const std::string &name);
+    // Add namespace
+    void import(const std::string &ns);
     void declare(const std::string &name);
     void declare_array(const std::string &array, int size);
     void declare_const(const std::string &name, const SteelType &datum);
@@ -86,27 +99,39 @@ private:
 
     std::string name_array_ref(const std::string &array_name); 
     typedef std::map<std::string, SteelType> VariableFile;
+    typedef std::map<std::string,SteelFunctor*> FunctionSet;
     std::list<VariableFile> m_symbols;
-  
 
+    void clear_imports();
+  
     SteelType * lookup_internal(const std::string &name);
   
     void registerBifs();
-    std::map<std::string,SteelFunctor*> m_functions;
+    std::deque<std::string> m_namespace_scope;
+    std::map<std::string,FunctionSet> m_functions;
+
 
     SteelType m_return;
-
 private:
     // Bifs
     SteelType print   (const std::string &str);
+    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_print_f;
     SteelType println (const std::string &str);
+    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_println_f;
     SteelType len     (const SteelArray &ref);
+    SteelFunctor1Arg<SteelInterpreter,const SteelArray&> m_len_f;
     SteelType real    (const SteelType &str);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_real_f;
     SteelType integer (const SteelType &str);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_integer_f;
     SteelType boolean (const SteelType &str);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_boolean_f;
     SteelType substr  (const std::string &str, int start, int len);
+    SteelFunctor3Arg<SteelInterpreter,const std::string&,int, int> m_substr_f;
     SteelType strlen  (const std::string &str);
+    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_strlen_f;
     SteelType is_array(const SteelType &);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_array_f;
 
     // Math built-ins
     SteelType ceil (double f);

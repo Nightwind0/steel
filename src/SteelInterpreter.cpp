@@ -9,6 +9,9 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#pragma warning(disable: 4355)
+
+const char * SteelInterpreter::kszGlobalNamespace = "_global";
 
 ParameterListItem::ParameterListItem(const std::string &name, double d)
 {
@@ -42,6 +45,15 @@ ParameterListItem::ParameterListItem(const std::string &name, const SteelType &v
 
 
 SteelInterpreter::SteelInterpreter()
+:m_print_f(this, &SteelInterpreter::print ),
+ m_println_f(this,&SteelInterpreter::println ),
+ m_len_f(this, &SteelInterpreter::len ),
+ m_real_f(this,&SteelInterpreter::real ),
+ m_integer_f(this,&SteelInterpreter::integer ),
+ m_boolean_f(this,&SteelInterpreter::boolean ),
+ m_substr_f(this,&SteelInterpreter::substr ),
+ m_strlen_f(this,&SteelInterpreter::strlen),
+ m_is_array_f(this,&SteelInterpreter::is_array)
 {
     registerBifs();
     srand(time(0));
@@ -49,34 +61,42 @@ SteelInterpreter::SteelInterpreter()
 
 SteelInterpreter::~SteelInterpreter()
 {
-    // Delete functors
-    // Since the user defined functions are in the main statement list,
-    // they are already deleted when you delete the tree... therefore,
-    // we don't want to delete them here.
-    for(std::map<std::string,SteelFunctor*>::iterator i = m_functions.begin();
-        i != m_functions.end(); i++)
-    {
-        delete i->second;
-    }
-        
+       
 }
 
 
 void SteelInterpreter::addFunction(const std::string &name,
                                    SteelFunctor *pFunc)
 {
-    std::map<std::string,SteelFunctor*>::iterator it = m_functions.find ( name );
-    
-    if(it != m_functions.end() && it->second->isFinal()) throw AlreadyDefined();
-
-    m_functions[name] = pFunc;
+    addFunction(name,kszGlobalNamespace,pFunc);
 }
 
-SteelFunctor *SteelInterpreter::removeFunction(const std::string &name)
+void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
+                                  SteelFunctor * pFunc)
 {
-    std::map<std::string,SteelFunctor*>::iterator it = m_functions.find ( name );
+    std::map<std::string,FunctionSet>::iterator sset = m_functions.find ( ns );
+    if(sset == m_functions.end())
+    {
+        m_functions[ns][name] = pFunc;
+    }
+    else
+    {
+        std::map<std::string,SteelFunctor*>::iterator it = sset->second.find ( name );
+    
+        if(it != sset->second.end() && it->second->isFinal()) throw AlreadyDefined();
 
-    m_functions.erase(it);
+        sset->second[name] = pFunc;
+    }
+}
+
+SteelFunctor *SteelInterpreter::removeFunction(const std::string &name, const std::string &ns)
+{
+    std::map<std::string,FunctionSet>::iterator set = m_functions.find ( ns );
+    std::map<std::string,SteelFunctor*>::iterator it = set->second.find ( name );
+
+    set->second.erase(it);
+
+    if(set->second.empty()) m_functions.erase(set);
 
     return it->second;
 }
@@ -109,9 +129,11 @@ AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
 
 SteelType SteelInterpreter::runAst(AstScript *pScript)
 {
+    import(kszGlobalNamespace);
     assert ( NULL != pScript );
     pScript->executeScript(this);
 
+    clear_imports();
     return getReturn();
 }
 
@@ -120,7 +142,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
 SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &params)
 {
     assert ( NULL != pScript );
-
+    import(kszGlobalNamespace);
     pushScope();
     for(ParameterList::const_iterator it = params.begin(); it != params.end();
         it++)
@@ -132,13 +154,14 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
 
     pScript->executeScript(this);
     popScope();
-
+    clear_imports();
     return getReturn();
 }
 
 SteelType SteelInterpreter::run(const std::string &name,const std::string &script)
 {
     SteelParser parser;
+    import(kszGlobalNamespace);
 //    parser.SetDebugSpewLevel(2);
     parser.setBuffer(script.c_str(),name);
     if(parser.Parse() != SteelParser::PRC_SUCCESS)
@@ -164,29 +187,59 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
     delete pScript;
 
     parser.ClearAcceptedToken();
-
+    clear_imports();
     return getReturn();
+}
+
+void SteelInterpreter::clear_imports()
+{
+    m_namespace_scope.clear();
+    import(kszGlobalNamespace);
+}
+
+void SteelInterpreter::import(const std::string &ns)
+{
+    m_namespace_scope.push_back(ns);
 }
 
 SteelType SteelInterpreter::call(const std::string &name, const std::vector<SteelType> &pList)
 {
-    // First, check the builtins. They can be considered like keywords.
 
-    std::map<std::string,SteelFunctor*>::iterator it = m_functions.find( name );
-
-    if( it != m_functions.end() )
+    for(std::deque<std::string>::reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
+        it++)
     {
-        // Its found, and its a bif.
-        SteelFunctor * pFunctor = it->second;
+        FunctionSet &set = m_functions[*it];
+
+        std::map<std::string,SteelFunctor*>::iterator iter = set.find( name );
+
+        if( iter != set.end() )
+        {
+            SteelFunctor * pFunctor = iter->second;
+            assert ( pFunctor != NULL );
+
+            return pFunctor->Call(this,pList);
+        }
+    }
+
+    throw UnknownIdentifier();
+
+    return SteelType();
+}
+
+SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList)
+{
+    FunctionSet &set = m_functions[ns];
+
+    std::map<std::string,SteelFunctor*>::iterator iter = set.find( name );
+
+    if( iter != set.end() )
+    {
+        SteelFunctor * pFunctor = iter->second;
         assert ( pFunctor != NULL );
 
         return pFunctor->Call(this,pList);
     }
-    else
-    {
-
-        throw UnknownIdentifier();
-    }
+    throw UnknownIdentifier();
 
     return SteelType();
 }
@@ -338,35 +391,25 @@ void SteelInterpreter::popScope()
 
 void SteelInterpreter::registerBifs()
 {
-    addFunction( "print", new SteelFunctor1Arg<SteelInterpreter,const std::string &>(this, &SteelInterpreter::print ) );
-    addFunction( "println", new SteelFunctor1Arg<SteelInterpreter,const std::string &>(this,&SteelInterpreter::println ) );
-    addFunction( "len", new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this, &SteelInterpreter::len ) );
-    addFunction( "real", new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real ) );
-    addFunction( "integer", new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer ) );
-    addFunction( "boolean", new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean ) );
-    addFunction( "substr", new SteelFunctor3Arg<SteelInterpreter,const std::string&,int, int>(this,&SteelInterpreter::substr ) );
-    addFunction( "strlen", new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::strlen));
-    addFunction( "is_array", new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_array));
-
     // Math functions
-    addFunction("ceil", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::ceil));
-    addFunction("abs", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::abs));
-    addFunction("floor", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::floor));
-    addFunction("exp", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::exp));
-    addFunction("log", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::log));
-    addFunction("log10", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::log10));
-    addFunction("sqrt", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sqrt));
-    addFunction("acos", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::acos));
-    addFunction("asin", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::asin));
-    addFunction("atan", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::atan));
-    addFunction("atan2", new SteelFunctor2Arg<SteelInterpreter,double,double>(this,&SteelInterpreter::atan2));
-    addFunction("cos", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::cos));
-    addFunction("sin", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sin));
-    addFunction("tan", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::tan));
-    addFunction("cosh", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::cosh));
-    addFunction("sinh", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sinh));
-    addFunction("tanh", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::tanh));
-    addFunction("round", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::round));
+    addFunction("ceil", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::ceil));
+    addFunction("abs", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::abs));
+    addFunction("floor", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::floor));
+    addFunction("exp", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::exp));
+    addFunction("log", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::log));
+    addFunction("log10", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::log10));
+    addFunction("sqrt", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sqrt));
+    addFunction("acos", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::acos));
+    addFunction("asin", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::asin));
+    addFunction("atan", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::atan));
+    addFunction("atan2", "math",new SteelFunctor2Arg<SteelInterpreter,double,double>(this,&SteelInterpreter::atan2));
+    addFunction("cos", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::cos));
+    addFunction("sin", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sin));
+    addFunction("tan", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::tan));
+    addFunction("cosh", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::cosh));
+    addFunction("sinh", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sinh));
+    addFunction("tanh", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::tanh));
+    addFunction("round", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::round));
 }
 
 
