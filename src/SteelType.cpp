@@ -5,6 +5,7 @@
 #include "SteelException.h"
 #include <cassert>
 #include <iomanip>
+#include <stdlib.h>
 
 SteelType::SteelType()
 {

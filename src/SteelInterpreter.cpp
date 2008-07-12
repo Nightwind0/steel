@@ -9,7 +9,10 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <stdlib.h>
+
 #pragma warning(disable: 4355)
+
 
 const char * SteelInterpreter::kszGlobalNamespace = "_global";
 
@@ -45,15 +48,17 @@ ParameterListItem::ParameterListItem(const std::string &name, const SteelType &v
 
 
 SteelInterpreter::SteelInterpreter()
-:m_print_f(this, &SteelInterpreter::print ),
- m_println_f(this,&SteelInterpreter::println ),
- m_len_f(this, &SteelInterpreter::len ),
- m_real_f(this,&SteelInterpreter::real ),
- m_integer_f(this,&SteelInterpreter::integer ),
- m_boolean_f(this,&SteelInterpreter::boolean ),
- m_substr_f(this,&SteelInterpreter::substr ),
- m_strlen_f(this,&SteelInterpreter::strlen),
- m_is_array_f(this,&SteelInterpreter::is_array)
+:
+    m_import_f(this,&SteelInterpreter::_import),
+    m_print_f(this, &SteelInterpreter::print ),
+    m_println_f(this,&SteelInterpreter::println ),
+    m_len_f(this, &SteelInterpreter::len ),
+    m_real_f(this,&SteelInterpreter::real ),
+    m_integer_f(this,&SteelInterpreter::integer ),
+    m_boolean_f(this,&SteelInterpreter::boolean ),
+    m_substr_f(this,&SteelInterpreter::substr ),
+    m_strlen_f(this,&SteelInterpreter::strlen),
+    m_is_array_f(this,&SteelInterpreter::is_array)
 {
     registerBifs();
     srand(time(0));
@@ -391,6 +396,18 @@ void SteelInterpreter::popScope()
 
 void SteelInterpreter::registerBifs()
 {
+    addFunction("import", &m_import_f);
+    addFunction("print", &m_print_f);
+    addFunction("println",&m_println_f);
+    addFunction("len",&m_len_f);
+    addFunction("real",&m_real_f);
+    addFunction("integer",&m_integer_f);
+    addFunction("boolean",&m_boolean_f);
+    addFunction("substr",&m_substr_f);
+    addFunction("strlen",&m_strlen_f);
+    addFunction("is_array",&m_is_array_f);
+
+
     // Math functions
     addFunction("ceil", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::ceil));
     addFunction("abs", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::abs));
@@ -412,6 +429,12 @@ void SteelInterpreter::registerBifs()
     addFunction("round", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::round));
 }
 
+SteelType SteelInterpreter::_import(const std::string &ns)
+{
+    import(ns);
+
+    return SteelType();
+}
 
 SteelType SteelInterpreter::print(const std::string &str)
 {
