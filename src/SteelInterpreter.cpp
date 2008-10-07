@@ -204,6 +204,10 @@ void SteelInterpreter::clear_imports()
 
 void SteelInterpreter::import(const std::string &ns)
 {
+    for(std::deque<std::string>::iterator it = m_namespace_scope.begin();
+        it != m_namespace_scope.end(); it++)
+        if(*it == ns) return; // Already have it imported
+
     m_namespace_scope.push_back(ns);
 }
 
@@ -257,6 +261,22 @@ void SteelInterpreter::setReturn(const SteelType &var)
 SteelType SteelInterpreter::getReturn() const
 {
     return m_return;
+}
+
+void SteelInterpreter::removeFunctions(const std::string &ns, bool del)
+{
+    FunctionSet &set = m_functions[ns];
+
+    if(del)
+    {
+        for(FunctionSet::iterator it=set.begin();it!=set.end(); it++)
+        {
+            SteelFunctor *pFunc = it->second;
+            delete pFunc;
+        }
+    }
+
+    m_functions.erase(ns);
 }
 
 

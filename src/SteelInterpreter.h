@@ -51,8 +51,8 @@ public:
     // want to delete those.)
     SteelFunctor *removeFunction(const std::string &name, const std::string &ns=kszGlobalNamespace);
 
-    // Removes all functions from a namespace
-    void removeFunctions(const std::string &ns);
+    // Removes all functions with corresponding namespace
+    void removeFunctions(const std::string &ns, bool delete_too = false);
 
     // Call a method with parameters.
     // This method builds the Ast then executes it
