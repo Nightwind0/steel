@@ -402,6 +402,27 @@ AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpret
     return RETURN;
 }
 
+AstImport::AstImport(unsigned int line, 
+                     const std::string &script,
+                     AstExpression *pExp):AstStatement(line,script),m_exp(pExp)
+{
+}
+
+AstImport::~AstImport()
+{
+}
+
+SteelType AstImport::evaluate(SteelInterpreter *pInterpreter)
+{
+    pInterpreter->import(m_exp->evaluate(pInterpreter));
+}
+
+SteelType * AstImport::lvalue(SteelInterpreter *pInterpreter)
+{
+    return NULL;
+}
+
+
 ostream & AstReturnStatement::print(std::ostream &out)
 {
     out << "return ";

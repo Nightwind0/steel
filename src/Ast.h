@@ -390,6 +390,20 @@ private:
 };
 
 
+class AstImport : public AstStatement
+{
+public:
+    AstImport(unsigned int line, 
+              const std::string &script,
+              AstExpression *pExp);
+    virtual ~AstImport();
+    virtual SteelType evaluate(SteelInterpreter *pInterpreter);
+    virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
+private:
+    AstExpression *m_exp;
+};
+
+
 class AstBinOp : public AstExpression
 {
 public:

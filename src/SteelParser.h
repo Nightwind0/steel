@@ -45,6 +45,7 @@ public:
             GT,
             GTE,
             IF,
+            IMPORT,
             INCREMENT,
             INT,
             LT,
@@ -126,7 +127,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 130 "SteelParser.h"
+#line 131 "SteelParser.h"
 
 private:
 
@@ -361,6 +362,7 @@ private:
     AstBase* ReductionRuleHandler0119 ();
     AstBase* ReductionRuleHandler0120 ();
     AstBase* ReductionRuleHandler0121 ();
+    AstBase* ReductionRuleHandler0122 ();
 
 }; // end of class SteelParser
 
@@ -371,4 +373,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token::Type token_
 
 	#endif // STEEL_PARSER_H
 
-#line 375 "SteelParser.h"
+#line 377 "SteelParser.h"

@@ -110,6 +110,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token FINAL
 %token CONSTANT
 %token DO
+%token IMPORT
 
 %prec CORRECT
 %prec NON_ELSE_INCORRECT
@@ -276,6 +277,8 @@ statement %type "AstStatement*"
 			addError(GET_LINE(),"parse error");
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		}
+|
+	IMPORT:imp exp:str { return new AstImport(imp->GetLine(),imp->GetScript(),str); }	
 |
 	exp_statement:exp  { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
 |

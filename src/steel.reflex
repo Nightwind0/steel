@@ -183,7 +183,13 @@ AstBase **token
 		
 		return SteelParser::Token::POP;
 	}
+|
+	(#import)
+	%language.cpp {
+		*token = NULL;
 
+		return SteelParser::Token::IMPORT;
+	}
 |
 	(:)
 	%language.cpp {
