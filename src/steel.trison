@@ -99,10 +99,10 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token ARRAY_IDENTIFIER
 %token FOR
 %token VAR
-%token INT
-%token FLOAT
-%token STRING
-%token BOOLEAN
+%token INT %type "AstInteger*"
+%token FLOAT %type "AstFloat*"
+%token STRING %type "AstString*"
+%token BOOLEAN 
 %token INCREMENT
 %token DECREMENT
 %token CAT
@@ -278,7 +278,7 @@ statement %type "AstStatement*"
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		}
 |
-	IMPORT:imp exp:str { return new AstImport(imp->GetLine(),imp->GetScript(),str); }	
+	IMPORT:imp STRING:str { return new AstImport(imp->GetLine(),imp->GetScript(),str); }	
 |
 	exp_statement:exp  { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
 |

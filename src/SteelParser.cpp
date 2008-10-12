@@ -765,13 +765,13 @@ AstBase* SteelParser::ReductionRuleHandler0016 ()
 #line 766 "SteelParser.cpp"
 }
 
-// rule 17: statement <- IMPORT:imp exp:str    
+// rule 17: statement <- IMPORT:imp STRING:str    
 AstBase* SteelParser::ReductionRuleHandler0017 ()
 {
     assert(0 < m_reduction_rule_token_count);
     AstBase* imp = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
     assert(1 < m_reduction_rule_token_count);
-    AstExpression* str = static_cast< AstExpression* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
+    AstString* str = static_cast< AstString* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 1]);
 
 #line 281 "steel.trison"
  return new AstImport(imp->GetLine(),imp->GetScript(),str); 
@@ -1306,7 +1306,7 @@ AstBase* SteelParser::ReductionRuleHandler0056 ()
 AstBase* SteelParser::ReductionRuleHandler0057 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstBase* i = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstInteger* i = static_cast< AstInteger* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
 #line 504 "steel.trison"
  return i;
@@ -1317,7 +1317,7 @@ AstBase* SteelParser::ReductionRuleHandler0057 ()
 AstBase* SteelParser::ReductionRuleHandler0058 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstBase* f = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstFloat* f = static_cast< AstFloat* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
 #line 506 "steel.trison"
  return f; 
@@ -1328,7 +1328,7 @@ AstBase* SteelParser::ReductionRuleHandler0058 ()
 AstBase* SteelParser::ReductionRuleHandler0059 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstBase* s = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstString* s = static_cast< AstString* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
 #line 508 "steel.trison"
  return s; 
@@ -1883,7 +1883,7 @@ AstBase* SteelParser::ReductionRuleHandler0103 ()
 AstBase* SteelParser::ReductionRuleHandler0104 ()
 {
     assert(0 < m_reduction_rule_token_count);
-    AstBase* i = static_cast< AstBase* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
+    AstInteger* i = static_cast< AstInteger* >(m_token_stack[m_token_stack.size() - m_reduction_rule_token_count + 0]);
 
 #line 653 "steel.trison"
  return i; 
@@ -2149,7 +2149,7 @@ SteelParser::ReductionRule const SteelParser::ms_reduction_rule[] =
     {       Token::statement_list__,  0, &SteelParser::ReductionRuleHandler0014, "rule 14: statement_list <-     "},
     {       Token::statement_list__,  2, &SteelParser::ReductionRuleHandler0015, "rule 15: statement_list <- statement_list statement    "},
     {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0016, "rule 16: statement <- %error    "},
-    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0017, "rule 17: statement <- IMPORT exp    "},
+    {            Token::statement__,  2, &SteelParser::ReductionRuleHandler0017, "rule 17: statement <- IMPORT STRING    "},
     {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0018, "rule 18: statement <- exp_statement    "},
     {            Token::statement__,  1, &SteelParser::ReductionRuleHandler0019, "rule 19: statement <- func_definition    "},
     {            Token::statement__,  3, &SteelParser::ReductionRuleHandler0020, "rule 20: statement <- '{' statement_list '}'     %prec CORRECT"},
@@ -2304,194 +2304,194 @@ SteelParser::State const SteelParser::ms_state[] =
     { 381,    1,    0,    0,    0}, // state   31
     { 382,    1,    0,  383,    1}, // state   32
     { 384,   31,    0,  415,    9}, // state   33
-    { 424,   17,    0,  441,    5}, // state   34
-    {   0,    0,  446,    0,    0}, // state   35
-    {   0,    0,  447,    0,    0}, // state   36
-    { 448,   21,    0,    0,    0}, // state   37
-    {   0,    0,  469,    0,    0}, // state   38
-    {   0,    0,  470,    0,    0}, // state   39
-    { 471,   51,    0,    0,    0}, // state   40
-    {   0,    0,  522,    0,    0}, // state   41
-    {   0,    0,  523,    0,    0}, // state   42
-    { 524,    2,    0,    0,    0}, // state   43
-    {   0,    0,  526,    0,    0}, // state   44
-    {   0,    0,  527,    0,    0}, // state   45
-    {   0,    0,  528,    0,    0}, // state   46
-    { 529,    2,    0,    0,    0}, // state   47
-    { 531,   21,    0,    0,    0}, // state   48
-    {   0,    0,  552,    0,    0}, // state   49
-    { 553,   32,    0,  585,    9}, // state   50
-    { 594,    5,  599,    0,    0}, // state   51
-    { 600,    5,  605,    0,    0}, // state   52
-    { 606,    8,  614,    0,    0}, // state   53
-    { 615,    2,  617,    0,    0}, // state   54
-    { 618,    5,  623,    0,    0}, // state   55
-    {   0,    0,  624,    0,    0}, // state   56
-    { 625,   34,    0,  659,    5}, // state   57
-    {   0,    0,  664,    0,    0}, // state   58
-    {   0,    0,  665,    0,    0}, // state   59
-    {   0,    0,  666,    0,    0}, // state   60
-    {   0,    0,  667,    0,    0}, // state   61
-    { 668,    2,  670,    0,    0}, // state   62
-    {   0,    0,  671,    0,    0}, // state   63
-    { 672,   21,    0,    0,    0}, // state   64
-    {   0,    0,  693,    0,    0}, // state   65
-    { 694,   17,    0,  711,    5}, // state   66
-    { 716,    1,    0,    0,    0}, // state   67
-    { 717,    1,    0,    0,    0}, // state   68
-    {   0,    0,  718,    0,    0}, // state   69
-    { 719,   18,    0,  737,    6}, // state   70
-    { 743,    1,  744,    0,    0}, // state   71
-    { 745,    2,  747,    0,    0}, // state   72
-    { 748,    2,  750,    0,    0}, // state   73
-    { 751,    5,  756,    0,    0}, // state   74
-    { 757,    2,  759,    0,    0}, // state   75
-    { 760,    5,  765,    0,    0}, // state   76
-    { 766,    2,  768,    0,    0}, // state   77
-    { 769,    5,  774,    0,    0}, // state   78
-    { 775,    2,  777,    0,    0}, // state   79
-    { 778,    5,  783,    0,    0}, // state   80
-    { 784,    2,    0,    0,    0}, // state   81
-    { 786,    1,    0,    0,    0}, // state   82
-    { 787,    2,    0,    0,    0}, // state   83
-    { 789,   20,  809,    0,    0}, // state   84
-    {   0,    0,  810,    0,    0}, // state   85
-    { 811,   17,    0,  828,    5}, // state   86
-    { 833,   17,    0,  850,    5}, // state   87
-    { 855,   51,    0,  906,    5}, // state   88
-    { 911,   51,    0,  962,    5}, // state   89
-    { 967,   51,    0, 1018,    5}, // state   90
-    {1023,   17,    0, 1040,    5}, // state   91
-    {1045,   17,    0, 1062,    5}, // state   92
-    {1067,   17,    0, 1084,    5}, // state   93
-    {1089,   17,    0, 1106,    5}, // state   94
-    {1111,   17,    0, 1128,    5}, // state   95
-    {1133,   17,    0, 1150,    5}, // state   96
-    {1155,   17,    0, 1172,    5}, // state   97
-    {1177,   17,    0, 1194,    5}, // state   98
-    {1199,   17,    0, 1216,    5}, // state   99
-    {1221,   17,    0, 1238,    5}, // state  100
-    {1243,   17,    0, 1260,    5}, // state  101
-    {1265,   17,    0, 1282,    5}, // state  102
-    {   0,    0, 1287,    0,    0}, // state  103
-    {   0,    0, 1288,    0,    0}, // state  104
-    {1289,   17,    0, 1306,    5}, // state  105
-    {1311,    1, 1312,    0,    0}, // state  106
-    {1313,   51,    0, 1364,    6}, // state  107
-    {1370,    1,    0,    0,    0}, // state  108
-    {   0,    0, 1371,    0,    0}, // state  109
-    {   0,    0, 1372,    0,    0}, // state  110
-    {   0,    0, 1373,    0,    0}, // state  111
-    {1374,    3,    0,    0,    0}, // state  112
-    {1377,   21,    0,    0,    0}, // state  113
-    {   0,    0, 1398,    0,    0}, // state  114
-    {1399,    3, 1402,    0,    0}, // state  115
-    {1403,   21,    0,    0,    0}, // state  116
-    {1424,    2, 1426, 1427,    2}, // state  117
-    {1429,    5,    0, 1434,    2}, // state  118
-    {1436,    2, 1438,    0,    0}, // state  119
-    {1439,   18,    0, 1457,    6}, // state  120
-    {1463,   17,    0, 1480,    5}, // state  121
-    {1485,   17,    0, 1502,    5}, // state  122
-    {1507,   17,    0, 1524,    5}, // state  123
-    {1529,    1,    0,    0,    0}, // state  124
-    {1530,    1,    0,    0,    0}, // state  125
-    {1531,   17,    0, 1548,    5}, // state  126
-    {   0,    0, 1553,    0,    0}, // state  127
-    {1554,    1,    0,    0,    0}, // state  128
-    {1555,   20, 1575,    0,    0}, // state  129
-    {1576,   21,    0,    0,    0}, // state  130
-    {1597,    9, 1606,    0,    0}, // state  131
-    {1607,    9, 1616,    0,    0}, // state  132
-    {1617,    6, 1623,    0,    0}, // state  133
-    {1624,    6, 1630,    0,    0}, // state  134
-    {1631,    4, 1635,    0,    0}, // state  135
-    {1636,    6, 1642,    0,    0}, // state  136
-    {1643,    4, 1647,    0,    0}, // state  137
-    {1648,   11, 1659,    0,    0}, // state  138
-    {1660,   11, 1671,    0,    0}, // state  139
-    {1672,   15, 1687,    0,    0}, // state  140
-    {1688,   15, 1703,    0,    0}, // state  141
-    {1704,   11, 1715,    0,    0}, // state  142
-    {1716,   11, 1727,    0,    0}, // state  143
-    {1728,   17, 1745,    0,    0}, // state  144
-    {1746,   18, 1764,    0,    0}, // state  145
-    {1765,    9, 1774,    0,    0}, // state  146
-    {   0,    0, 1775,    0,    0}, // state  147
-    {   0,    0, 1776,    0,    0}, // state  148
-    {1777,   20, 1797,    0,    0}, // state  149
-    {1798,    2, 1800,    0,    0}, // state  150
-    {   0,    0, 1801,    0,    0}, // state  151
-    {1802,   31,    0, 1833,    9}, // state  152
-    {1842,   31,    0, 1873,    9}, // state  153
-    {1882,   31,    0, 1913,    9}, // state  154
-    {1922,   31,    0, 1953,    9}, // state  155
-    {1962,    3,    0,    0,    0}, // state  156
-    {   0,    0, 1965,    0,    0}, // state  157
-    {1966,    1,    0,    0,    0}, // state  158
-    {1967,    3,    0,    0,    0}, // state  159
-    {1970,    2, 1972,    0,    0}, // state  160
-    {1973,   18,    0, 1991,    5}, // state  161
-    {1996,   20, 2016,    0,    0}, // state  162
-    {2017,   20, 2037,    0,    0}, // state  163
-    {2038,   21,    0,    0,    0}, // state  164
-    {2059,    2, 2061, 2062,    2}, // state  165
-    {2064,    5,    0, 2069,    2}, // state  166
-    {2071,   20, 2091,    0,    0}, // state  167
-    {2092,   17,    0, 2109,    5}, // state  168
-    {   0,    0, 2114,    0,    0}, // state  169
-    {   0,    0, 2115,    0,    0}, // state  170
-    {2116,   17,    0, 2133,    5}, // state  171
-    {   0,    0, 2138,    0,    0}, // state  172
-    {   0,    0, 2139,    0,    0}, // state  173
-    {2140,    1, 2141,    0,    0}, // state  174
-    {2142,    1, 2143,    0,    0}, // state  175
-    {   0,    0, 2144,    0,    0}, // state  176
-    {2145,    1,    0,    0,    0}, // state  177
-    {2146,    2,    0, 2148,    1}, // state  178
-    {2149,    1,    0,    0,    0}, // state  179
-    {2150,    1,    0,    0,    0}, // state  180
-    {2151,    2, 2153,    0,    0}, // state  181
-    {2154,   31,    0, 2185,    9}, // state  182
-    {2194,   21, 2215,    0,    0}, // state  183
-    {   0,    0, 2216,    0,    0}, // state  184
-    {2217,    3,    0,    0,    0}, // state  185
-    {2220,    1,    0,    0,    0}, // state  186
-    {2221,    3,    0,    0,    0}, // state  187
-    {2224,    3, 2227,    0,    0}, // state  188
-    {2228,   21,    0,    0,    0}, // state  189
-    {2249,   20, 2269,    0,    0}, // state  190
-    {2270,   31,    0, 2301,    9}, // state  191
-    {2310,   31,    0, 2341,    9}, // state  192
-    {   0,    0, 2350, 2351,    1}, // state  193
-    {   0,    0, 2352,    0,    0}, // state  194
-    {   0,    0, 2353, 2354,    1}, // state  195
-    {   0,    0, 2355, 2356,    1}, // state  196
-    {   0,    0, 2357,    0,    0}, // state  197
-    {2358,   31,    0, 2389,    9}, // state  198
-    {2398,    1,    0,    0,    0}, // state  199
-    {2399,    1,    0,    0,    0}, // state  200
-    {2400,    1,    0,    0,    0}, // state  201
-    {   0,    0, 2401,    0,    0}, // state  202
-    {   0,    0, 2402,    0,    0}, // state  203
-    {   0,    0, 2403,    0,    0}, // state  204
-    {   0,    0, 2404,    0,    0}, // state  205
-    {2405,   32,    0, 2437,    9}, // state  206
-    {2446,   32,    0, 2478,    9}, // state  207
-    {2487,   32,    0, 2519,    9}, // state  208
-    {   0,    0, 2528,    0,    0}, // state  209
-    {   0,    0, 2529, 2530,    1}, // state  210
-    {   0,    0, 2531, 2532,    1}, // state  211
-    {   0,    0, 2533, 2534,    1}, // state  212
-    {   0,    0, 2535,    0,    0}, // state  213
-    {   0,    0, 2536,    0,    0}, // state  214
-    {   0,    0, 2537,    0,    0}, // state  215
-    {2538,   32,    0, 2570,    9}, // state  216
-    {2579,   32,    0, 2611,    9}, // state  217
-    {2620,   32,    0, 2652,    9}, // state  218
-    {   0,    0, 2661,    0,    0}, // state  219
-    {   0,    0, 2662,    0,    0}, // state  220
-    {   0,    0, 2663,    0,    0}  // state  221
+    { 424,    1,    0,    0,    0}, // state   34
+    {   0,    0,  425,    0,    0}, // state   35
+    {   0,    0,  426,    0,    0}, // state   36
+    { 427,   21,    0,    0,    0}, // state   37
+    {   0,    0,  448,    0,    0}, // state   38
+    {   0,    0,  449,    0,    0}, // state   39
+    { 450,   51,    0,    0,    0}, // state   40
+    {   0,    0,  501,    0,    0}, // state   41
+    {   0,    0,  502,    0,    0}, // state   42
+    { 503,    2,    0,    0,    0}, // state   43
+    {   0,    0,  505,    0,    0}, // state   44
+    {   0,    0,  506,    0,    0}, // state   45
+    {   0,    0,  507,    0,    0}, // state   46
+    { 508,    2,    0,    0,    0}, // state   47
+    { 510,   21,    0,    0,    0}, // state   48
+    {   0,    0,  531,    0,    0}, // state   49
+    { 532,   32,    0,  564,    9}, // state   50
+    { 573,    5,  578,    0,    0}, // state   51
+    { 579,    5,  584,    0,    0}, // state   52
+    { 585,    8,  593,    0,    0}, // state   53
+    { 594,    2,  596,    0,    0}, // state   54
+    { 597,    5,  602,    0,    0}, // state   55
+    {   0,    0,  603,    0,    0}, // state   56
+    { 604,   34,    0,  638,    5}, // state   57
+    {   0,    0,  643,    0,    0}, // state   58
+    {   0,    0,  644,    0,    0}, // state   59
+    {   0,    0,  645,    0,    0}, // state   60
+    {   0,    0,  646,    0,    0}, // state   61
+    { 647,    2,  649,    0,    0}, // state   62
+    {   0,    0,  650,    0,    0}, // state   63
+    { 651,   21,    0,    0,    0}, // state   64
+    {   0,    0,  672,    0,    0}, // state   65
+    { 673,   17,    0,  690,    5}, // state   66
+    { 695,    1,    0,    0,    0}, // state   67
+    { 696,    1,    0,    0,    0}, // state   68
+    {   0,    0,  697,    0,    0}, // state   69
+    { 698,   18,    0,  716,    6}, // state   70
+    { 722,    1,  723,    0,    0}, // state   71
+    { 724,    2,  726,    0,    0}, // state   72
+    { 727,    2,  729,    0,    0}, // state   73
+    { 730,    5,  735,    0,    0}, // state   74
+    { 736,    2,  738,    0,    0}, // state   75
+    { 739,    5,  744,    0,    0}, // state   76
+    { 745,    2,  747,    0,    0}, // state   77
+    { 748,    5,  753,    0,    0}, // state   78
+    { 754,    2,  756,    0,    0}, // state   79
+    { 757,    5,  762,    0,    0}, // state   80
+    { 763,    2,    0,    0,    0}, // state   81
+    { 765,    1,    0,    0,    0}, // state   82
+    { 766,    2,    0,    0,    0}, // state   83
+    {   0,    0,  768,    0,    0}, // state   84
+    {   0,    0,  769,    0,    0}, // state   85
+    { 770,   17,    0,  787,    5}, // state   86
+    { 792,   17,    0,  809,    5}, // state   87
+    { 814,   51,    0,  865,    5}, // state   88
+    { 870,   51,    0,  921,    5}, // state   89
+    { 926,   51,    0,  977,    5}, // state   90
+    { 982,   17,    0,  999,    5}, // state   91
+    {1004,   17,    0, 1021,    5}, // state   92
+    {1026,   17,    0, 1043,    5}, // state   93
+    {1048,   17,    0, 1065,    5}, // state   94
+    {1070,   17,    0, 1087,    5}, // state   95
+    {1092,   17,    0, 1109,    5}, // state   96
+    {1114,   17,    0, 1131,    5}, // state   97
+    {1136,   17,    0, 1153,    5}, // state   98
+    {1158,   17,    0, 1175,    5}, // state   99
+    {1180,   17,    0, 1197,    5}, // state  100
+    {1202,   17,    0, 1219,    5}, // state  101
+    {1224,   17,    0, 1241,    5}, // state  102
+    {   0,    0, 1246,    0,    0}, // state  103
+    {   0,    0, 1247,    0,    0}, // state  104
+    {1248,   17,    0, 1265,    5}, // state  105
+    {1270,    1, 1271,    0,    0}, // state  106
+    {1272,   51,    0, 1323,    6}, // state  107
+    {1329,    1,    0,    0,    0}, // state  108
+    {   0,    0, 1330,    0,    0}, // state  109
+    {   0,    0, 1331,    0,    0}, // state  110
+    {   0,    0, 1332,    0,    0}, // state  111
+    {1333,    3,    0,    0,    0}, // state  112
+    {1336,   21,    0,    0,    0}, // state  113
+    {   0,    0, 1357,    0,    0}, // state  114
+    {1358,    3, 1361,    0,    0}, // state  115
+    {1362,   21,    0,    0,    0}, // state  116
+    {1383,    2, 1385, 1386,    2}, // state  117
+    {1388,    5,    0, 1393,    2}, // state  118
+    {1395,    2, 1397,    0,    0}, // state  119
+    {1398,   18,    0, 1416,    6}, // state  120
+    {1422,   17,    0, 1439,    5}, // state  121
+    {1444,   17,    0, 1461,    5}, // state  122
+    {1466,   17,    0, 1483,    5}, // state  123
+    {1488,    1,    0,    0,    0}, // state  124
+    {1489,    1,    0,    0,    0}, // state  125
+    {1490,   17,    0, 1507,    5}, // state  126
+    {   0,    0, 1512,    0,    0}, // state  127
+    {1513,    1,    0,    0,    0}, // state  128
+    {1514,   20, 1534,    0,    0}, // state  129
+    {1535,   21,    0,    0,    0}, // state  130
+    {1556,    9, 1565,    0,    0}, // state  131
+    {1566,    9, 1575,    0,    0}, // state  132
+    {1576,    6, 1582,    0,    0}, // state  133
+    {1583,    6, 1589,    0,    0}, // state  134
+    {1590,    4, 1594,    0,    0}, // state  135
+    {1595,    6, 1601,    0,    0}, // state  136
+    {1602,    4, 1606,    0,    0}, // state  137
+    {1607,   11, 1618,    0,    0}, // state  138
+    {1619,   11, 1630,    0,    0}, // state  139
+    {1631,   15, 1646,    0,    0}, // state  140
+    {1647,   15, 1662,    0,    0}, // state  141
+    {1663,   11, 1674,    0,    0}, // state  142
+    {1675,   11, 1686,    0,    0}, // state  143
+    {1687,   17, 1704,    0,    0}, // state  144
+    {1705,   18, 1723,    0,    0}, // state  145
+    {1724,    9, 1733,    0,    0}, // state  146
+    {   0,    0, 1734,    0,    0}, // state  147
+    {   0,    0, 1735,    0,    0}, // state  148
+    {1736,   20, 1756,    0,    0}, // state  149
+    {1757,    2, 1759,    0,    0}, // state  150
+    {   0,    0, 1760,    0,    0}, // state  151
+    {1761,   31,    0, 1792,    9}, // state  152
+    {1801,   31,    0, 1832,    9}, // state  153
+    {1841,   31,    0, 1872,    9}, // state  154
+    {1881,   31,    0, 1912,    9}, // state  155
+    {1921,    3,    0,    0,    0}, // state  156
+    {   0,    0, 1924,    0,    0}, // state  157
+    {1925,    1,    0,    0,    0}, // state  158
+    {1926,    3,    0,    0,    0}, // state  159
+    {1929,    2, 1931,    0,    0}, // state  160
+    {1932,   18,    0, 1950,    5}, // state  161
+    {1955,   20, 1975,    0,    0}, // state  162
+    {1976,   20, 1996,    0,    0}, // state  163
+    {1997,   21,    0,    0,    0}, // state  164
+    {2018,    2, 2020, 2021,    2}, // state  165
+    {2023,    5,    0, 2028,    2}, // state  166
+    {2030,   20, 2050,    0,    0}, // state  167
+    {2051,   17,    0, 2068,    5}, // state  168
+    {   0,    0, 2073,    0,    0}, // state  169
+    {   0,    0, 2074,    0,    0}, // state  170
+    {2075,   17,    0, 2092,    5}, // state  171
+    {   0,    0, 2097,    0,    0}, // state  172
+    {   0,    0, 2098,    0,    0}, // state  173
+    {2099,    1, 2100,    0,    0}, // state  174
+    {2101,    1, 2102,    0,    0}, // state  175
+    {   0,    0, 2103,    0,    0}, // state  176
+    {2104,    1,    0,    0,    0}, // state  177
+    {2105,    2,    0, 2107,    1}, // state  178
+    {2108,    1,    0,    0,    0}, // state  179
+    {2109,    1,    0,    0,    0}, // state  180
+    {2110,    2, 2112,    0,    0}, // state  181
+    {2113,   31,    0, 2144,    9}, // state  182
+    {2153,   21, 2174,    0,    0}, // state  183
+    {   0,    0, 2175,    0,    0}, // state  184
+    {2176,    3,    0,    0,    0}, // state  185
+    {2179,    1,    0,    0,    0}, // state  186
+    {2180,    3,    0,    0,    0}, // state  187
+    {2183,    3, 2186,    0,    0}, // state  188
+    {2187,   21,    0,    0,    0}, // state  189
+    {2208,   20, 2228,    0,    0}, // state  190
+    {2229,   31,    0, 2260,    9}, // state  191
+    {2269,   31,    0, 2300,    9}, // state  192
+    {   0,    0, 2309, 2310,    1}, // state  193
+    {   0,    0, 2311,    0,    0}, // state  194
+    {   0,    0, 2312, 2313,    1}, // state  195
+    {   0,    0, 2314, 2315,    1}, // state  196
+    {   0,    0, 2316,    0,    0}, // state  197
+    {2317,   31,    0, 2348,    9}, // state  198
+    {2357,    1,    0,    0,    0}, // state  199
+    {2358,    1,    0,    0,    0}, // state  200
+    {2359,    1,    0,    0,    0}, // state  201
+    {   0,    0, 2360,    0,    0}, // state  202
+    {   0,    0, 2361,    0,    0}, // state  203
+    {   0,    0, 2362,    0,    0}, // state  204
+    {   0,    0, 2363,    0,    0}, // state  205
+    {2364,   32,    0, 2396,    9}, // state  206
+    {2405,   32,    0, 2437,    9}, // state  207
+    {2446,   32,    0, 2478,    9}, // state  208
+    {   0,    0, 2487,    0,    0}, // state  209
+    {   0,    0, 2488, 2489,    1}, // state  210
+    {   0,    0, 2490, 2491,    1}, // state  211
+    {   0,    0, 2492, 2493,    1}, // state  212
+    {   0,    0, 2494,    0,    0}, // state  213
+    {   0,    0, 2495,    0,    0}, // state  214
+    {   0,    0, 2496,    0,    0}, // state  215
+    {2497,   32,    0, 2529,    9}, // state  216
+    {2538,   32,    0, 2570,    9}, // state  217
+    {2579,   32,    0, 2611,    9}, // state  218
+    {   0,    0, 2620,    0,    0}, // state  219
+    {   0,    0, 2621,    0,    0}, // state  220
+    {   0,    0, 2622,    0,    0}  // state  221
 
 };
 
@@ -3124,29 +3124,7 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // state   34
 // ///////////////////////////////////////////////////////////////////////////
     // terminal transitions
-    {                 Token::ERROR_, {        TA_SHIFT_AND_PUSH_STATE,   47}},
-    {              Token::Type('('), {        TA_SHIFT_AND_PUSH_STATE,    6}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,    8}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,    9}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   10}},
-    {                    Token::NOT, {        TA_SHIFT_AND_PUSH_STATE,   11}},
-    {        Token::FUNC_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   18}},
-    {         Token::VAR_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   19}},
-    {       Token::ARRAY_IDENTIFIER, {        TA_SHIFT_AND_PUSH_STATE,   20}},
-    {                    Token::INT, {        TA_SHIFT_AND_PUSH_STATE,   23}},
-    {                  Token::FLOAT, {        TA_SHIFT_AND_PUSH_STATE,   24}},
-    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   25}},
-    {                Token::BOOLEAN, {        TA_SHIFT_AND_PUSH_STATE,   26}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,   27}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,   28}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,   29}},
-    {                    Token::POP, {        TA_SHIFT_AND_PUSH_STATE,   30}},
-    // nonterminal transitions
-    {                  Token::exp__, {                  TA_PUSH_STATE,   84}},
-    {       Token::var_identifier__, {                  TA_PUSH_STATE,   39}},
-    {      Token::func_identifier__, {                  TA_PUSH_STATE,   40}},
-    {     Token::array_identifier__, {                  TA_PUSH_STATE,   41}},
-    {                 Token::call__, {                  TA_PUSH_STATE,   42}},
+    {                 Token::STRING, {        TA_SHIFT_AND_PUSH_STATE,   84}},
 
 // ///////////////////////////////////////////////////////////////////////////
 // state   35
@@ -3759,27 +3737,6 @@ SteelParser::StateTransition const SteelParser::ms_state_transition[] =
 // ///////////////////////////////////////////////////////////////////////////
 // state   84
 // ///////////////////////////////////////////////////////////////////////////
-    // terminal transitions
-    {              Token::Type('='), {        TA_SHIFT_AND_PUSH_STATE,   86}},
-    {              Token::Type('['), {        TA_SHIFT_AND_PUSH_STATE,   87}},
-    {              Token::Type('-'), {        TA_SHIFT_AND_PUSH_STATE,   88}},
-    {              Token::Type('+'), {        TA_SHIFT_AND_PUSH_STATE,   89}},
-    {              Token::Type('*'), {        TA_SHIFT_AND_PUSH_STATE,   90}},
-    {              Token::Type('/'), {        TA_SHIFT_AND_PUSH_STATE,   91}},
-    {              Token::Type('^'), {        TA_SHIFT_AND_PUSH_STATE,   92}},
-    {              Token::Type('%'), {        TA_SHIFT_AND_PUSH_STATE,   93}},
-    {                      Token::D, {        TA_SHIFT_AND_PUSH_STATE,   94}},
-    {                     Token::GT, {        TA_SHIFT_AND_PUSH_STATE,   95}},
-    {                     Token::LT, {        TA_SHIFT_AND_PUSH_STATE,   96}},
-    {                     Token::EQ, {        TA_SHIFT_AND_PUSH_STATE,   97}},
-    {                     Token::NE, {        TA_SHIFT_AND_PUSH_STATE,   98}},
-    {                    Token::GTE, {        TA_SHIFT_AND_PUSH_STATE,   99}},
-    {                    Token::LTE, {        TA_SHIFT_AND_PUSH_STATE,  100}},
-    {                    Token::AND, {        TA_SHIFT_AND_PUSH_STATE,  101}},
-    {                     Token::OR, {        TA_SHIFT_AND_PUSH_STATE,  102}},
-    {              Token::INCREMENT, {        TA_SHIFT_AND_PUSH_STATE,  103}},
-    {              Token::DECREMENT, {        TA_SHIFT_AND_PUSH_STATE,  104}},
-    {                    Token::CAT, {        TA_SHIFT_AND_PUSH_STATE,  105}},
     // default transition
     {               Token::DEFAULT_, {           TA_REDUCE_USING_RULE,   17}},
 
@@ -6438,5 +6395,5 @@ SteelParser::Token::Type SteelParser::Scan ()
 	return m_scanner->Scan(&m_lookahead_token);
 }
 
-#line 6442 "SteelParser.cpp"
+#line 6399 "SteelParser.cpp"
 

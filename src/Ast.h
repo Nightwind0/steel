@@ -243,6 +243,7 @@ public:
     virtual ostream & print(std::ostream &out);
     void addChar(const char c);
     void addString(const std::string &str);
+    std::string getString() const { return m_value; }
     virtual SteelType evaluate(SteelInterpreter *pInterpreter);
     virtual SteelType * lvalue(SteelInterpreter *pInterpreter){ return NULL; }
 private:
@@ -395,12 +396,12 @@ class AstImport : public AstStatement
 public:
     AstImport(unsigned int line, 
               const std::string &script,
-              AstExpression *pExp);
+              AstString *pStr);
     virtual ~AstImport();
     virtual SteelType evaluate(SteelInterpreter *pInterpreter);
     virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
 private:
-    AstExpression *m_exp;
+    std::string m_ns;
 };
 
 

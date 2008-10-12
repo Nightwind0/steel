@@ -404,7 +404,7 @@ AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpret
 
 AstImport::AstImport(unsigned int line, 
                      const std::string &script,
-                     AstExpression *pExp):AstStatement(line,script),m_exp(pExp)
+                     AstString *pStr):AstStatement(line,script),m_ns(pStr->getString())
 {
 }
 
@@ -414,7 +414,7 @@ AstImport::~AstImport()
 
 SteelType AstImport::evaluate(SteelInterpreter *pInterpreter)
 {
-    pInterpreter->import(m_exp->evaluate(pInterpreter));
+    pInterpreter->import(m_ns);
 }
 
 SteelType * AstImport::lvalue(SteelInterpreter *pInterpreter)
