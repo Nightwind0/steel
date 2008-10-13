@@ -398,8 +398,8 @@ public:
               const std::string &script,
               AstString *pStr);
     virtual ~AstImport();
-    virtual SteelType evaluate(SteelInterpreter *pInterpreter);
-    virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
+    virtual ostream & print(ostream &out);
+    virtual eStopType execute(SteelInterpreter *pInterpreter);
 private:
     std::string m_ns;
 };

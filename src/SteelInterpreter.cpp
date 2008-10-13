@@ -49,7 +49,6 @@ ParameterListItem::ParameterListItem(const std::string &name, const SteelType &v
 
 SteelInterpreter::SteelInterpreter()
 :
-    m_import_f(this,&SteelInterpreter::_import),
     m_print_f(this, &SteelInterpreter::print ),
     m_println_f(this,&SteelInterpreter::println ),
     m_len_f(this, &SteelInterpreter::len ),
@@ -107,10 +106,14 @@ SteelFunctor *SteelInterpreter::removeFunction(const std::string &name, const st
 }
 
 AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
-                                          const std::string &script)
+                                          const std::string &script,
+                                          bool debugparser)
 {
     SteelParser parser;
     parser.setBuffer(script.c_str(),script_name);
+
+    if(debugparser) parser.SetDebugSpewLevel(2);
+
     if(parser.Parse() != SteelParser::PRC_SUCCESS)
     {
         if(parser.hadError())
@@ -416,7 +419,6 @@ void SteelInterpreter::popScope()
 
 void SteelInterpreter::registerBifs()
 {
-    addFunction("import", &m_import_f);
     addFunction("print", &m_print_f);
     addFunction("println",&m_println_f);
     addFunction("len",&m_len_f);
@@ -449,12 +451,7 @@ void SteelInterpreter::registerBifs()
     addFunction("round", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::round));
 }
 
-SteelType SteelInterpreter::_import(const std::string &ns)
-{
-    import(ns);
 
-    return SteelType();
-}
 
 SteelType SteelInterpreter::print(const std::string &str)
 {

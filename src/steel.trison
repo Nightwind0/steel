@@ -278,7 +278,7 @@ statement %type "AstStatement*"
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		}
 |
-	IMPORT:imp STRING:str { return new AstImport(imp->GetLine(),imp->GetScript(),str); }	
+	IMPORT:imp  STRING:str  ';' { return new AstImport(GET_LINE(),GET_SCRIPT(),str); }	
 |
 	exp_statement:exp  { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
 |

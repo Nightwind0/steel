@@ -1,4 +1,4 @@
-import("math");
+#import "math";
 println ( 2 ^ 8 );
 println ( cos(5) );
 println ( exp(log(2)/10) );

@@ -412,15 +412,17 @@ AstImport::~AstImport()
 {
 }
 
-SteelType AstImport::evaluate(SteelInterpreter *pInterpreter)
+std::ostream & AstImport::print(ostream &out)
+{
+    out
+ << "#include \"" << m_ns << "\";\n";
+}
+AstStatement::eStopType AstImport::execute(SteelInterpreter *pInterpreter)
 {
     pInterpreter->import(m_ns);
+    return COMPLETED;
 }
 
-SteelType * AstImport::lvalue(SteelInterpreter *pInterpreter)
-{
-    return NULL;
-}
 
 
 ostream & AstReturnStatement::print(std::ostream &out)

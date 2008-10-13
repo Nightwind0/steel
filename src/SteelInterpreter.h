@@ -64,7 +64,8 @@ public:
     // around, which can be run over and over, and the deletion of it is
     // up to the user of SteelInterpreter
     AstScript * prebuildAst(const std::string &script_name,
-                            const std::string &script);
+                            const std::string &script,
+                            bool debugparser=false);
 
     // After using prebuildAst, you can later run it using runAst
     SteelType runAst(AstScript *pAst);
@@ -114,8 +115,6 @@ private:
     SteelType m_return;
 private:
     // Bifs
-    SteelType _import  (const std::string &ns);
-    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_import_f;
     SteelType print   (const std::string &str);
     SteelFunctor1Arg<SteelInterpreter,const std::string &> m_print_f;
     SteelType println (const std::string &str);
