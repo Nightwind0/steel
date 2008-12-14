@@ -22,20 +22,22 @@ public:
     SteelType(const SteelType &);
     ~SteelType();
 
+    typedef void * Handle;
+
     operator int () const;
     operator unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
     operator double () const;
     operator std::string () const;
     operator bool () const;
     operator std::vector<SteelType> () const;
-    operator void* () const;
+    operator Handle () const;
 
     void set(int i);
     void set(double d);
     void set(bool b);
     void set(const std::string &);
     void set(const std::vector<SteelType> &);
-    void set(void *p);
+    void set(Handle p);
 
     // Array stuff
     bool isArray() const { return m_storage == ARRAY; }

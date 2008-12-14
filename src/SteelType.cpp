@@ -57,7 +57,7 @@ SteelType::operator int () const
     return 0;
 }
 
-SteelType::operator void*() const
+SteelType::operator Handle() const
 {
     if(m_storage != SteelType::HANDLE)
         throw TypeMismatch();
@@ -158,7 +158,7 @@ void SteelType::set(const std::string &str)
     m_storage = SteelType::STRING;
 }
 
-void SteelType::set(void* h)
+void SteelType::set(Handle h)
 {
     m_value.h = h;
     m_storage = SteelType::HANDLE;
