@@ -61,11 +61,12 @@ SteelInterpreter::SteelInterpreter()
 {
     registerBifs();
     srand(time(0));
+
 }
 
 SteelInterpreter::~SteelInterpreter()
 {
-       
+
 }
 
 
