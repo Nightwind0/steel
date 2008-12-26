@@ -217,6 +217,37 @@ void SteelInterpreter::import(const std::string &ns)
 
 SteelType SteelInterpreter::call(const std::string &name, const std::vector<SteelType> &pList)
 {
+    int scope = name.find("::");
+
+    if(scope != std::string::npos)
+    {
+        // there's a scope!
+        std::string scopestr = name.substr(0,scope);
+        
+        std::map<std::string,FunctionSet>::iterator it = m_functions.find(scopestr);
+
+        if(it != m_functions.end())
+        {
+            FunctionSet &set = it->second;
+            std::string func_name = name.substr(scope+2);
+           
+            std::map<std::string,SteelFunctor*>::iterator iter = set.find( func_name );
+
+            if( iter != set.end() )
+            {
+                SteelFunctor * pFunctor = iter->second;
+                assert ( pFunctor != NULL );
+
+                return pFunctor->Call(this,pList);
+            }
+            
+        }
+        else
+        {
+            // TODO: Should throw a UnknownNamespace here...
+        }
+        throw UnknownIdentifier();
+    }
 
     for(std::deque<std::string>::reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
         it++)
@@ -450,6 +481,7 @@ void SteelInterpreter::registerBifs()
     addFunction("sinh", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::sinh));
     addFunction("tanh", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::tanh));
     addFunction("round", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::round));
+    addFunction("pow", "math", new SteelFunctor2Arg<SteelInterpreter,double,double>(this,&SteelInterpreter::pow));
 }
 
 
@@ -681,4 +713,12 @@ SteelType SteelInterpreter::round (double f)
     var.set(static_cast<double>(floor(f+0.5)));
 
     return var;    
+}
+
+SteelType SteelInterpreter::pow (double f, double g)
+{
+    SteelType var;
+    var.set(static_cast<double>(::pow(f,g)));
+
+    return var;
 }

@@ -153,6 +153,7 @@ private:
     SteelType sinh (double f);
     SteelType tanh (double f);
     SteelType round(double f);
+    SteelType pow  (double f, double g);
 };
 
 
