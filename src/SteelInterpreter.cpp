@@ -243,9 +243,10 @@ SteelType SteelInterpreter::call(const std::string &name, const std::vector<Stee
 
 SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList)
 {
+    static std::string unspecifiedNS(kszUnspecifiedNamespace);
     // If this call has no namespace, we have to search for it using this
     // version...
-    if(ns == kszUnspecifiedNamespace)
+    if(ns == unspecifiedNS)
     {
         return call(name,pList);
     }
