@@ -73,7 +73,19 @@ SteelInterpreter::~SteelInterpreter()
 void SteelInterpreter::addFunction(const std::string &name,
                                    SteelFunctor *pFunc)
 {
-    addFunction(name,kszGlobalNamespace,pFunc);
+    int scope = name.find("::");
+    if(scope != std::string::npos)
+    {
+        // There's a scope
+        std::string scope_name = name.substr(0,scope);
+        std::string func_name = name.substr(scope+2);
+        addFunction(func_name,scope_name,pFunc);
+    }
+    else
+    {
+        // global namespace
+        addFunction(name,kszGlobalNamespace,pFunc);
+    }
 }
 
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
