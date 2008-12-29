@@ -94,7 +94,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token IF
 %token ELSE
 %token FUNCTION
-%token FUNC_IDENTIFIER
+%token BAREWORD %type "AstBareword*"
 %token VAR_IDENTIFIER
 %token ARRAY_IDENTIFIER
 %token FOR
@@ -111,6 +111,7 @@ SteelParser::Token::Type SteelParser::Scan ()
 %token CONSTANT
 %token DO
 %token IMPORT
+%token SCOPE
 
 %prec CORRECT
 %prec NON_ELSE_INCORRECT
@@ -147,7 +148,7 @@ root %type "AstScript*"
 
 func_definition %type "AstFunctionDefinition*"
 :
-	FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
+	FUNCTION func_identifier:id '(' param_definition:params ')' '{' statement_list:stmts '}'
 				{
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -157,7 +158,7 @@ func_definition %type "AstFunctionDefinition*"
 									false);
 				}
 |
-	FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'
+	FUNCTION func_identifier:id '(' %error ')' '{' statement_list:stmts '}'
 				{
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
@@ -169,7 +170,7 @@ func_definition %type "AstFunctionDefinition*"
 									false);
 				}
 |
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'
+	FINAL FUNCTION func_identifier:id '(' %error ')' '{' statement_list:stmts '}'
 				{
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
@@ -208,7 +209,7 @@ func_definition %type "AstFunctionDefinition*"
 				}
 
 |
-	FINAL FUNCTION FUNC_IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
+	FINAL FUNCTION func_identifier:id '(' param_definition:params ')' '{' statement_list:stmts '}'
 				{
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -660,7 +661,16 @@ var_identifier %type "AstVarIdentifier *"
 
 func_identifier %type "AstFuncIdentifier*"
 :
-	FUNC_IDENTIFIER:id { return id; }
+	BAREWORD:id {
+				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),id->GetWord()); 
+				return pId; 
+				}
+|
+	BAREWORD:ns SCOPE BAREWORD:func 
+				{
+				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),func->GetWord(),ns->GetWord());
+				return pId;
+				}
 ;
 
 array_identifier %type "AstArrayIdentifier*"

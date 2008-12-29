@@ -893,8 +893,8 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
     SteelType ret;
     try{
         if(m_pParams)
-            ret = pInterpreter->call( m_pId->getValue(), m_pParams->getParamList(pInterpreter) );
-        else ret = pInterpreter->call( m_pId->getValue(), std::vector<SteelType>() );
+            ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),m_pParams->getParamList(pInterpreter) );
+        else ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),std::vector<SteelType>() );
     }
     catch(ParamMismatch )
     {
@@ -1528,6 +1528,17 @@ ostream & AstParamDefinitionList::print (std::ostream &out)
     return out;
 }          
 
+std::string AstFuncIdentifier::GetNamespace(void) const
+{
+    if(m_ns.size())
+    {
+        return m_ns;
+    }
+    else
+    {
+        return SteelInterpreter::kszUnspecifiedNamespace;
+    }
+}
 
 AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
                                              const std::string &script,
@@ -1549,7 +1560,7 @@ AstFunctionDefinition::~AstFunctionDefinition()
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)
 {
     try{
-        pInterpreter->registerFunction( m_pId->getValue(), m_pParams , m_pStatements, mbFinal );
+        pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements, mbFinal );
     }
     catch(AlreadyDefined)
     {

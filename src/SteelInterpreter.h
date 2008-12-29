@@ -38,8 +38,6 @@ public:
     SteelInterpreter();
     virtual ~SteelInterpreter();
 
-    static const char * kszGlobalNamespace;
-
     // Add function to the global namespace
     void addFunction(const std::string &name, SteelFunctor *pFunc);
 
@@ -89,12 +87,16 @@ public:
 
     void pushScope();
     void popScope();
-    void registerFunction(const std::string &name, 
+    void registerFunction(const std::string &name,
+                          const std::string &ns,
                           AstParamDefinitionList *pParams, 
                           AstStatementList *pStatements,
                           bool final);
     void setReturn(const SteelType &var);
     SteelType getReturn() const;
+
+    static const char * kszGlobalNamespace;
+    static const char * kszUnspecifiedNamespace;
 
 private:
 

@@ -15,6 +15,7 @@
 
 
 const char * SteelInterpreter::kszGlobalNamespace = "_global";
+const char * SteelInterpreter::kszUnspecifiedNamespace = "?";
 
 ParameterListItem::ParameterListItem(const std::string &name, double d)
 {
@@ -73,19 +74,8 @@ SteelInterpreter::~SteelInterpreter()
 void SteelInterpreter::addFunction(const std::string &name,
                                    SteelFunctor *pFunc)
 {
-    int scope = name.find("::");
-    if(scope != std::string::npos)
-    {
-        // There's a scope
-        std::string scope_name = name.substr(0,scope);
-        std::string func_name = name.substr(scope+2);
-        addFunction(func_name,scope_name,pFunc);
-    }
-    else
-    {
-        // global namespace
-        addFunction(name,kszGlobalNamespace,pFunc);
-    }
+    // global namespace
+    addFunction(name,kszGlobalNamespace,pFunc);    
 }
 
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
@@ -229,38 +219,6 @@ void SteelInterpreter::import(const std::string &ns)
 
 SteelType SteelInterpreter::call(const std::string &name, const std::vector<SteelType> &pList)
 {
-    int scope = name.find("::");
-
-    if(scope != std::string::npos)
-    {
-        // there's a scope!
-        std::string scopestr = name.substr(0,scope);
-        
-        std::map<std::string,FunctionSet>::iterator it = m_functions.find(scopestr);
-
-        if(it != m_functions.end())
-        {
-            FunctionSet &set = it->second;
-            std::string func_name = name.substr(scope+2);
-           
-            std::map<std::string,SteelFunctor*>::iterator iter = set.find( func_name );
-
-            if( iter != set.end() )
-            {
-                SteelFunctor * pFunctor = iter->second;
-                assert ( pFunctor != NULL );
-
-                return pFunctor->Call(this,pList);
-            }
-            
-        }
-        else
-        {
-            // TODO: Should throw a UnknownNamespace here...
-        }
-        throw UnknownIdentifier();
-    }
-
     for(std::deque<std::string>::reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
         it++)
     {
@@ -280,11 +238,26 @@ SteelType SteelInterpreter::call(const std::string &name, const std::vector<Stee
     throw UnknownIdentifier();
 
     return SteelType();
+
 }
 
 SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList)
 {
-    FunctionSet &set = m_functions[ns];
+    // If this call has no namespace, we have to search for it using this
+    // version...
+    if(ns == kszUnspecifiedNamespace)
+    {
+        return call(name,pList);
+    }
+
+    std::map<std::string,FunctionSet>::iterator setiter = m_functions.find(ns);
+
+    if(setiter == m_functions.end())
+    {
+        throw UnknownIdentifier();
+    }
+
+    FunctionSet &set = setiter->second;
 
     std::map<std::string,SteelFunctor*>::iterator iter = set.find( name );
 
@@ -425,11 +398,12 @@ void SteelInterpreter::assign(SteelType *pVar, const SteelType &value)
 
 
 void SteelInterpreter::registerFunction(const std::string &name, 
+                                        const std::string &ns,
                                         AstParamDefinitionList *pParams, 
                                         AstStatementList *pStatements, 
                                         bool final)
 {
-    addFunction(name,new SteelUserFunction( pParams, pStatements, final ));
+    addFunction(name,ns,new SteelUserFunction( pParams, pStatements, final ));
 }
 
 SteelType * SteelInterpreter::lookup_internal(const std::string &name)

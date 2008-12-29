@@ -25,6 +25,23 @@ private:
     friend ostream & operator<<(ostream &,AstBase&);
 };
 
+class AstBareword : public AstBase
+{
+public:
+AstBareword(unsigned int line, const std::string &script, const std::string &word)
+    :AstBase(line,script),m_word(word)
+    {
+    }
+    virtual ~AstBareword(){}
+
+    std::string GetWord(void)const
+    {
+        return m_word;
+    }
+private:
+    std::string m_word;
+};
+
 class AstKeyword : public AstBase
 {
 public:
@@ -314,15 +331,27 @@ class AstFuncIdentifier : public AstIdentifier
 {
 public:
     AstFuncIdentifier(unsigned int line,
-              const std::string &script,
-              const std::string &value)
-    :AstIdentifier(line,script,value){}
+                      const std::string &script,
+                      const std::string &value)
+        :AstIdentifier(line,script,value)
+{
+}
+    AstFuncIdentifier(unsigned int line,
+                      const std::string &script,
+                      const std::string &value,
+                      const std::string &ns)
+        :AstIdentifier(line,script,value),m_ns(ns)
+{
+}
     virtual ~AstFuncIdentifier(){}
 
     // Right? Because this isn't the same as a call?
     virtual SteelType evaluate(SteelInterpreter *pInterpreter) { return SteelType(); }
     virtual SteelType * lvalue(SteelInterpreter *pInterpreter){ return NULL; }
+
+    std::string GetNamespace(void) const;
 private:
+    std::string m_ns;
 };
 
 class AstArrayIdentifier : public AstIdentifier
