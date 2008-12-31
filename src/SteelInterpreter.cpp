@@ -359,9 +359,10 @@ SteelType *SteelInterpreter::lookup_lvalue(const std::string &name)
 {
     SteelType *p = lookup_internal(name);
 
+    if(p == NULL) throw UnknownIdentifier();
+
     if(p->isConst()) throw ConstViolation();
 
-    if(p == NULL) throw UnknownIdentifier();
     return p;
 }
 
