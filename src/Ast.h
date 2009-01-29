@@ -9,6 +9,7 @@
 using std::ostream;
 
 class SteelInterpreter;
+class SteelFunctor;
 
 class AstBase
 {
@@ -319,12 +320,13 @@ public:
     AstVarIdentifier(unsigned int line,
              const std::string &script,
              const std::string &value)
-    :AstIdentifier(line,script,value){}
+             :AstIdentifier(line,script,value),m_pLValue(NULL){}
     virtual ~AstVarIdentifier(){}
 
     virtual SteelType evaluate(SteelInterpreter *pInterpreter);
     virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
 private:
+    SteelType *m_pLValue;
 };
 
 class AstFuncIdentifier : public AstIdentifier
@@ -533,6 +535,7 @@ public:
 private:
     AstFuncIdentifier *m_pId;
     AstParamList *m_pParams;
+    SteelFunctor *m_pFunctor;
 };
 
 /* class AstArrayExpression : public AstExpression

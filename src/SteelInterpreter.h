@@ -95,6 +95,9 @@ public:
     void setReturn(const SteelType &var);
     SteelType getReturn() const;
 
+    SteelFunctor* lookup_functor(const std::string &name, const std::string &ns);
+    SteelFunctor* lookup_functor(const std::string &name);
+
     static const char * kszGlobalNamespace;
     static const char * kszUnspecifiedNamespace;
 

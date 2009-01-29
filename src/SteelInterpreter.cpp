@@ -219,6 +219,11 @@ void SteelInterpreter::import(const std::string &ns)
 
 SteelType SteelInterpreter::call(const std::string &name, const std::vector<SteelType> &pList)
 {
+    return lookup_functor(name)->Call(this,pList);
+}
+
+SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name)
+{
     for(std::deque<std::string>::reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
         it++)
     {
@@ -231,24 +236,30 @@ SteelType SteelInterpreter::call(const std::string &name, const std::vector<Stee
             SteelFunctor * pFunctor = iter->second;
             assert ( pFunctor != NULL );
 
-            return pFunctor->Call(this,pList);
+            return pFunctor;
         }
     }
 
     throw UnknownIdentifier();
 
-    return SteelType();
-
+    return NULL;
 }
 
 SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList)
+{
+    SteelFunctor * pFunctor = lookup_functor(name,ns);
+
+    return pFunctor->Call(this,pList);
+}
+
+SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name, const std::string &ns)
 {
     static std::string unspecifiedNS(kszUnspecifiedNamespace);
     // If this call has no namespace, we have to search for it using this
     // version...
     if(ns == unspecifiedNS)
     {
-        return call(name,pList);
+        return lookup_functor(name);
     }
 
     std::map<std::string,FunctionSet>::iterator setiter = m_functions.find(ns);
@@ -267,11 +278,11 @@ SteelType SteelInterpreter::call(const std::string &name, const std::string &ns,
         SteelFunctor * pFunctor = iter->second;
         assert ( pFunctor != NULL );
 
-        return pFunctor->Call(this,pList);
+        return pFunctor;
     }
     throw UnknownIdentifier();
 
-    return SteelType();
+    return NULL;
 }
 
 void SteelInterpreter::setReturn(const SteelType &var)

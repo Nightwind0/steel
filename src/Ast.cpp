@@ -878,7 +878,7 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
 
 AstCallExpression::AstCallExpression(unsigned int line,
                                      const std::string &script, AstFuncIdentifier *pId, AstParamList *pList)
-    :AstExpression(line,script),m_pId(pId),m_pParams(pList)
+    :AstExpression(line,script),m_pId(pId),m_pParams(pList),m_pFunctor(NULL)
 {
     assert ( m_pId );
 }
@@ -892,9 +892,21 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
 {
     SteelType ret;
     try{
+        if(!m_pFunctor)
+        {
+            m_pFunctor = pInterpreter->lookup_functor(m_pId->getValue(),m_pId->GetNamespace());
+        }
+
+        if(m_pParams)
+            ret = m_pFunctor->Call(pInterpreter,m_pParams->getParamList(pInterpreter));
+        else 
+            ret = m_pFunctor->Call(pInterpreter,std::vector<SteelType>());
+        
+#if 0
         if(m_pParams)
             ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),m_pParams->getParamList(pInterpreter) );
         else ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),std::vector<SteelType>() );
+#endif
     }
     catch(ParamMismatch )
     {
@@ -1260,8 +1272,7 @@ SteelType AstVarIdentifier::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
-        SteelType val = pInterpreter->lookup ( getValue() );
-        return val;
+        return pInterpreter->lookup ( getValue() );
     }
     catch(UnknownIdentifier)
     {
