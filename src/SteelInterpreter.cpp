@@ -47,6 +47,12 @@ ParameterListItem::ParameterListItem(const std::string &name, const SteelType &v
     m_value = var;
 }
 
+ParameterListItem::ParameterListItem(const std::string &name, void* p)
+{
+    m_name = name;
+    m_value.set(p);
+}
+
 
 SteelInterpreter::SteelInterpreter()
 :
