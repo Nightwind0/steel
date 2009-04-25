@@ -2,7 +2,7 @@
 #define SR_STEELTYPE_H
 
 #include <queue>
-
+#include <string>
 
 class SteelType
 {
