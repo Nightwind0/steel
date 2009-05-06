@@ -1571,7 +1571,10 @@ AstFunctionDefinition::~AstFunctionDefinition()
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)
 {
     try{
-        pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements, mbFinal );
+      // For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
+      if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
+	pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements, mbFinal );
+      }else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements, mbFinal );
     }
     catch(AlreadyDefined)
     {

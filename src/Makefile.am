@@ -20,9 +20,10 @@ libsteel_la_HEADERS =   Ast.h \
 						SteelScanner.h \
 						SteelInterpreter.h
 
+SteelParser.h : SteelParser.cpp 
 SteelParser.cpp : steel.trison
-	trison -S steel.states -o SteelParser -Hh steel.trison
-
+	trison -S steel.states   steel.trison
+SteelScanner.h : SteelScanner.cpp
 SteelScanner.cpp : steel.reflex
 	reflex  steel.reflex
 

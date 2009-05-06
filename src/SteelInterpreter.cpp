@@ -121,9 +121,11 @@ AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
     SteelParser parser;
     parser.setBuffer(script.c_str(),script_name);
 
-    if(debugparser) parser.SetDebugSpewLevel(2);
+    AstBase *pBase;
 
-    if(parser.Parse() != SteelParser::PRC_SUCCESS)
+    if(debugparser) parser.DebugSpew(true);
+
+    if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
     {
         if(parser.hadError())
         {
@@ -139,7 +141,9 @@ AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
         throw SteelException(SteelException::PARSING,0,script_name, parser.getErrors());
     }
 
-    AstScript *pScript = static_cast<AstScript*>( parser.GetAcceptedToken() );
+    //AstScript *pScript = static_cast<AstScript*>( parser.GetAcceptedToken() );
+
+    AstScript * pScript = dynamic_cast<AstScript*> ( pBase );
 
     return pScript;
 }
@@ -181,7 +185,8 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
     import(kszGlobalNamespace);
 //    parser.SetDebugSpewLevel(2);
     parser.setBuffer(script.c_str(),name);
-    if(parser.Parse() != SteelParser::PRC_SUCCESS)
+    AstBase * pBase;
+    if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
     {
         if(parser.hadError())
         {
@@ -197,13 +202,12 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
         throw SteelException(SteelException::PARSING,0,name, parser.getErrors());
     }
 
-    AstScript *pScript = static_cast<AstScript*>( parser.GetAcceptedToken() );
+    AstScript *pScript = static_cast<AstScript*>( pBase );
 
     pScript->executeScript(this);
     
     delete pScript;
 
-    parser.ClearAcceptedToken();
     clear_imports();
     return getReturn();
 }
