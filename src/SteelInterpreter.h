@@ -160,6 +160,9 @@ private:
     SteelType tanh (double f);
     SteelType round(double f);
     SteelType pow  (double f, double g);
+    SteelType randf (); // Returns double between 0 and 1
+    SteelType rand ( );
+    SteelType srand ( int );
 };
 
 

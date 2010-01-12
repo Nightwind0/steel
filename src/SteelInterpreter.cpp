@@ -460,6 +460,8 @@ void SteelInterpreter::popScope()
 
 void SteelInterpreter::registerBifs()
 {
+
+    srand(time(0));
     addFunction("print", &m_print_f);
     addFunction("println",&m_println_f);
     addFunction("len",&m_len_f);
@@ -491,6 +493,9 @@ void SteelInterpreter::registerBifs()
     addFunction("tanh", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::tanh));
     addFunction("round", "math",new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::round));
     addFunction("pow", "math", new SteelFunctor2Arg<SteelInterpreter,double,double>(this,&SteelInterpreter::pow));
+    addFunction("rand","math", new SteelFunctorNoArgs<SteelInterpreter>(this, &SteelInterpreter::rand));
+    addFunction("srand","math", new SteelFunctor1Arg<SteelInterpreter,int>(this, &SteelInterpreter::srand));
+    addFunction("randf","math", new SteelFunctorNoArgs<SteelInterpreter>(this, &SteelInterpreter::randf));
 }
 
 
@@ -730,4 +735,25 @@ SteelType SteelInterpreter::pow (double f, double g)
     var.set(static_cast<double>(::pow(f,g)));
 
     return var;
+}
+
+SteelType SteelInterpreter::srand ( int s )
+{
+  ::srand(s);
+
+  return SteelType();
+}
+
+SteelType SteelInterpreter::rand ( )
+{
+  SteelType var;
+  var.set(::rand());
+  return var;
+}
+
+SteelType SteelInterpreter::randf ( )
+{
+  SteelType var;
+  var.set( (double)::rand() / ((double)RAND_MAX + 1) );
+  return var;
 }
