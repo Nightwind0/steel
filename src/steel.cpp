@@ -11,6 +11,7 @@ int main(int argc, char * argv[])
     bool bPrint=false;
     bool bRun=true;
     bool bDebug = false;
+    bool bScanDebug = false;
 
     for(int i=0;i<argc;i++)
     {
@@ -21,6 +22,10 @@ int main(int argc, char * argv[])
         {
             bPrint = true;
         }
+	else if(arg == "--no-scan-debug")
+	{
+	  bScanDebug = false;
+	}
         else if(arg == "--no-exec" ||
                 arg == "-n")
         {
@@ -29,6 +34,7 @@ int main(int argc, char * argv[])
                  arg == "-d")
         {
             bDebug = true;
+	    bScanDebug = true;
         }
 
         
@@ -41,7 +47,7 @@ int main(int argc, char * argv[])
     }
 
     try{
-        AstScript * pScript = interpreter.prebuildAst("<STDIN>",script,bDebug);
+      AstScript * pScript = interpreter.prebuildAst("<STDIN>",script,bDebug,bScanDebug);
 
         if(bPrint)
             pScript->print(std::cout);

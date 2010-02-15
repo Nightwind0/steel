@@ -310,11 +310,12 @@ public:
       * %target.cpp.bottom_of_parse_method_actions directives can be used to specify
       * code to execute at the beginning and end, respectively, of the Parse() method.
       * This includes the ability to enclose the body of the Parse() method within a
-      * try {} block, for exception handling (if exceptions are thrown in reduction
-      * rule code, then the %target.cpp.enable_parse_method_exception_handling directive
-      * must be specified; this will cause the parser to catch and rethrow any exceptions
-      * thrown in reduction rule code, allowing it to clean up dynamically allocated
-      * memory, etc.
+      * try {} block, for exception handling (if exceptions are thrown in scan_actions
+      * or any reduction rule code, then the %target.cpp.enable_scan_actions_exceptions
+      * or %target.cpp.enable_reduction_rule_exceptions directives must be specified
+      * respectively; this will cause the parser to catch and rethrow any exceptions
+      * thrown by scan_actions or reduction rule code, allowing it to clean up
+      * dynamically allocated memory, etc.
       *
       * @param return_token A pointer to the value which will be assigned to upon
       *        successfully parsing the requested nonterminal. If the parse fails,
@@ -341,6 +342,7 @@ public:
 	bool hadError() const { return mbErrorEncountered; }
 	std::string getErrors() const { return mErrors; }
     Token Scan ();
+    void SetScannerDebugSpew(bool on);
 private:
 	void addError(unsigned int line, const std::string &error);
     SteelScanner *m_scanner;
@@ -348,7 +350,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 352 "SteelParser.h"
+#line 354 "SteelParser.h"
 
 
 private:
@@ -410,7 +412,7 @@ private:
     void ClearLookaheadQueue_ () throw();
     Token const &Lookahead_ (LookaheadQueue_::size_type index) throw();
     bool ExerciseTransition_ (Transition_ const &transition);
-    Token::Data ExecuteReductionRule_ (BarfCpp_::Uint32 const rule_index_);
+    Token::Data ExecuteReductionRule_ (BarfCpp_::Uint32 const rule_index_) throw();
     // debug spew methods
     void PrintParserStatus_ (std::ostream &stream) const;
     void PrintIndented_ (std::ostream &stream, char const *string) const;
@@ -469,4 +471,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token
 
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 473 "SteelParser.h"
+#line 475 "SteelParser.h"

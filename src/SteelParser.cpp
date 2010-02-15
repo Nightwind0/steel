@@ -33,7 +33,7 @@ SteelParser::SteelParser ()
     DebugSpew(false);
 
 
-#line 79 "steel.trison"
+#line 85 "steel.trison"
 
     m_scanner = new SteelScanner();
 
@@ -48,7 +48,7 @@ SteelParser::~SteelParser ()
 
 
 
-#line 83 "steel.trison"
+#line 89 "steel.trison"
 
     delete m_scanner;
 
@@ -63,7 +63,7 @@ bool SteelParser::IsAtEndOfInput ()
 void SteelParser::ResetForNewInput ()
 {
     TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " executing reset-for-new-input actions" << std::endl)
-    
+
     // clean up stuff that might be hanging around from the last parse's input.
     ClearStack_();
     ClearLookaheadQueue_();
@@ -72,7 +72,7 @@ void SteelParser::ResetForNewInput ()
 SteelParser::ParserReturnCode SteelParser::Parse (AstBase* *return_token, ParseNonterminal::Name nonterminal_to_parse)
 {
 
-#line 50 "steel.trison"
+#line 51 "steel.trison"
 
 	mbErrorEncountered = false;
 	mErrors.clear();
@@ -245,7 +245,7 @@ SteelParser::ParserReturnCode SteelParser::Parse_ (AstBase* *return_token, Parse
                 // and break out of this inner (transition) loop.
                 if (lookahead_sequence_matched)
                 {
-                    TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " current (relevant) lookahead(s):")
+                    TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " currently usable lookahead(s):")
                     for (BarfCpp_::Uint32 i = 0; i < tested_lookahead_count; ++i)
                     {
                         TRISON_CPP_DEBUG_CODE_(std::cerr << ' ' << Lookahead_(i))
@@ -261,7 +261,7 @@ SteelParser::ParserReturnCode SteelParser::Parse_ (AstBase* *return_token, Parse
             // if no transition was exercised, then exercise the default transition
             if (!transition_exercised)
             {
-                TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " current (relevant) lookahead(s):")
+                TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " currently usable lookahead(s):")
                 for (BarfCpp_::Uint32 i = 0; i < tested_lookahead_count; ++i)
                 {
                     TRISON_CPP_DEBUG_CODE_(std::cerr << ' ' << Lookahead_(i))
@@ -306,7 +306,7 @@ void SteelParser::ThrowAwayToken_ (Token::Data &token_data) throw()
     TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " executing throw-away-token actions" << std::endl)
 
 
-#line 88 "steel.trison"
+#line 94 "steel.trison"
 
     delete token_data;
 
@@ -315,13 +315,15 @@ void SteelParser::ThrowAwayToken_ (Token::Data &token_data) throw()
 
 SteelParser::Token SteelParser::Scan_ () throw()
 {
+    TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " executing scan actions" << std::endl)
 
-#line 96 "steel.trison"
+
+#line 102 "steel.trison"
 
     assert(m_scanner != NULL);
     return m_scanner->Scan();
 
-#line 325 "SteelParser.cpp"
+#line 327 "SteelParser.cpp"
 }
 
 void SteelParser::ClearStack_ () throw()
@@ -410,7 +412,7 @@ bool SteelParser::ExerciseTransition_ (Transition_ const &transition)
     }
 }
 
-SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 const rule_index_)
+SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 const rule_index_) throw()
 {
     assert(rule_index_ < ms_rule_count_);
     TRISON_CPP_DEBUG_CODE_(std::cerr << "SteelParser:" << " executing reduction rule " << rule_index_ << std::endl)
@@ -425,7 +427,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatementList* list(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 164 "steel.trison"
+#line 170 "steel.trison"
 
 				AstScript * pScript =   new AstScript(
 							list->GetLine(),
@@ -433,7 +435,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 		        pScript->SetList(list);
 				return pScript;
 			
-#line 437 "SteelParser.cpp"
+#line 439 "SteelParser.cpp"
             break;
         }
 
@@ -444,7 +446,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(m_stack_[m_stack_.size()-5].m_token_data));
             AstStatementList* stmts(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 177 "steel.trison"
+#line 183 "steel.trison"
 
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -453,7 +455,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 									stmts,
 									false);
 				
-#line 457 "SteelParser.cpp"
+#line 459 "SteelParser.cpp"
             break;
         }
 
@@ -463,7 +465,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-7].m_token_data));
             AstStatementList* stmts(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 187 "steel.trison"
+#line 193 "steel.trison"
 
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
@@ -474,7 +476,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 									stmts,
 									false);
 				
-#line 478 "SteelParser.cpp"
+#line 480 "SteelParser.cpp"
             break;
         }
 
@@ -484,7 +486,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-7].m_token_data));
             AstStatementList* stmts(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 199 "steel.trison"
+#line 205 "steel.trison"
 
 					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
@@ -495,7 +497,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 									stmts,
 									true);
 				
-#line 499 "SteelParser.cpp"
+#line 501 "SteelParser.cpp"
             break;
         }
 
@@ -505,7 +507,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(m_stack_[m_stack_.size()-5].m_token_data));
             AstStatementList* stmts(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 211 "steel.trison"
+#line 217 "steel.trison"
 
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -517,7 +519,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 									stmts,
 									false);
 				
-#line 521 "SteelParser.cpp"
+#line 523 "SteelParser.cpp"
             break;
         }
 
@@ -527,7 +529,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(m_stack_[m_stack_.size()-5].m_token_data));
             AstStatementList* stmts(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 224 "steel.trison"
+#line 230 "steel.trison"
 
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -539,7 +541,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 									stmts,
 									true);
 				
-#line 543 "SteelParser.cpp"
+#line 545 "SteelParser.cpp"
             break;
         }
 
@@ -550,7 +552,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(m_stack_[m_stack_.size()-5].m_token_data));
             AstStatementList* stmts(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 238 "steel.trison"
+#line 244 "steel.trison"
 
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -559,7 +561,7 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 									stmts,
 									true);
 				
-#line 563 "SteelParser.cpp"
+#line 565 "SteelParser.cpp"
             break;
         }
 
@@ -568,9 +570,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstBase* id(m_stack_[m_stack_.size()-1].m_token_data);
 
-#line 252 "steel.trison"
+#line 258 "steel.trison"
  return id; 
-#line 574 "SteelParser.cpp"
+#line 576 "SteelParser.cpp"
             break;
         }
 
@@ -579,9 +581,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstBase* id(m_stack_[m_stack_.size()-1].m_token_data);
 
-#line 254 "steel.trison"
+#line 260 "steel.trison"
  return id; 
-#line 585 "SteelParser.cpp"
+#line 587 "SteelParser.cpp"
             break;
         }
 
@@ -589,11 +591,11 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 259 "steel.trison"
+#line 265 "steel.trison"
 
 		 return new AstParamDefinitionList(GET_LINE(), GET_SCRIPT());
 	
-#line 597 "SteelParser.cpp"
+#line 599 "SteelParser.cpp"
             break;
         }
 
@@ -602,13 +604,13 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstDeclaration* decl(static_cast<AstDeclaration*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 264 "steel.trison"
+#line 270 "steel.trison"
 
 				AstParamDefinitionList * pList = new AstParamDefinitionList(decl->GetLine(),decl->GetScript());
 				pList->add(static_cast<AstDeclaration*>(decl));
 				return pList;		
 			
-#line 612 "SteelParser.cpp"
+#line 614 "SteelParser.cpp"
             break;
         }
 
@@ -618,12 +620,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstParamDefinitionList* list(static_cast<AstParamDefinitionList*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstDeclaration* decl(static_cast<AstDeclaration*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 271 "steel.trison"
+#line 277 "steel.trison"
 
 				list->add(static_cast<AstDeclaration*>(decl));
 				return list;
 			
-#line 627 "SteelParser.cpp"
+#line 629 "SteelParser.cpp"
             break;
         }
 
@@ -632,12 +634,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstParamDefinitionList* list(static_cast<AstParamDefinitionList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 277 "steel.trison"
+#line 283 "steel.trison"
 
 				addError(list->GetLine(),"expected parameter definition");
 				return list;
 			
-#line 641 "SteelParser.cpp"
+#line 643 "SteelParser.cpp"
             break;
         }
 
@@ -645,14 +647,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 286 "steel.trison"
+#line 292 "steel.trison"
 
 				AstStatementList *pList = 
 					new AstStatementList(m_scanner->getCurrentLine(),
 										m_scanner->getScriptName());
 				return pList;
 			
-#line 656 "SteelParser.cpp"
+#line 658 "SteelParser.cpp"
             break;
         }
 
@@ -662,12 +664,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstStatementList* list(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 294 "steel.trison"
+#line 300 "steel.trison"
 
 					list->add( stmt ); 
 					return list;
 				
-#line 671 "SteelParser.cpp"
+#line 673 "SteelParser.cpp"
             break;
         }
 
@@ -675,12 +677,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 302 "steel.trison"
+#line 308 "steel.trison"
  
 			addError(GET_LINE(),"parse error");
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		
-#line 684 "SteelParser.cpp"
+#line 686 "SteelParser.cpp"
             break;
         }
 
@@ -690,9 +692,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstBase* imp(m_stack_[m_stack_.size()-3].m_token_data);
             AstString* str(static_cast<AstString*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 307 "steel.trison"
+#line 313 "steel.trison"
  return new AstImport(GET_LINE(),GET_SCRIPT(),str); 
-#line 696 "SteelParser.cpp"
+#line 698 "SteelParser.cpp"
             break;
         }
 
@@ -701,9 +703,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 309 "steel.trison"
+#line 315 "steel.trison"
  return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); 
-#line 707 "SteelParser.cpp"
+#line 709 "SteelParser.cpp"
             break;
         }
 
@@ -712,9 +714,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFunctionDefinition* func(static_cast<AstFunctionDefinition*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 311 "steel.trison"
+#line 317 "steel.trison"
  return func; 
-#line 718 "SteelParser.cpp"
+#line 720 "SteelParser.cpp"
             break;
         }
 
@@ -723,9 +725,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatementList* list(static_cast<AstStatementList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 313 "steel.trison"
+#line 319 "steel.trison"
  return list; 
-#line 729 "SteelParser.cpp"
+#line 731 "SteelParser.cpp"
             break;
         }
 
@@ -733,11 +735,11 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 315 "steel.trison"
+#line 321 "steel.trison"
 
 			 return new AstStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 741 "SteelParser.cpp"
+#line 743 "SteelParser.cpp"
             break;
         }
 
@@ -746,9 +748,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstDeclaration* vardecl(static_cast<AstDeclaration*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 319 "steel.trison"
+#line 325 "steel.trison"
  return vardecl; 
-#line 752 "SteelParser.cpp"
+#line 754 "SteelParser.cpp"
             break;
         }
 
@@ -757,12 +759,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstDeclaration* decl(static_cast<AstDeclaration*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 322 "steel.trison"
+#line 328 "steel.trison"
 
 				addError(decl->GetLine(),"unexpected tokens found before variable declaration.");
 				return decl;
 			
-#line 766 "SteelParser.cpp"
+#line 768 "SteelParser.cpp"
             break;
         }
 
@@ -771,12 +773,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstDeclaration* decl(static_cast<AstDeclaration*>(m_stack_[m_stack_.size()-3].m_token_data));
 
-#line 328 "steel.trison"
+#line 334 "steel.trison"
 
 			addError(decl->GetLine(),"expected ';' after variable declaration.");
 			return decl;
 		
-#line 780 "SteelParser.cpp"
+#line 782 "SteelParser.cpp"
             break;
         }
 
@@ -786,9 +788,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 333 "steel.trison"
+#line 339 "steel.trison"
  return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); 
-#line 792 "SteelParser.cpp"
+#line 794 "SteelParser.cpp"
             break;
         }
 
@@ -796,13 +798,13 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 345 "steel.trison"
+#line 351 "steel.trison"
  
 				addError(GET_LINE(),"missing loop condition.");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT())); 
 			
-#line 806 "SteelParser.cpp"
+#line 808 "SteelParser.cpp"
             break;
         }
 
@@ -811,12 +813,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 353 "steel.trison"
+#line 359 "steel.trison"
  
 				addError(GET_LINE(),"error in loop expression.");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);    
 			
-#line 820 "SteelParser.cpp"
+#line 822 "SteelParser.cpp"
             break;
         }
 
@@ -826,11 +828,11 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-5].m_token_data));
             AstExpression* condition(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 360 "steel.trison"
+#line 366 "steel.trison"
 
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), condition, stmt);
 	   
-#line 834 "SteelParser.cpp"
+#line 836 "SteelParser.cpp"
             break;
         }
 
@@ -839,12 +841,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-5].m_token_data));
 
-#line 365 "steel.trison"
+#line 371 "steel.trison"
 
 				addError(GET_LINE(),"error in while condition.");
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
 	   
-#line 848 "SteelParser.cpp"
+#line 850 "SteelParser.cpp"
             break;
         }
 
@@ -853,12 +855,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 371 "steel.trison"
+#line 377 "steel.trison"
 
 				addError(GET_LINE(),"error. do loop missing proper while condition.");
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
 	   
-#line 862 "SteelParser.cpp"
+#line 864 "SteelParser.cpp"
             break;
         }
 
@@ -867,12 +869,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-4].m_token_data));
 
-#line 378 "steel.trison"
+#line 384 "steel.trison"
 
 				addError(GET_LINE(),"error, missing condition or no closing ')' found after while.");
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, NULL);
 	   
-#line 876 "SteelParser.cpp"
+#line 878 "SteelParser.cpp"
             break;
         }
 
@@ -883,9 +885,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstStatement* elses(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 385 "steel.trison"
+#line 391 "steel.trison"
  return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);
-#line 889 "SteelParser.cpp"
+#line 891 "SteelParser.cpp"
             break;
         }
 
@@ -895,9 +897,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 387 "steel.trison"
+#line 393 "steel.trison"
  return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); 
-#line 901 "SteelParser.cpp"
+#line 903 "SteelParser.cpp"
             break;
         }
 
@@ -907,12 +909,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstStatement* elses(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 390 "steel.trison"
+#line 396 "steel.trison"
 
 			addError(GET_LINE(),"parse error in if condition."); 
 			return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt,elses);
 		
-#line 916 "SteelParser.cpp"
+#line 918 "SteelParser.cpp"
             break;
         }
 
@@ -921,12 +923,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 396 "steel.trison"
+#line 402 "steel.trison"
 
 				addError(GET_LINE(),"parse error in if condition."); 
 				return new AstIfStatement(GET_LINE(), GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),stmt);
 			
-#line 930 "SteelParser.cpp"
+#line 932 "SteelParser.cpp"
             break;
         }
 
@@ -934,13 +936,13 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 402 "steel.trison"
+#line 408 "steel.trison"
 
 			addError(GET_LINE(),"expected ')' after if condition.");
 			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
 				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 		
-#line 944 "SteelParser.cpp"
+#line 946 "SteelParser.cpp"
             break;
         }
 
@@ -948,14 +950,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 409 "steel.trison"
+#line 415 "steel.trison"
 
 			addError(GET_LINE(),"expected opening '(' after 'if'");
 			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
 				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 
 		
-#line 959 "SteelParser.cpp"
+#line 961 "SteelParser.cpp"
             break;
         }
 
@@ -964,9 +966,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 417 "steel.trison"
+#line 423 "steel.trison"
  return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);
-#line 970 "SteelParser.cpp"
+#line 972 "SteelParser.cpp"
             break;
         }
 
@@ -974,11 +976,11 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 420 "steel.trison"
+#line 426 "steel.trison"
 
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 982 "SteelParser.cpp"
+#line 984 "SteelParser.cpp"
             break;
         }
 
@@ -989,12 +991,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* condition(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 441 "steel.trison"
+#line 447 "steel.trison"
 
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition, 
 						new AstExpression (start->GetLine(),start->GetScript()), stmt); 
 			
-#line 998 "SteelParser.cpp"
+#line 1000 "SteelParser.cpp"
             break;
         }
 
@@ -1006,11 +1008,11 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* iteration(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstStatement* stmt(static_cast<AstStatement*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 447 "steel.trison"
+#line 453 "steel.trison"
 
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			
-#line 1014 "SteelParser.cpp"
+#line 1016 "SteelParser.cpp"
             break;
         }
 
@@ -1018,14 +1020,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 452 "steel.trison"
+#line 458 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1029 "SteelParser.cpp"
+#line 1031 "SteelParser.cpp"
             break;
         }
 
@@ -1034,14 +1036,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* start(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 460 "steel.trison"
+#line 466 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1045 "SteelParser.cpp"
+#line 1047 "SteelParser.cpp"
             break;
         }
 
@@ -1051,14 +1053,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* start(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* condition(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 468 "steel.trison"
+#line 474 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1062 "SteelParser.cpp"
+#line 1064 "SteelParser.cpp"
             break;
         }
 
@@ -1069,14 +1071,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* condition(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
             AstExpression* iteration(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 476 "steel.trison"
+#line 482 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop. Expected ')'");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1080 "SteelParser.cpp"
+#line 1082 "SteelParser.cpp"
             break;
         }
 
@@ -1084,14 +1086,14 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 484 "steel.trison"
+#line 490 "steel.trison"
 
 				addError(GET_LINE(),"malformed for loop. Expected opening '('");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1095 "SteelParser.cpp"
+#line 1097 "SteelParser.cpp"
             break;
         }
 
@@ -1099,28 +1101,15 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 493 "steel.trison"
+#line 499 "steel.trison"
 
 				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1107 "SteelParser.cpp"
+#line 1109 "SteelParser.cpp"
             break;
         }
 
         case 47:
-        {
-            assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
-
-#line 498 "steel.trison"
-
-				addError(GET_LINE(),"expected ';' after 'break'");
-				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
-			
-#line 1120 "SteelParser.cpp"
-            break;
-        }
-
-        case 48:
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
@@ -1129,7 +1118,20 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 				addError(GET_LINE(),"expected ';' after 'break'");
 				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1133 "SteelParser.cpp"
+#line 1122 "SteelParser.cpp"
+            break;
+        }
+
+        case 48:
+        {
+            assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
+
+#line 510 "steel.trison"
+
+				addError(GET_LINE(),"expected ';' after 'break'");
+				return new AstBreakStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1135 "SteelParser.cpp"
             break;
         }
 
@@ -1137,28 +1139,15 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 512 "steel.trison"
+#line 518 "steel.trison"
 
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1145 "SteelParser.cpp"
+#line 1147 "SteelParser.cpp"
             break;
         }
 
         case 50:
-        {
-            assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
-
-#line 517 "steel.trison"
-
-				addError(GET_LINE(),"expected ';' after 'continue'");
-				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
-			
-#line 1158 "SteelParser.cpp"
-            break;
-        }
-
-        case 51:
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
@@ -1167,7 +1156,20 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
 				addError(GET_LINE(),"expected ';' after 'continue'");
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
 			
-#line 1171 "SteelParser.cpp"
+#line 1160 "SteelParser.cpp"
+            break;
+        }
+
+        case 51:
+        {
+            assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
+
+#line 529 "steel.trison"
+
+				addError(GET_LINE(),"expected ';' after 'continue'");
+				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
+			
+#line 1173 "SteelParser.cpp"
             break;
         }
 
@@ -1196,9 +1198,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstCallExpression* call(static_cast<AstCallExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 542 "steel.trison"
+#line 548 "steel.trison"
  return call; 
-#line 1202 "SteelParser.cpp"
+#line 1204 "SteelParser.cpp"
             break;
         }
 
@@ -1207,9 +1209,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstInteger* i(static_cast<AstInteger*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 544 "steel.trison"
+#line 550 "steel.trison"
  return i;
-#line 1213 "SteelParser.cpp"
+#line 1215 "SteelParser.cpp"
             break;
         }
 
@@ -1218,9 +1220,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFloat* f(static_cast<AstFloat*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 546 "steel.trison"
+#line 552 "steel.trison"
  return f; 
-#line 1224 "SteelParser.cpp"
+#line 1226 "SteelParser.cpp"
             break;
         }
 
@@ -1229,9 +1231,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstString* s(static_cast<AstString*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 548 "steel.trison"
+#line 554 "steel.trison"
  return s; 
-#line 1235 "SteelParser.cpp"
+#line 1237 "SteelParser.cpp"
             break;
         }
 
@@ -1240,9 +1242,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstBase* b(m_stack_[m_stack_.size()-1].m_token_data);
 
-#line 550 "steel.trison"
+#line 556 "steel.trison"
  return b; 
-#line 1246 "SteelParser.cpp"
+#line 1248 "SteelParser.cpp"
             break;
         }
 
@@ -1251,9 +1253,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstVarIdentifier * id(static_cast<AstVarIdentifier *>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 552 "steel.trison"
+#line 558 "steel.trison"
  return id; 
-#line 1257 "SteelParser.cpp"
+#line 1259 "SteelParser.cpp"
             break;
         }
 
@@ -1262,9 +1264,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstArrayIdentifier* id(static_cast<AstArrayIdentifier*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 554 "steel.trison"
+#line 560 "steel.trison"
  return id; 
-#line 1268 "SteelParser.cpp"
+#line 1270 "SteelParser.cpp"
             break;
         }
 
@@ -1274,9 +1276,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 556 "steel.trison"
+#line 562 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); 
-#line 1280 "SteelParser.cpp"
+#line 1282 "SteelParser.cpp"
             break;
         }
 
@@ -1285,12 +1287,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 558 "steel.trison"
+#line 564 "steel.trison"
  
 				addError(a->GetLine(),"expected expression before '+'.");	
 				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
 			  
-#line 1294 "SteelParser.cpp"
+#line 1296 "SteelParser.cpp"
             break;
         }
 
@@ -1299,12 +1301,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 563 "steel.trison"
+#line 569 "steel.trison"
  
 				addError(a->GetLine(),"expected expression before '-'.");	
 				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
 			  
-#line 1308 "SteelParser.cpp"
+#line 1310 "SteelParser.cpp"
             break;
         }
 
@@ -1313,12 +1315,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 568 "steel.trison"
+#line 574 "steel.trison"
  
 				addError(a->GetLine(),"expected expression after '*'.");	
 				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
 			  
-#line 1322 "SteelParser.cpp"
+#line 1324 "SteelParser.cpp"
             break;
         }
 
@@ -1327,12 +1329,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 573 "steel.trison"
+#line 579 "steel.trison"
  
 				addError(b->GetLine(),"expected expression before '*'.");	
 				return new AstBinOp(b->GetLine(),b->GetScript(),AstBinOp::MULT,new AstExpression(GET_LINE(),GET_SCRIPT()),b);
 			  
-#line 1336 "SteelParser.cpp"
+#line 1338 "SteelParser.cpp"
             break;
         }
 
@@ -1342,9 +1344,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 579 "steel.trison"
+#line 585 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); 
-#line 1348 "SteelParser.cpp"
+#line 1350 "SteelParser.cpp"
             break;
         }
 
@@ -1354,9 +1356,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 581 "steel.trison"
+#line 587 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,b); 
-#line 1360 "SteelParser.cpp"
+#line 1362 "SteelParser.cpp"
             break;
         }
 
@@ -1366,9 +1368,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 583 "steel.trison"
+#line 589 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::DIV,a,b); 
-#line 1372 "SteelParser.cpp"
+#line 1374 "SteelParser.cpp"
             break;
         }
 
@@ -1378,9 +1380,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 585 "steel.trison"
+#line 591 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MOD,a,b); 
-#line 1384 "SteelParser.cpp"
+#line 1386 "SteelParser.cpp"
             break;
         }
 
@@ -1390,9 +1392,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 587 "steel.trison"
+#line 593 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); 
-#line 1396 "SteelParser.cpp"
+#line 1398 "SteelParser.cpp"
             break;
         }
 
@@ -1402,9 +1404,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 589 "steel.trison"
+#line 595 "steel.trison"
  return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); 
-#line 1408 "SteelParser.cpp"
+#line 1410 "SteelParser.cpp"
             break;
         }
 
@@ -1414,9 +1416,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 591 "steel.trison"
+#line 597 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); 
-#line 1420 "SteelParser.cpp"
+#line 1422 "SteelParser.cpp"
             break;
         }
 
@@ -1426,9 +1428,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 593 "steel.trison"
+#line 599 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); 
-#line 1432 "SteelParser.cpp"
+#line 1434 "SteelParser.cpp"
             break;
         }
 
@@ -1438,9 +1440,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 595 "steel.trison"
+#line 601 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); 
-#line 1444 "SteelParser.cpp"
+#line 1446 "SteelParser.cpp"
             break;
         }
 
@@ -1450,9 +1452,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 597 "steel.trison"
+#line 603 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::EQ,a,b); 
-#line 1456 "SteelParser.cpp"
+#line 1458 "SteelParser.cpp"
             break;
         }
 
@@ -1462,9 +1464,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 599 "steel.trison"
+#line 605 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::NE,a,b); 
-#line 1468 "SteelParser.cpp"
+#line 1470 "SteelParser.cpp"
             break;
         }
 
@@ -1474,9 +1476,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 601 "steel.trison"
+#line 607 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LT,a,b); 
-#line 1480 "SteelParser.cpp"
+#line 1482 "SteelParser.cpp"
             break;
         }
 
@@ -1486,9 +1488,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 603 "steel.trison"
+#line 609 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GT,a,b); 
-#line 1492 "SteelParser.cpp"
+#line 1494 "SteelParser.cpp"
             break;
         }
 
@@ -1498,9 +1500,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 605 "steel.trison"
+#line 611 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); 
-#line 1504 "SteelParser.cpp"
+#line 1506 "SteelParser.cpp"
             break;
         }
 
@@ -1510,9 +1512,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 607 "steel.trison"
+#line 613 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); 
-#line 1516 "SteelParser.cpp"
+#line 1518 "SteelParser.cpp"
             break;
         }
 
@@ -1522,9 +1524,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             AstExpression* a(static_cast<AstExpression*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* b(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 609 "steel.trison"
+#line 615 "steel.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::CAT,a,b); 
-#line 1528 "SteelParser.cpp"
+#line 1530 "SteelParser.cpp"
             break;
         }
 
@@ -1533,9 +1535,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 611 "steel.trison"
+#line 617 "steel.trison"
  return exp; 
-#line 1539 "SteelParser.cpp"
+#line 1541 "SteelParser.cpp"
             break;
         }
 
@@ -1544,9 +1546,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 613 "steel.trison"
+#line 619 "steel.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); 
-#line 1550 "SteelParser.cpp"
+#line 1552 "SteelParser.cpp"
             break;
         }
 
@@ -1555,9 +1557,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 615 "steel.trison"
+#line 621 "steel.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); 
-#line 1561 "SteelParser.cpp"
+#line 1563 "SteelParser.cpp"
             break;
         }
 
@@ -1565,12 +1567,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 617 "steel.trison"
+#line 623 "steel.trison"
 
 						addError(GET_LINE(),"expected expression after unary minus.");
 						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
 								  
-#line 1574 "SteelParser.cpp"
+#line 1576 "SteelParser.cpp"
             break;
         }
 
@@ -1578,12 +1580,12 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 625 "steel.trison"
+#line 631 "steel.trison"
 
 						addError(GET_LINE(),"expected expression after ':'.");
 						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::CAT,new AstExpression(GET_LINE(),GET_SCRIPT()));
 								  
-#line 1587 "SteelParser.cpp"
+#line 1589 "SteelParser.cpp"
             break;
         }
 
@@ -1592,9 +1594,9 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 631 "steel.trison"
+#line 637 "steel.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); 
-#line 1598 "SteelParser.cpp"
+#line 1600 "SteelParser.cpp"
             break;
         }
 
@@ -1603,10 +1605,10 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (BarfCpp_::Uint32 co
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 633 "steel.trison"
+#line 639 "steel.trison"
  return new AstUnaryOp(exp->GetLine(),
 exp->GetScript(), AstUnaryOp::CAT,exp); 
-#line 1610 "SteelParser.cpp"
+#line 1612 "SteelParser.cpp"
             break;
         }
 
@@ -1616,9 +1618,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-4].m_token_data));
             AstExpression* index(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 636 "steel.trison"
+#line 642 "steel.trison"
  return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); 
-#line 1622 "SteelParser.cpp"
+#line 1624 "SteelParser.cpp"
             break;
         }
 
@@ -1627,9 +1629,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 638 "steel.trison"
+#line 644 "steel.trison"
  return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);
-#line 1633 "SteelParser.cpp"
+#line 1635 "SteelParser.cpp"
             break;
         }
 
@@ -1637,13 +1639,13 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 640 "steel.trison"
+#line 646 "steel.trison"
 
 										addError(GET_LINE(),"expected lvalue after '++'");
 										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
 												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
 										
-#line 1647 "SteelParser.cpp"
+#line 1649 "SteelParser.cpp"
             break;
         }
 
@@ -1652,9 +1654,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 654 "steel.trison"
+#line 660 "steel.trison"
  return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);
-#line 1658 "SteelParser.cpp"
+#line 1660 "SteelParser.cpp"
             break;
         }
 
@@ -1663,9 +1665,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 656 "steel.trison"
+#line 662 "steel.trison"
  return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);
-#line 1669 "SteelParser.cpp"
+#line 1671 "SteelParser.cpp"
             break;
         }
 
@@ -1673,13 +1675,13 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 658 "steel.trison"
+#line 664 "steel.trison"
 
 										addError(GET_LINE(),"expected lvalue after '--'");
 										return new AstDecrement(GET_LINE(),GET_SCRIPT(),
 												new AstExpression(GET_LINE(),GET_SCRIPT()),AstDecrement::PRE);
 										
-#line 1683 "SteelParser.cpp"
+#line 1685 "SteelParser.cpp"
             break;
         }
 
@@ -1688,12 +1690,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 665 "steel.trison"
+#line 671 "steel.trison"
  
 									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
 
 									
-#line 1697 "SteelParser.cpp"
+#line 1699 "SteelParser.cpp"
             break;
         }
 
@@ -1702,9 +1704,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* lvalue(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 677 "steel.trison"
+#line 683 "steel.trison"
  return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); 
-#line 1708 "SteelParser.cpp"
+#line 1710 "SteelParser.cpp"
             break;
         }
 
@@ -1712,12 +1714,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 679 "steel.trison"
+#line 685 "steel.trison"
 
 						addError(GET_LINE(),"expected expression after 'pop'.");
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()));
 							  
-#line 1721 "SteelParser.cpp"
+#line 1723 "SteelParser.cpp"
             break;
         }
 
@@ -1725,11 +1727,11 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
         {
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
 
-#line 688 "steel.trison"
+#line 694 "steel.trison"
 
 			return new AstExpression(GET_LINE(),GET_SCRIPT()); 
 		
-#line 1733 "SteelParser.cpp"
+#line 1735 "SteelParser.cpp"
             break;
         }
 
@@ -1738,9 +1740,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 692 "steel.trison"
+#line 698 "steel.trison"
  return exp; 
-#line 1744 "SteelParser.cpp"
+#line 1746 "SteelParser.cpp"
             break;
         }
 
@@ -1749,9 +1751,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstInteger* i(static_cast<AstInteger*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 697 "steel.trison"
+#line 703 "steel.trison"
  return i; 
-#line 1755 "SteelParser.cpp"
+#line 1757 "SteelParser.cpp"
             break;
         }
 
@@ -1760,9 +1762,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstBase* id(m_stack_[m_stack_.size()-1].m_token_data);
 
-#line 702 "steel.trison"
+#line 708 "steel.trison"
  return id; 
-#line 1766 "SteelParser.cpp"
+#line 1768 "SteelParser.cpp"
             break;
         }
 
@@ -1771,12 +1773,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstBareword* id(static_cast<AstBareword*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 707 "steel.trison"
+#line 713 "steel.trison"
 
 				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),id->GetWord()); 
 				return pId; 
 				
-#line 1780 "SteelParser.cpp"
+#line 1782 "SteelParser.cpp"
             break;
         }
 
@@ -1786,12 +1788,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstBareword* ns(static_cast<AstBareword*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstBareword* func(static_cast<AstBareword*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 713 "steel.trison"
+#line 719 "steel.trison"
 
 				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),func->GetWord(),ns->GetWord());
 				return pId;
 				
-#line 1795 "SteelParser.cpp"
+#line 1797 "SteelParser.cpp"
             break;
         }
 
@@ -1800,9 +1802,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstBase* id(m_stack_[m_stack_.size()-1].m_token_data);
 
-#line 721 "steel.trison"
+#line 727 "steel.trison"
  return id; 
-#line 1806 "SteelParser.cpp"
+#line 1808 "SteelParser.cpp"
             break;
         }
 
@@ -1811,9 +1813,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-3].m_token_data));
 
-#line 727 "steel.trison"
+#line 733 "steel.trison"
  return new AstCallExpression(id->GetLine(),id->GetScript(),id);
-#line 1817 "SteelParser.cpp"
+#line 1819 "SteelParser.cpp"
             break;
         }
 
@@ -1823,9 +1825,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-4].m_token_data));
             AstParamList* params(static_cast<AstParamList*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 729 "steel.trison"
+#line 735 "steel.trison"
  return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);
-#line 1829 "SteelParser.cpp"
+#line 1831 "SteelParser.cpp"
             break;
         }
 
@@ -1835,12 +1837,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstParamList* params(static_cast<AstParamList*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 732 "steel.trison"
+#line 738 "steel.trison"
 
 				addError(GET_LINE(),"expected ')' before ';'.");
 				return new AstCallExpression(id->GetLine(),id->GetScript(),id,params); 
 			
-#line 1844 "SteelParser.cpp"
+#line 1846 "SteelParser.cpp"
             break;
         }
 
@@ -1849,12 +1851,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 738 "steel.trison"
+#line 744 "steel.trison"
 
 				addError(GET_LINE(),"expected ')' before ';'");
 				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
 			
-#line 1858 "SteelParser.cpp"
+#line 1860 "SteelParser.cpp"
             break;
         }
 
@@ -1863,12 +1865,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-3].m_token_data));
 
-#line 744 "steel.trison"
+#line 750 "steel.trison"
 
 				addError(GET_LINE(),"missing '(' in function call");
 				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
 			
-#line 1872 "SteelParser.cpp"
+#line 1874 "SteelParser.cpp"
             break;
         }
 
@@ -1877,12 +1879,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 750 "steel.trison"
+#line 756 "steel.trison"
 
 				addError(GET_LINE(),"function call missing parentheses.");
 				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
 			
-#line 1886 "SteelParser.cpp"
+#line 1888 "SteelParser.cpp"
             break;
         }
 
@@ -1891,12 +1893,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstFuncIdentifier* id(static_cast<AstFuncIdentifier*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 756 "steel.trison"
+#line 762 "steel.trison"
 
 				addError(GET_LINE(),"invalid bareword. function call missing parentheses?");
 				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
 			
-#line 1900 "SteelParser.cpp"
+#line 1902 "SteelParser.cpp"
             break;
         }
 
@@ -1905,9 +1907,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstVarIdentifier * id(static_cast<AstVarIdentifier *>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 765 "steel.trison"
+#line 771 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id);
-#line 1911 "SteelParser.cpp"
+#line 1913 "SteelParser.cpp"
             break;
         }
 
@@ -1917,9 +1919,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstVarIdentifier * id(static_cast<AstVarIdentifier *>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 767 "steel.trison"
+#line 773 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,exp); 
-#line 1923 "SteelParser.cpp"
+#line 1925 "SteelParser.cpp"
             break;
         }
 
@@ -1929,9 +1931,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstVarIdentifier * id(static_cast<AstVarIdentifier *>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 769 "steel.trison"
+#line 775 "steel.trison"
  return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,true,exp); 
-#line 1935 "SteelParser.cpp"
+#line 1937 "SteelParser.cpp"
             break;
         }
 
@@ -1941,9 +1943,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstArrayIdentifier* id(static_cast<AstArrayIdentifier*>(m_stack_[m_stack_.size()-4].m_token_data));
             AstExpression* i(static_cast<AstExpression*>(m_stack_[m_stack_.size()-2].m_token_data));
 
-#line 771 "steel.trison"
+#line 777 "steel.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); 
-#line 1947 "SteelParser.cpp"
+#line 1949 "SteelParser.cpp"
             break;
         }
 
@@ -1952,9 +1954,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstArrayIdentifier* id(static_cast<AstArrayIdentifier*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 773 "steel.trison"
+#line 779 "steel.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); 
-#line 1958 "SteelParser.cpp"
+#line 1960 "SteelParser.cpp"
             break;
         }
 
@@ -1964,13 +1966,13 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstArrayIdentifier* id(static_cast<AstArrayIdentifier*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 775 "steel.trison"
+#line 781 "steel.trison"
 
 							AstArrayDeclaration *pDecl =  new AstArrayDeclaration(id->GetLine(),id->GetScript(),id);
 							pDecl->assign(exp);
 							return pDecl;
 						 
-#line 1974 "SteelParser.cpp"
+#line 1976 "SteelParser.cpp"
             break;
         }
 
@@ -1979,12 +1981,12 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             assert(ms_rule_table_[rule_index_].m_token_count < m_stack_.size());
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 784 "steel.trison"
+#line 790 "steel.trison"
  AstParamList * pList = new AstParamList ( exp->GetLine(), exp->GetScript() );
 		  pList->add(exp);
 		  return pList;
 		
-#line 1988 "SteelParser.cpp"
+#line 1990 "SteelParser.cpp"
             break;
         }
 
@@ -1994,9 +1996,9 @@ exp->GetScript(), AstUnaryOp::CAT,exp);
             AstParamList* list(static_cast<AstParamList*>(m_stack_[m_stack_.size()-3].m_token_data));
             AstExpression* exp(static_cast<AstExpression*>(m_stack_[m_stack_.size()-1].m_token_data));
 
-#line 789 "steel.trison"
+#line 795 "steel.trison"
  list->add(exp); return list;
-#line 2000 "SteelParser.cpp"
+#line 2002 "SteelParser.cpp"
             break;
         }
 
@@ -8115,7 +8117,7 @@ BarfCpp_::Size const SteelParser::ms_token_name_count_ = sizeof(SteelParser::ms_
 // ///////////////////////////////////////////////////////////////////////
 
 
-#line 55 "steel.trison"
+#line 56 "steel.trison"
 
 
 void SteelParser::addError(unsigned int line, const std::string &error)
@@ -8131,6 +8133,11 @@ void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
 	m_scanner->setBuffer(pBuffer,name);
 }
 
+void SteelParser::SetScannerDebugSpew(bool on)
+{
+	assert ( NULL != m_scanner );
+	m_scanner->DebugSpew(on);
+}
 
 SteelParser::Token SteelParser::Scan ()
 {
@@ -8138,4 +8145,4 @@ SteelParser::Token SteelParser::Scan ()
 	return m_scanner->Scan();
 }
 
-#line 8142 "SteelParser.cpp"
+#line 8149 "SteelParser.cpp"

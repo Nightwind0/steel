@@ -1,5 +1,6 @@
 %targets cpp
-
+%target.cpp.generate_debug_spew_code
+%target.cpp.generate_interactive_scanner
 %target.cpp.header_filename "SteelScanner.h"
 %target.cpp.implementation_filename "SteelScanner.cpp"
 %target.cpp.top_of_header_file %{
@@ -25,14 +26,6 @@ class AstBase;
 #include "Ast.h"
 %}
 
-
-
-%target.cpp.start_of_scan_method_actions %{
-%}
-
-%target.cpp.end_of_scan_method_actions %{
-	
-%}
 
 %target.cpp.top_of_class {
 	void setBuffer(const char * pBuffer, const std::string &name);
@@ -113,6 +106,7 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 
 
 
+
 %target.cpp.return_next_input_char {
 
 	if( m_pBuffer[m_char_cursor] == '\0')
@@ -128,18 +122,22 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 }
 
 
-
 %target.cpp.class_name SteelScanner
 
-%start_in_scanner_mode MAIN
+%start_with_state_machine MAIN
 %%
 
 
-%scanner_mode MAIN
+%state_machine MAIN
 :
 	(\z)
 	%target.cpp {
 		return SteelParser::Token(SteelParser::Terminal::END_,NULL);
+	}
+|
+	(/[*])
+	%target.cpp {
+		    SwitchToStateMachine(StateMachine::COMMENT_GUTS);
 	}
 |
 	(\n)
@@ -161,7 +159,7 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 	%target.cpp {
 		m_token = new AstString(m_line,m_script_name);
 		
-		ScannerMode(Mode::STRING_LITERAL_GUTS);
+		SwitchToStateMachine(StateMachine::STRING_LITERAL_GUTS);
 	}
 |
 	(true)
@@ -339,7 +337,7 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		return SteelParser::Token(SteelParser::Terminal::FINAL,NULL);
 	}
 |
-	(var)
+	(var|declare)
 	 %target.cpp{
 		return SteelParser::Token(SteelParser::Terminal::VAR,NULL);
 	}
@@ -356,7 +354,20 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 
 ;
 
-%scanner_mode STRING_LITERAL_GUTS
+%state_machine COMMENT_GUTS %ungreedy
+:
+	((\n|.)*[*]/)
+	%target.cpp{
+		SwitchToStateMachine(StateMachine::MAIN);
+	}
+|
+	((\n|.)*\z)
+	%target.cpp{
+		// Eat
+	}
+;
+
+%state_machine STRING_LITERAL_GUTS
 :
 
 	([^"])
@@ -378,7 +389,7 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 	%target.cpp{ 
 		AstString *pString = (AstString*)m_token;
 
-		ScannerMode(Mode::MAIN);
+		SwitchToStateMachine(StateMachine::MAIN);
 		return SteelParser::Token(SteelParser::Terminal::STRING,m_token);
 	}
 |

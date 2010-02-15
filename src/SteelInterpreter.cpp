@@ -64,7 +64,9 @@ SteelInterpreter::SteelInterpreter()
     m_boolean_f(this,&SteelInterpreter::boolean ),
     m_substr_f(this,&SteelInterpreter::substr ),
     m_strlen_f(this,&SteelInterpreter::strlen),
-    m_is_array_f(this,&SteelInterpreter::is_array)
+    m_is_array_f(this,&SteelInterpreter::is_array),
+    m_is_handle_f(this,&SteelInterpreter::is_handle),
+    m_is_valid_f(this,&SteelInterpreter::is_valid)
 {
     registerBifs();
     srand(time(0));
@@ -116,14 +118,17 @@ SteelFunctor *SteelInterpreter::removeFunction(const std::string &name, const st
 
 AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
                                           const std::string &script,
-                                          bool debugparser)
+                                          bool debugparser,
+					  bool debugscanner)
 {
     SteelParser parser;
     parser.setBuffer(script.c_str(),script_name);
 
     AstBase *pBase;
 
-    if(debugparser) parser.DebugSpew(true);
+    parser.DebugSpew(debugparser);
+    parser.SetScannerDebugSpew(debugscanner);
+    
 
     if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
     {
@@ -471,6 +476,8 @@ void SteelInterpreter::registerBifs()
     addFunction("substr",&m_substr_f);
     addFunction("strlen",&m_strlen_f);
     addFunction("is_array",&m_is_array_f);
+    addFunction("is_handle",&m_is_handle_f);
+    addFunction("is_valid",&m_is_valid_f);
 
 
     // Math functions
@@ -578,6 +585,25 @@ SteelType SteelInterpreter::is_array(const SteelType &array)
 
     return var;
 }
+
+
+SteelType SteelInterpreter::is_handle(const SteelType &handle)
+{
+    SteelType var;
+    var.set ( handle.isHandle() );
+
+    return var;
+}
+
+
+SteelType SteelInterpreter::is_valid(const SteelType &handle)
+{
+    SteelType var;
+    var.set ( handle.isValidHandle() );
+
+    return var;
+}
+
 
 ///////////////////////////////////////////////////////////////
 //

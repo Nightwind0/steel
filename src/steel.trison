@@ -39,6 +39,7 @@
 	bool hadError() const { return mbErrorEncountered; }
 	std::string getErrors() const { return mErrors; }
     Token Scan ();
+    void SetScannerDebugSpew(bool on);
 private:
 	void addError(unsigned int line, const std::string &error);
     SteelScanner *m_scanner;
@@ -67,6 +68,11 @@ void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
 	m_scanner->setBuffer(pBuffer,name);
 }
 
+void SteelParser::SetScannerDebugSpew(bool on)
+{
+	assert ( NULL != m_scanner );
+	m_scanner->DebugSpew(on);
+}
 
 SteelParser::Token SteelParser::Scan ()
 {

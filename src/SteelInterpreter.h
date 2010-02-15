@@ -64,7 +64,8 @@ public:
     // up to the user of SteelInterpreter
     AstScript * prebuildAst(const std::string &script_name,
                             const std::string &script,
-                            bool debugparser=false);
+                            bool debugparser=false,
+			    bool debugscanner=false);
 
     // After using prebuildAst, you can later run it using runAst
     SteelType runAst(AstScript *pAst);
@@ -139,6 +140,10 @@ private:
     SteelFunctor1Arg<SteelInterpreter,const std::string &> m_strlen_f;
     SteelType is_array(const SteelType &);
     SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_array_f;
+    SteelType is_handle(const SteelType&);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_handle_f;
+    SteelType is_valid(const SteelType&);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_valid_f;
 
     // Math built-ins
     SteelType ceil (double f);

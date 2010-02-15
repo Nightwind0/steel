@@ -50,6 +50,10 @@ public:
     void reserveArray(int index);
     SteelType pop();
 
+    // Handle stuff
+    bool isHandle() const { return m_storage == HANDLE; }
+    bool isValidHandle() const { return isHandle() && m_value.h != NULL; }
+
     // Assignment
     SteelType & operator=(const SteelType &rhs);
     // Unary operators
