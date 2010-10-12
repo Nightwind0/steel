@@ -1,0 +1,11 @@
+function random_name(){
+	 declare $r = math::rand();
+	 if($r % 2 == 0)
+	       return "Kevin";
+	 else return "Stephen";
+}
+
+declare $money = math::rand();
+println("{random_name()} is a good man. He has ${$money}.");
+
+println("I like brackets \{ and \}");
