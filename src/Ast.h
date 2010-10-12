@@ -164,6 +164,53 @@ private:
     AstStatement * m_pStatement;
 };
 
+
+class AstCaseStatement : public AstStatement
+{
+ public:
+  AstCaseStatement(unsigned int line, const std::string &script, AstStatement* statement);
+  virtual ~AstCaseStatement();
+
+  virtual ostream& print(std::ostream& out);
+  virtual eStopType execute(SteelInterpreter* pInterpreter);
+ private:
+  AstStatement* m_pStatement;
+};
+
+class AstCaseStatementList: public AstBase
+{
+ public:
+  AstCaseStatementList(unsigned int line, const std::string& script);
+  virtual ~AstCaseStatementList();
+
+  virtual ostream& print(std::ostream& out);
+  void add(AstExpression* matchExpression, AstCaseStatement* statement);
+  bool setDefault(AstCaseStatement* statement);
+  AstStatement::eStopType executeCaseMatching(AstExpression* value, SteelInterpreter* pInterpreter);
+ private:
+  struct Case{
+    AstExpression* matchExpression;
+    AstCaseStatement* statement;
+  };
+  std::list<Case> m_cases;
+  AstCaseStatement* m_pDefault;
+  
+};
+
+class AstSwitchStatement: public AstStatement
+{
+ public:
+  AstSwitchStatement(unsigned int line, const std::string& script,
+		     AstExpression* value, AstCaseStatementList* cases);
+
+  virtual ostream& print(std::ostream& out);
+  virtual eStopType execute(SteelInterpreter* pInterpreter);
+ private:
+  AstExpression* m_pValue;
+  AstCaseStatementList* m_pCases;
+};
+
+
 class AstReturnStatement : public AstStatement
 {
 public:

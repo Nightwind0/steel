@@ -124,7 +124,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal ELSE
 %terminal FUNCTION
 %terminal BAREWORD %type.cpp "AstBareword*"
-%terminal VAR_IDENTIFIER
+%terminal VAR_IDENTIFIER %type.cpp "AstVarIdentifier*"
 %terminal ARRAY_IDENTIFIER
 %terminal FOR
 %terminal VAR
@@ -143,6 +143,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal SCOPE
 %terminal SWITCH
 %terminal CASE
+%terminal DEFAULT
 
 %prec.left CORRECT
 %prec.left NON_ELSE_INCORRECT
@@ -531,15 +532,37 @@ SteelParser::Token SteelParser::Scan ()
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT()); 
 			}
 |
-	SWITCH '(' exp:exp ')' '{' case_list '}' 
+	SWITCH '(' exp:exp ')' '{' case_list:case_list '}' %target.cpp {
+	       	   	   return new AstSwitchStatement(GET_LINE(),GET_SCRIPT(),exp,case_list);
+	}
 
 ;
 
-%nonterminal case_list 
+%nonterminal case_list %type.cpp "AstCaseStatementList*"
 :
-	case_list CASE INT:i ':' statement_list 
+	case_list:list CASE INT:i ')' statement_list:stmt %target.cpp { list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	// this space intentionally left blank
+	case_list:list CASE STRING:str ')' statement_list:stmt %target.cpp { list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
+|
+	case_list:list CASE VAR_IDENTIFIER:var ')' statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
+|
+	CASE INT:i ')' statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+|
+	CASE STRING:str ')' statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+|
+	CASE VAR_IDENTIFIER:var ')' statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+|
+	DEFAULT ')' statement_list:stmt %target.cpp {AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->setDefault(new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+|
+	case_list:list DEFAULT ')' statement_list:stmt %target.cpp {
+										AstCaseStatement* case_stmt = new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt);
+										if(!list->setDefault(case_stmt)){
+												delete case_stmt;
+		       	       	   		       		   			     addError(GET_LINE(),"duplicate default statement found");
+											     return list;
+											     }
+											     return list;
+								  }
 ;
 
 
@@ -635,9 +658,11 @@ SteelParser::Token SteelParser::Scan ()
 |
 
 	NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); }
+/*
 |
 	CAT exp:exp  %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(),
 exp->GetScript(), AstUnaryOp::CAT,exp); }
+*/
 |
 	exp:lvalue '[' exp:index ']' %prec PAREN %target.cpp { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
 |

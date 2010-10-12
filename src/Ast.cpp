@@ -384,6 +384,118 @@ ostream & AstIfStatement::print(std::ostream &out)
     return out;
 }
 
+
+AstCaseStatement::AstCaseStatement(unsigned int line, const std::string& script,
+                                   AstStatement* pStmt)
+  :AstStatement(line,script),m_pStatement(pStmt)
+{
+
+}
+
+AstCaseStatement::~AstCaseStatement()
+{
+  delete m_pStatement;
+}
+
+ostream& AstCaseStatement::print(std::ostream& out)
+{
+  return m_pStatement->print(out);
+}
+
+AstStatement::eStopType AstCaseStatement::execute(SteelInterpreter* pInterpreter)
+{
+  return m_pStatement->execute(pInterpreter);
+}
+
+AstCaseStatementList::AstCaseStatementList(unsigned int line, const std::string& script)
+  :AstBase(line,script),m_pDefault(NULL)
+{
+
+}
+
+AstCaseStatementList::~AstCaseStatementList()
+{
+  // TODO: Delete all cases
+}
+
+ostream& AstCaseStatementList::print(std::ostream& out)
+{
+  // TODO: This
+  return out;
+}
+
+void AstCaseStatementList::add(AstExpression* matchExpression, AstCaseStatement* statement)
+{
+  Case case_;
+  case_.matchExpression = matchExpression;
+  case_.statement = statement;
+  m_cases.push_back(case_);
+}
+
+bool AstCaseStatementList::setDefault(AstCaseStatement* statement)
+{
+  if(m_pDefault){
+    return false;
+  }
+
+  m_pDefault = statement;
+  return true;
+}
+
+AstStatement::eStopType AstCaseStatementList::executeCaseMatching(AstExpression* value, SteelInterpreter* pInterpreter)
+{
+  SteelType val = value->evaluate(pInterpreter);
+  bool matched = false;
+  // TODO: Later, if we switch to enum/literal ONLY, then we can make this a map
+  for(std::list<Case>::iterator iter = m_cases.begin();
+      iter != m_cases.end(); iter++)
+    {
+       if(matched || iter->matchExpression->evaluate(pInterpreter) == val)
+       {
+	 matched = true;
+	 AstStatement::eStopType stopType = iter->statement->execute(pInterpreter);
+	  if(stopType == AstStatement::BREAK || stopType == AstStatement::RETURN)
+	    return stopType;
+	  // Otherwise, keep going - this enables fallthroughs;
+       }
+    }
+  
+  if(m_pDefault)
+    return m_pDefault->execute(pInterpreter);
+
+  return AstStatement::COMPLETED;
+}
+
+AstSwitchStatement::AstSwitchStatement(unsigned int line, const std::string& script,
+		     AstExpression* value, AstCaseStatementList* cases)
+  :AstStatement(line,script),m_pValue(value),m_pCases(cases)
+{
+}
+
+
+std::ostream& AstSwitchStatement::print(std::ostream& out)
+{
+  return out;
+}
+
+AstStatement::eStopType AstSwitchStatement::execute(SteelInterpreter* pInterpreter)
+{
+  // TODO: Here we look for a matching case and execute it. 
+  // We could look for all matching cases, or throw an error if two match
+  // Don't forget, if our stop type is complete, to execute the next case as well.
+  // If its break, we stop. If it's return, we return .
+  // TODO: Future; Add enums to steel. Then, have the C++ be able to inject enums in,
+  // and then ONLY accept literal ints or enums in switch statements
+  eStopType stopType =  m_pCases->executeCaseMatching(m_pValue,pInterpreter);
+
+  // Eat breaks
+  if(stopType == BREAK) 
+    stopType = COMPLETED;
+
+  return stopType;
+}
+
+
 AstReturnStatement::AstReturnStatement(unsigned int line, const std::string &script, AstExpression *pExp)
     :AstStatement(line,script),m_pExpression(pExp)
 {
@@ -811,6 +923,7 @@ SteelType AstUnaryOp::evaluate(SteelInterpreter *pInterpreter)
             return m_operand->evaluate(pInterpreter);
         case NOT:
             return ! m_operand->evaluate(pInterpreter);
+#if 0 // We no longer allow unary cat. Use array() 
         case CAT:
         {
             SteelType var;
@@ -818,6 +931,7 @@ SteelType AstUnaryOp::evaluate(SteelInterpreter *pInterpreter)
             var.add( m_operand->evaluate(pInterpreter) );
             return var;
         }
+#endif
         }
     }
     catch(OperationMismatch m)

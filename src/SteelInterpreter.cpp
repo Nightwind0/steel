@@ -66,7 +66,8 @@ SteelInterpreter::SteelInterpreter()
     m_strlen_f(this,&SteelInterpreter::strlen),
     m_is_array_f(this,&SteelInterpreter::is_array),
     m_is_handle_f(this,&SteelInterpreter::is_handle),
-    m_is_valid_f(this,&SteelInterpreter::is_valid)
+    m_is_valid_f(this,&SteelInterpreter::is_valid),
+    m_array_f(this,&SteelInterpreter::array)
 {
     registerBifs();
     srand(time(0));
@@ -478,6 +479,7 @@ void SteelInterpreter::registerBifs()
     addFunction("is_array",&m_is_array_f);
     addFunction("is_handle",&m_is_handle_f);
     addFunction("is_valid",&m_is_valid_f);
+    addFunction("array",&m_array_f);
 
 
     // Math functions
@@ -576,6 +578,15 @@ SteelType SteelInterpreter::strlen(const std::string &str)
     var.set ( (int)str.size() );
 
     return var;
+}
+
+SteelType SteelInterpreter::array(const SteelType& value)
+{
+  SteelType array;
+  array.set(SteelArray());
+  array.add(value);
+
+  return array;
 }
 
 SteelType SteelInterpreter::is_array(const SteelType &array)

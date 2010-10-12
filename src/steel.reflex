@@ -182,6 +182,21 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		return SteelParser::Token(SteelParser::Terminal::IMPORT,NULL);
 	}
 |
+	(case)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::CASE,NULL);
+	}
+|
+	(switch)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::SWITCH,NULL);
+	}
+|
+	(default)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::DEFAULT,NULL);
+	}
+|
 	(::)
 	%target.cpp {
 		return SteelParser::Token(SteelParser::Terminal::SCOPE,NULL);

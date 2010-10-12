@@ -95,12 +95,12 @@ printarray(@woot);
 printarray(5:6:12.0:"Hooey");
 
 
-var @ted = :(1:2):(3:4);
+var @ted = array((1:2):(3:4));
 
 printarray(@ted);
 
 
-if( is_array ( :2 ) ) println("Yes.");
+if( is_array ( array(2) ) ) println("Yes.");
 
 
 if( is_array ( 2 ) ) println("Help!");

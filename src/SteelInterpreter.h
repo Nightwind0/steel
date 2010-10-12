@@ -144,6 +144,9 @@ private:
     SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_handle_f;
     SteelType is_valid(const SteelType&);
     SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_valid_f;
+    SteelType array   (const SteelType&);
+    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_array_f;
+
 
     // Math built-ins
     SteelType ceil (double f);
