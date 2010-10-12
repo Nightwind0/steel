@@ -144,6 +144,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal SWITCH
 %terminal CASE
 %terminal DEFAULT
+%terminal CASE_DELIM
 
 %prec.left CORRECT
 %prec.left NON_ELSE_INCORRECT
@@ -540,21 +541,21 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal case_list %type.cpp "AstCaseStatementList*"
 :
-	case_list:list CASE INT:i ')' statement_list:stmt %target.cpp { list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	case_list:list CASE INT:i CASE_DELIM statement_list:stmt %target.cpp { list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	case_list:list CASE STRING:str ')' statement_list:stmt %target.cpp { list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
+	case_list:list CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
 |
-	case_list:list CASE VAR_IDENTIFIER:var ')' statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
+	case_list:list CASE VAR_IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
 |
-	CASE INT:i ')' statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	CASE INT:i CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	CASE STRING:str ')' statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	CASE VAR_IDENTIFIER:var ')' statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	CASE VAR_IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	DEFAULT ')' statement_list:stmt %target.cpp {AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->setDefault(new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	DEFAULT CASE_DELIM statement_list:stmt %target.cpp {AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->setDefault(new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	case_list:list DEFAULT ')' statement_list:stmt %target.cpp {
+	case_list:list DEFAULT CASE_DELIM statement_list:stmt %target.cpp {
 										AstCaseStatement* case_stmt = new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt);
 										if(!list->setDefault(case_stmt)){
 												delete case_stmt;

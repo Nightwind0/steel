@@ -1,23 +1,23 @@
 switch(5){
-	case 1)
+	case 1:
 	     println("One");
-	case 5)
+	case 5:
 	     println("Five");
 	     println("Alive");
-	case 6)
+	case 6:
 	     println("Six");
-	case 7)
+	case 7:
 	     println("Seven");
 	     break;
-	default)
+	default:
 		println("Default");
 }
 
 
 switch(0){
-	case 3)
+	case 3:
 	     println("Three");
 	     break;
-	default)
+	default:
 	println("Default");
 }
