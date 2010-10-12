@@ -392,13 +392,6 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		pString->addChar(accepted_string[0]);
 	}
 |
-	(\\.)
-	%target.cpp{
-		AstString *pString = (AstString*)m_token;
-		pString->addChar( AstString::getEscapedChar ( accepted_string[1] ) );
-	}
-
-|
 
 	(") 
 	%target.cpp{ 

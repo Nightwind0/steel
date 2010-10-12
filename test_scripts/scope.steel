@@ -1,0 +1,17 @@
+function hippo::squeak()
+{
+	println("The hippo squeaks");
+}
+
+function hippo::honk()
+{
+	println("The hippo honks");
+}
+
+hippo::squeak();
+
+using "hippo";
+
+squeak();
+squeak();
+honk();

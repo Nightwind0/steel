@@ -86,7 +86,63 @@ char AstString::getEscapedChar(char c)
 SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 {
     SteelType var;
-    var.set(m_value);
+    std::string value;
+    // TODO: Here, we can process substrings/expressions
+    std::string subexpr = "return "; // This basically makes the expression into something useful. sort of a hack...
+    bool escaping = false;
+    bool in_subexpr = false;
+    for(int i=0;i<m_value.size();i++){
+      char c = m_value[i];
+
+      if(in_subexpr)
+      {
+	if(c!='}')
+	  subexpr+=c;
+	else
+	{
+	  in_subexpr = false;
+	  subexpr += ';';
+	
+#ifndef NDEBUG
+	  std::cerr << "Sub expression: " << subexpr << std::endl;
+#endif
+	  SteelParser parser;
+	  parser.setBuffer(subexpr.c_str(),m_value);
+	  AstBase * pBase;
+	  if(parser.Parse(&pBase) == SteelParser::PRC_SUCCESS && !parser.hadError()){
+	    AstScript * pScript = dynamic_cast<AstScript*>(pBase);
+	    if(pScript){
+	      pScript->executeScript(pInterpreter);
+	      delete pScript;
+	    }
+	    value += (std::string)pInterpreter->getReturn();
+	  }else{
+	    value += "%err%";
+	  }
+
+	  subexpr = "return ";
+	}
+      }
+      else if(escaping)
+      {
+	value += getEscapedChar(c);
+	escaping = false;
+      }
+      else if(c == '\\')
+      {
+	escaping = true;
+      }
+      else if(c == '{')
+      {
+	in_subexpr = true;
+      }
+      else
+      {
+	value += c;
+      }
+    }
+
+    var.set(value);
 
     return var;
 }
