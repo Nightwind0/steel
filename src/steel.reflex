@@ -202,11 +202,6 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		return SteelParser::Token(SteelParser::Terminal::SCOPE,NULL);
 	}
 |
-	(:)
-	%target.cpp {
-		return SteelParser::Token(SteelParser::Terminal::CAT,NULL);
-	}
-|
 	(\-\-)
 	%target.cpp {
 		return SteelParser::Token(SteelParser::Terminal::DECREMENT,NULL);

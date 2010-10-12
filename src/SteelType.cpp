@@ -512,52 +512,7 @@ SteelType  SteelType::d(const SteelType &rhs)
     return var;
 }
 
-SteelType SteelType::cat(const SteelType &rhs)
-{
-    SteelType ret;
-    SteelType var;
 
-
-    switch(m_storage)
-    {
-    case SteelType::ARRAY:
-        ret.set ( *m_value.a );
-        ret.add ( rhs );
-        return ret;
-    case SteelType::HANDLE:
-        var.set ( m_value.h );
-        break;
-
-    case SteelType::STRING:
-    {
-        // Create a var and put this string in it.
-        var.set ( *m_value.s );
-    
-        break;
-    }
-    case SteelType::INT:
-    {
-        var.set ( m_value.i );
-        break;
-    }
-    case SteelType::DOUBLE:
-    {
-        var.set ( m_value.d );
-        break;
-    }
-    case SteelType::BOOL:
-    {
-        var.set ( m_value.b );
-        break;
-    }
-    }
-   
-    ret.set ( SteelArray() );
-    ret.add ( var );
-    ret.add ( rhs );
-
-    return ret;
-}
 
 
 SteelType SteelType::operator-()

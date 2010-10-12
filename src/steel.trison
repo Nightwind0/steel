@@ -1,3 +1,4 @@
+
 %targets cpp
 %target.cpp.header_filename "SteelParser.h"
 %target.cpp.implementation_filename "SteelParser.cpp"
@@ -134,7 +135,6 @@ SteelParser::Token SteelParser::Scan ()
 %terminal BOOLEAN 
 %terminal INCREMENT
 %terminal DECREMENT
-%terminal CAT
 %terminal POP
 %terminal FINAL
 %terminal CONSTANT
@@ -635,8 +635,6 @@ SteelParser::Token SteelParser::Scan ()
 |
 	exp:a GTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }	
 |
-	exp:a CAT exp:b %prec ADD_SUB %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::CAT,a,b); }
-|
 	'(' exp:exp ')' %prec PAREN %target.cpp { return exp; }
 |
 	'-' exp:exp  %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); }
@@ -648,13 +646,6 @@ SteelParser::Token SteelParser::Scan ()
 						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
 								  }
 
-
-|
-
-	CAT %error  %prec UNARY %target.cpp {
-						addError(GET_LINE(),"expected expression after ':'.");
-						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::CAT,new AstExpression(GET_LINE(),GET_SCRIPT()));
-								  }
 |
 
 	NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); }

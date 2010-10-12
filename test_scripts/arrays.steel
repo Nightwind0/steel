@@ -64,9 +64,9 @@ println (@array[0]);
 
 @copy = @array;
 var @second;
-@second = (@second : 5 : "Bob");
-@copy = (@copy : @second);
-@copy = (@copy : 12 : 15);
+@second = array(@second , 5 , "Bob");
+@copy = array(@copy , @second);
+@copy = array(@copy , 12 , 15);
 println(pop @copy);
 
 var $count;
@@ -87,15 +87,15 @@ println( @two_d[0][0] );
 
 
 var @woot;
-@woot = (0x20 : 13.8 : "Woon" : @copy) ;
+@woot = array(0x20 , 13.8 , "Woon" , @copy) ;
 
 printarray(@woot);
 
 
-printarray(5:6:12.0:"Hooey");
+printarray(array(5,6,12.0,"Hooey"));
 
 
-var @ted = array((1:2):(3:4));
+var @ted = array(array(1,2),array(3,4));
 
 printarray(@ted);
 
@@ -106,7 +106,7 @@ if( is_array ( array(2) ) ) println("Yes.");
 if( is_array ( 2 ) ) println("Help!");
 
 
-println ( (1:2:"Three":"Four")[2] );
+println ( array(1,2,"Three","Four")[2] );
 
 
 

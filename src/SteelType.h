@@ -75,7 +75,6 @@ public:
     SteelType  operator>(const SteelType &rhs);
     SteelType  operator>=(const SteelType &rhs);
     SteelType  d(const SteelType &rhs);
-    SteelType cat(const SteelType &rhs);
 
     bool isConst()const;
     void makeConst();

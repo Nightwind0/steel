@@ -580,11 +580,10 @@ SteelType SteelInterpreter::strlen(const std::string &str)
     return var;
 }
 
-SteelType SteelInterpreter::array(const SteelType& value)
+SteelType SteelInterpreter::array(const SteelArray& value)
 {
   SteelType array;
-  array.set(SteelArray());
-  array.add(value);
+  array.set(value);
 
   return array;
 }

@@ -85,7 +85,7 @@ enum
 #endif // !defined(BarfCpp_namespace_)
 
 
-#line 4 "steel.trison"
+#line 5 "steel.trison"
 
 #if !defined(STEEL_PARSER_HPP_)
 #define STEEL_PARSER_HPP_
@@ -174,16 +174,15 @@ public:
             BOOLEAN = 283,
             INCREMENT = 284,
             DECREMENT = 285,
-            CAT = 286,
-            POP = 287,
-            FINAL = 288,
-            CONSTANT = 289,
-            DO = 290,
-            IMPORT = 291,
-            SCOPE = 292,
-            SWITCH = 293,
-            CASE = 294,
-            DEFAULT = 295
+            POP = 286,
+            FINAL = 287,
+            CONSTANT = 288,
+            DO = 289,
+            IMPORT = 290,
+            SCOPE = 291,
+            SWITCH = 292,
+            CASE = 293,
+            DEFAULT = 294
         }; // end of enum SteelParser::Terminal::Name
     }; // end of struct SteelParser::Terminal
 
@@ -201,22 +200,22 @@ public:
           */
         enum Name
         {
-            array_identifier = 273,
-            call = 275,
-            case_list = 260,
-            exp = 262,
-            exp_statement = 264,
-            func_definition = 248,
-            func_identifier = 271,
-            int_literal = 266,
-            param_definition = 254,
-            param_id = 250,
-            param_list = 279,
+            array_identifier = 269,
+            call = 271,
+            case_list = 256,
+            exp = 258,
+            exp_statement = 260,
+            func_definition = 244,
+            func_identifier = 267,
+            int_literal = 262,
+            param_definition = 250,
+            param_id = 246,
+            param_list = 275,
             root = 0,
-            statement = 258,
-            statement_list = 256,
-            var_identifier = 269,
-            vardecl = 277,
+            statement = 254,
+            statement_list = 252,
+            var_identifier = 265,
+            vardecl = 273,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).
@@ -337,7 +336,7 @@ public:
     ParserReturnCode Parse (AstBase* *return_token, ParseNonterminal::Name nonterminal_to_parse = ParseNonterminal::root);
 
 
-#line 37 "steel.trison"
+#line 38 "steel.trison"
 
     void setBuffer(const char *pBuffer, const std::string &script_name);
 	bool hadError() const { return mbErrorEncountered; }
@@ -351,7 +350,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 355 "SteelParser.h"
+#line 354 "SteelParser.h"
 
 
 private:
@@ -365,22 +364,22 @@ private:
         enum Name
         {
             none_ = 0,
-            root = 296,
-            func_definition = 297,
-            param_id = 298,
-            param_definition = 299,
-            statement_list = 300,
-            statement = 301,
-            case_list = 302,
-            exp = 303,
-            exp_statement = 304,
-            int_literal = 305,
-            var_identifier = 306,
-            func_identifier = 307,
-            array_identifier = 308,
-            call = 309,
-            vardecl = 310,
-            param_list = 311
+            root = 295,
+            func_definition = 296,
+            param_id = 297,
+            param_definition = 298,
+            statement_list = 299,
+            statement = 300,
+            case_list = 301,
+            exp = 302,
+            exp_statement = 303,
+            int_literal = 304,
+            var_identifier = 305,
+            func_identifier = 306,
+            array_identifier = 307,
+            call = 308,
+            vardecl = 309,
+            param_list = 310
         }; // end of enum SteelParser::Nonterminal_::Name
     }; // end of struct SteelParser::Nonterminal_
     struct Transition_;
@@ -467,9 +466,9 @@ private:
 std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token);
 
 
-#line 16 "steel.trison"
+#line 17 "steel.trison"
 
 
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 476 "SteelParser.h"
+#line 475 "SteelParser.h"

@@ -140,6 +140,23 @@ private:
         ObjType *m_pObj;
 };
 
+template<class ObjType>
+class SteelFunctorArray : public SteelFunctor
+{
+ public:
+  typedef SteelType (ObjType::*FuncPointer)(const SteelArray&);
+ SteelFunctorArray(ObjType* obj,FuncPointer p):
+  m_pObj(obj),m_pFunc(p){}
+  virtual ~SteelFunctorArray(){}
+  virtual SteelType Call(SteelInterpreter*,const SteelArray &params)
+  {
+    return (m_pObj->*m_pFunc)(params);
+  }
+ private:
+  FuncPointer m_pFunc;
+  ObjType* m_pObj;
+};
+
 /*
 
 template <class Class>

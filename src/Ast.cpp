@@ -768,8 +768,6 @@ std::string AstBinOp::ToString(Op op)
         return " <= ";
     case GTE:
         return " >=";
-    case CAT:
-        return " : ";
     default:
         assert(0);
         return "";
@@ -851,8 +849,6 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
         case GTE:
             return m_left->evaluate(pInterpreter)
                 >= m_right->evaluate(pInterpreter);
-        case CAT:
-            return m_left->evaluate(pInterpreter).cat( m_right->evaluate(pInterpreter) );
         default:
             assert(0);
     
@@ -898,8 +894,6 @@ std::string AstUnaryOp::ToString(Op op)
         return "+";
     case NOT:
         return " not ";
-    case CAT:
-        return " : " ;
     default:
         assert ( 0 );
         return "";

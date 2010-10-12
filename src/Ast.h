@@ -502,8 +502,7 @@ public:
     LT,
     GT,
     LTE,
-    GTE,
-    CAT
+    GTE
     };
 
     static std::string ToString(Op op);
