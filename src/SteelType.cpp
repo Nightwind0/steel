@@ -320,6 +320,10 @@ SteelType  SteelType::operator/(const SteelType &rhs)
     SteelType val;
     storage s = std::max(m_storage,rhs.m_storage);
 
+    double right = (double)rhs;
+
+    if(right == 0.0) throw DivideByZero();
+
     switch(s)
     {
     case SteelType::ARRAY:
@@ -328,10 +332,10 @@ SteelType  SteelType::operator/(const SteelType &rhs)
         throw OperationMismatch();
         return val;
     case SteelType::INT:
-        val.set ( (int)*this / (int)rhs );
+      val.set ( (int)*this / right );
         return val;
     case SteelType::DOUBLE:
-        val.set ( (double)*this / (double)rhs);
+        val.set ( (double)*this / right);
         return val;
     case SteelType::STRING:
         throw OperationMismatch();
@@ -347,6 +351,10 @@ SteelType  SteelType::operator%(const SteelType &rhs)
     SteelType val;
     storage s = std::max(m_storage,rhs.m_storage);
 
+    int right = (int)rhs;
+
+    if(right == 0) throw DivideByZero();
+
     switch(s)
     {
     case SteelType::ARRAY:
@@ -355,10 +363,10 @@ SteelType  SteelType::operator%(const SteelType &rhs)
         throw OperationMismatch();
         return val;
     case SteelType::INT:
-        val.set ( (int)*this % (int)rhs );
+        val.set ( (int)*this % right );
         return val;
     case SteelType::DOUBLE:
-        val.set ( (int)*this % (int)rhs);
+        val.set ( (int)*this % right );
         return val;
     case SteelType::STRING:
         throw OperationMismatch();
@@ -499,6 +507,10 @@ SteelType  SteelType::d(const SteelType &rhs)
     SteelType var;
     int dice = (int)*this;
     int sides = (int)rhs;
+
+    if(sides == 0){
+      throw DivideByZero();
+    }
 
     int total = 0;
 

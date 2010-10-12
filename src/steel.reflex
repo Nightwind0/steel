@@ -282,12 +282,12 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		 return SteelParser::Token(SteelParser::Terminal::D,NULL);
 	 }
 |
-	(and) 
+	(and|&&) 
 	%target.cpp{ 
 		 return SteelParser::Token(SteelParser::Terminal::AND,NULL);
 	 }
 |
-	(or) 
+	(or|\|\|) 
 	%target.cpp{ 
 		 return SteelParser::Token(SteelParser::Terminal::OR,NULL);
 	 }

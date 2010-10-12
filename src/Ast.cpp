@@ -860,6 +860,12 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
                              GetLine(),GetScript(),
                              "Binary operation '" + ToString(m_op) + "' disallowed between these types");
     }
+    catch(DivideByZero z)
+    {
+      throw SteelException(SteelException::RUNTIME,
+			   GetLine(),GetScript(),
+			   "Divide by zero error on operation '" + ToString(m_op) +"'");
+    }
 
     return SteelType();
 }

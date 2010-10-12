@@ -77,6 +77,10 @@ class ConstViolation
 {
 };
 
+class DivideByZero
+{
+};
+
 #endif
 
 

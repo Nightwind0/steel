@@ -1,4 +1,5 @@
 
+println("All should be TRUE");
 
 if ( true and true ) println ( "TRUE" );
 else println ( "FALSE true" );
@@ -30,3 +31,22 @@ else println ( "TRUE" );
 
 if ( not false ) println ("TRUE");
 else println ( "FALSE 1false");
+
+
+if( true && true ) println("TRUE");
+else println ( "FALSE" );
+
+if ( true || false ) println("TRUE");
+else println( "FALSE" );
+
+if( false || true ) println("TRUE");
+else println("FALSE");
+
+if ( !false ) println("TRUE");
+else println("FALSE");
+
+if (!!true) println("TRUE");
+else println("FALSE");
+
+if(not !true) println("TRUE");
+else println("FALSE");
