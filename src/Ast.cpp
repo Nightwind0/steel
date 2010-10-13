@@ -682,10 +682,12 @@ AstForEachStatement::~AstForEachStatement()
 ostream& AstForEachStatement::print(std::ostream &out)
 {
     // TODO: This
+	return out;
 }
 
 AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpreter)
 {
+	AstStatement::eStopType stoptype;
     pInterpreter->pushScope();
     try{
 
@@ -729,7 +731,11 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
 	for(unsigned int i=0;i<array.getArraySize();i++)
 	{
 	    *val = array.getElement(i);
-	    m_pStatement->execute(pInterpreter);
+	    stoptype = m_pStatement->execute(pInterpreter);
+		if(stoptype == RETURN || stoptype == BREAK){
+			pInterpreter->popScope();
+			return stoptype;
+		}
 	}
 
     }
@@ -739,6 +745,8 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
     }
 
     pInterpreter->popScope();
+
+	return COMPLETED;
 }
 
 
