@@ -92,54 +92,54 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
     bool escaping = false;
     bool in_subexpr = false;
     for(int i=0;i<m_value.size();i++){
-      char c = m_value[i];
+	char c = m_value[i];
 
-      if(in_subexpr)
-      {
-	if(c!='}')
-	  subexpr+=c;
-	else
+	if(in_subexpr)
 	{
-	  in_subexpr = false;
-	  subexpr += ';';
+	    if(c!='}')
+		subexpr+=c;
+	    else
+	    {
+		in_subexpr = false;
+		subexpr += ';';
 	
 #ifndef NDEBUG
-	  std::cerr << "Sub expression: " << subexpr << std::endl;
+		std::cerr << "Sub expression: " << subexpr << std::endl;
 #endif
-	  SteelParser parser;
-	  parser.setBuffer(subexpr.c_str(),m_value);
-	  AstBase * pBase;
-	  if(parser.Parse(&pBase) == SteelParser::PRC_SUCCESS && !parser.hadError()){
-	    AstScript * pScript = dynamic_cast<AstScript*>(pBase);
-	    if(pScript){
-	      pScript->executeScript(pInterpreter);
-	      delete pScript;
-	    }
-	    value += (std::string)pInterpreter->getReturn();
-	  }else{
-	    value += "%err%";
-	  }
+		SteelParser parser;
+		parser.setBuffer(subexpr.c_str(),m_value);
+		AstBase * pBase;
+		if(parser.Parse(&pBase) == SteelParser::PRC_SUCCESS && !parser.hadError()){
+		    AstScript * pScript = dynamic_cast<AstScript*>(pBase);
+		    if(pScript){
+			pScript->executeScript(pInterpreter);
+			delete pScript;
+		    }
+		    value += (std::string)pInterpreter->getReturn();
+		}else{
+		    value += "%err%";
+		}
 
-	  subexpr = "return ";
+		subexpr = "return ";
+	    }
 	}
-      }
-      else if(escaping)
-      {
-	value += getEscapedChar(c);
-	escaping = false;
-      }
-      else if(c == '\\')
-      {
-	escaping = true;
-      }
-      else if(c == '{')
-      {
-	in_subexpr = true;
-      }
-      else
-      {
-	value += c;
-      }
+	else if(escaping)
+	{
+	    value += getEscapedChar(c);
+	    escaping = false;
+	}
+	else if(c == '\\')
+	{
+	    escaping = true;
+	}
+	else if(c == '{')
+	{
+	    in_subexpr = true;
+	}
+	else
+	{
+	    value += c;
+	}
     }
 
     var.set(value);
@@ -443,112 +443,112 @@ ostream & AstIfStatement::print(std::ostream &out)
 
 AstCaseStatement::AstCaseStatement(unsigned int line, const std::string& script,
                                    AstStatement* pStmt)
-  :AstStatement(line,script),m_pStatement(pStmt)
+    :AstStatement(line,script),m_pStatement(pStmt)
 {
 
 }
 
 AstCaseStatement::~AstCaseStatement()
 {
-  delete m_pStatement;
+    delete m_pStatement;
 }
 
 ostream& AstCaseStatement::print(std::ostream& out)
 {
-  return m_pStatement->print(out);
+    return m_pStatement->print(out);
 }
 
 AstStatement::eStopType AstCaseStatement::execute(SteelInterpreter* pInterpreter)
 {
-  return m_pStatement->execute(pInterpreter);
+    return m_pStatement->execute(pInterpreter);
 }
 
 AstCaseStatementList::AstCaseStatementList(unsigned int line, const std::string& script)
-  :AstBase(line,script),m_pDefault(NULL)
+    :AstBase(line,script),m_pDefault(NULL)
 {
 
 }
 
 AstCaseStatementList::~AstCaseStatementList()
 {
-  // TODO: Delete all cases
+    // TODO: Delete all cases
 }
 
 ostream& AstCaseStatementList::print(std::ostream& out)
 {
-  // TODO: This
-  return out;
+    // TODO: This
+    return out;
 }
 
 void AstCaseStatementList::add(AstExpression* matchExpression, AstCaseStatement* statement)
 {
-  Case case_;
-  case_.matchExpression = matchExpression;
-  case_.statement = statement;
-  m_cases.push_back(case_);
+    Case case_;
+    case_.matchExpression = matchExpression;
+    case_.statement = statement;
+    m_cases.push_back(case_);
 }
 
 bool AstCaseStatementList::setDefault(AstCaseStatement* statement)
 {
-  if(m_pDefault){
-    return false;
-  }
+    if(m_pDefault){
+	return false;
+    }
 
-  m_pDefault = statement;
-  return true;
+    m_pDefault = statement;
+    return true;
 }
 
 AstStatement::eStopType AstCaseStatementList::executeCaseMatching(AstExpression* value, SteelInterpreter* pInterpreter)
 {
-  SteelType val = value->evaluate(pInterpreter);
-  bool matched = false;
-  // TODO: Later, if we switch to enum/literal ONLY, then we can make this a map
-  for(std::list<Case>::iterator iter = m_cases.begin();
-      iter != m_cases.end(); iter++)
+    SteelType val = value->evaluate(pInterpreter);
+    bool matched = false;
+    // TODO: Later, if we switch to enum/literal ONLY, then we can make this a map
+    for(std::list<Case>::iterator iter = m_cases.begin();
+	iter != m_cases.end(); iter++)
     {
-       if(matched || iter->matchExpression->evaluate(pInterpreter) == val)
-       {
-	 matched = true;
-	 AstStatement::eStopType stopType = iter->statement->execute(pInterpreter);
-	  if(stopType == AstStatement::BREAK || stopType == AstStatement::RETURN)
-	    return stopType;
-	  // Otherwise, keep going - this enables fallthroughs;
-       }
+	if(matched || iter->matchExpression->evaluate(pInterpreter) == val)
+	{
+	    matched = true;
+	    AstStatement::eStopType stopType = iter->statement->execute(pInterpreter);
+	    if(stopType == AstStatement::BREAK || stopType == AstStatement::RETURN)
+		return stopType;
+	    // Otherwise, keep going - this enables fallthroughs;
+	}
     }
   
-  if(m_pDefault)
-    return m_pDefault->execute(pInterpreter);
+    if(m_pDefault)
+	return m_pDefault->execute(pInterpreter);
 
-  return AstStatement::COMPLETED;
+    return AstStatement::COMPLETED;
 }
 
 AstSwitchStatement::AstSwitchStatement(unsigned int line, const std::string& script,
-		     AstExpression* value, AstCaseStatementList* cases)
-  :AstStatement(line,script),m_pValue(value),m_pCases(cases)
+				       AstExpression* value, AstCaseStatementList* cases)
+    :AstStatement(line,script),m_pValue(value),m_pCases(cases)
 {
 }
 
 
 std::ostream& AstSwitchStatement::print(std::ostream& out)
 {
-  return out;
+    return out;
 }
 
 AstStatement::eStopType AstSwitchStatement::execute(SteelInterpreter* pInterpreter)
 {
-  // TODO: Here we look for a matching case and execute it. 
-  // We could look for all matching cases, or throw an error if two match
-  // Don't forget, if our stop type is complete, to execute the next case as well.
-  // If its break, we stop. If it's return, we return .
-  // TODO: Future; Add enums to steel. Then, have the C++ be able to inject enums in,
-  // and then ONLY accept literal ints or enums in switch statements
-  eStopType stopType =  m_pCases->executeCaseMatching(m_pValue,pInterpreter);
+    // TODO: Here we look for a matching case and execute it. 
+    // We could look for all matching cases, or throw an error if two match
+    // Don't forget, if our stop type is complete, to execute the next case as well.
+    // If its break, we stop. If it's return, we return .
+    // TODO: Future; Add enums to steel. Then, have the C++ be able to inject enums in,
+    // and then ONLY accept literal ints or enums in switch statements
+    eStopType stopType =  m_pCases->executeCaseMatching(m_pValue,pInterpreter);
 
-  // Eat breaks
-  if(stopType == BREAK) 
-    stopType = COMPLETED;
+    // Eat breaks
+    if(stopType == BREAK) 
+	stopType = COMPLETED;
 
-  return stopType;
+    return stopType;
 }
 
 
@@ -656,6 +656,91 @@ ostream & AstLoopStatement::print(std::ostream &out)
     
     return out;
 }
+
+
+AstForEachStatement::AstForEachStatement(unsigned int line, const std::string& script,
+					 AstDeclaration* decl, AstExpression * array_exp, AstStatement* stmt)
+    :AstStatement(line,script),m_pLValue(NULL),m_pDeclaration(decl),m_pArrayExpression(array_exp),m_pStatement(stmt)
+{
+}
+
+AstForEachStatement::AstForEachStatement(unsigned int line, const std::string& script,
+					 AstVarIdentifier* lvalue, AstExpression* array_exp, AstStatement* stmt)
+    :AstStatement(line,script),m_pDeclaration(NULL),m_pLValue(lvalue),m_pArrayExpression(array_exp),m_pStatement(stmt)
+{
+}
+
+AstForEachStatement::~AstForEachStatement()
+{
+    if(m_pDeclaration) delete m_pDeclaration;
+    if(m_pArrayExpression) delete m_pArrayExpression;
+    if(m_pLValue) delete m_pLValue;
+    if(m_pStatement) delete m_pStatement;
+}
+
+
+ostream& AstForEachStatement::print(std::ostream &out)
+{
+    // TODO: This
+}
+
+AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpreter)
+{
+    pInterpreter->pushScope();
+    try{
+
+	SteelType * val = NULL;
+	if(m_pDeclaration)
+	{
+	  AstVarDeclaration * vardecl = dynamic_cast<AstVarDeclaration*>(m_pDeclaration);
+	  if(vardecl == NULL)
+	  {
+	      throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid iterator on foreach. Must be scalar.");
+	  }
+	  vardecl->execute(pInterpreter);
+	  AstVarIdentifier *pId = vardecl->getIdentifier();
+
+	  val = pId->lvalue(pInterpreter);
+
+	  if(NULL == val) throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid lvalue used as iterator in foreach.");
+	    
+	}
+	else if(m_pLValue)
+	{
+	   val =  m_pLValue->lvalue(pInterpreter);
+
+	   if(NULL == val) throw SteelException(SteelException::INVALID_LVALUE,
+                                              GetLine(),
+                                              GetScript(),
+                                              "Invalid lvalue used as iterator in foreach.");
+	}
+	else
+	{
+	    throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(), "Invalid lvalue used as iterator in foreach.");
+	}
+
+	SteelType array = m_pArrayExpression->evaluate(pInterpreter);
+
+	if(!array.isArray())
+	{
+	    throw SteelException(SteelException::TYPE_MISMATCH,GetLine(),GetScript(),"foreach on a non-array");
+	}
+
+	for(unsigned int i=0;i<array.getArraySize();i++)
+	{
+	    *val = array.getElement(i);
+	    m_pStatement->execute(pInterpreter);
+	}
+
+    }
+    catch (UnknownIdentifier e)
+    {
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER, GetLine(),GetScript(),"Unknown identifier in foreach statement.");
+    }
+
+    pInterpreter->popScope();
+}
+
 
 
 
@@ -918,9 +1003,9 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
     }
     catch(DivideByZero z)
     {
-      throw SteelException(SteelException::RUNTIME,
-			   GetLine(),GetScript(),
-			   "Divide by zero error on operation '" + ToString(m_op) +"'");
+	throw SteelException(SteelException::RUNTIME,
+			     GetLine(),GetScript(),
+			     "Divide by zero error on operation '" + ToString(m_op) +"'");
     }
 
     return SteelType();
@@ -1741,10 +1826,10 @@ AstFunctionDefinition::~AstFunctionDefinition()
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)
 {
     try{
-      // For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
-      if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
-	pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements, mbFinal );
-      }else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements, mbFinal );
+	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
+	if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
+	    pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements, mbFinal );
+	}else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements, mbFinal );
     }
     catch(AlreadyDefined)
     {

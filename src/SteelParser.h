@@ -167,23 +167,25 @@ public:
             VAR_IDENTIFIER = 276,
             ARRAY_IDENTIFIER = 277,
             FOR = 278,
-            VAR = 279,
-            INT = 280,
-            FLOAT = 281,
-            STRING = 282,
-            BOOLEAN = 283,
-            INCREMENT = 284,
-            DECREMENT = 285,
-            POP = 286,
-            FINAL = 287,
-            CONSTANT = 288,
-            DO = 289,
-            IMPORT = 290,
-            SCOPE = 291,
-            SWITCH = 292,
-            CASE = 293,
-            DEFAULT = 294,
-            CASE_DELIM = 295
+            FOREACH = 279,
+            IN = 280,
+            VAR = 281,
+            INT = 282,
+            FLOAT = 283,
+            STRING = 284,
+            BOOLEAN = 285,
+            INCREMENT = 286,
+            DECREMENT = 287,
+            POP = 288,
+            FINAL = 289,
+            CONSTANT = 290,
+            DO = 291,
+            IMPORT = 292,
+            SCOPE = 293,
+            SWITCH = 294,
+            CASE = 295,
+            DEFAULT = 296,
+            CASE_DELIM = 297
         }; // end of enum SteelParser::Terminal::Name
     }; // end of struct SteelParser::Terminal
 
@@ -201,22 +203,22 @@ public:
           */
         enum Name
         {
-            array_identifier = 269,
-            call = 271,
-            case_list = 256,
-            exp = 258,
-            exp_statement = 260,
-            func_definition = 244,
-            func_identifier = 267,
-            int_literal = 262,
-            param_definition = 250,
-            param_id = 246,
-            param_list = 275,
+            array_identifier = 289,
+            call = 291,
+            case_list = 276,
+            exp = 278,
+            exp_statement = 280,
+            func_definition = 264,
+            func_identifier = 287,
+            int_literal = 282,
+            param_definition = 270,
+            param_id = 266,
+            param_list = 295,
             root = 0,
-            statement = 254,
-            statement_list = 252,
-            var_identifier = 265,
-            vardecl = 273,
+            statement = 274,
+            statement_list = 272,
+            var_identifier = 285,
+            vardecl = 293,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).
@@ -351,7 +353,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 355 "SteelParser.h"
+#line 357 "SteelParser.h"
 
 
 private:
@@ -365,22 +367,22 @@ private:
         enum Name
         {
             none_ = 0,
-            root = 296,
-            func_definition = 297,
-            param_id = 298,
-            param_definition = 299,
-            statement_list = 300,
-            statement = 301,
-            case_list = 302,
-            exp = 303,
-            exp_statement = 304,
-            int_literal = 305,
-            var_identifier = 306,
-            func_identifier = 307,
-            array_identifier = 308,
-            call = 309,
-            vardecl = 310,
-            param_list = 311
+            root = 298,
+            func_definition = 299,
+            param_id = 300,
+            param_definition = 301,
+            statement_list = 302,
+            statement = 303,
+            case_list = 304,
+            exp = 305,
+            exp_statement = 306,
+            int_literal = 307,
+            var_identifier = 308,
+            func_identifier = 309,
+            array_identifier = 310,
+            call = 311,
+            vardecl = 312,
+            param_list = 313
         }; // end of enum SteelParser::Nonterminal_::Name
     }; // end of struct SteelParser::Nonterminal_
     struct Transition_;
@@ -472,4 +474,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token
 
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 476 "SteelParser.h"
+#line 478 "SteelParser.h"

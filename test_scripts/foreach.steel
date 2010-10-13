@@ -1,0 +1,12 @@
+
+declare @junk = array(1,1,2,3,5,8,13);
+
+foreach (var $thing) in @junk {
+	println($thing);
+}
+
+declare $jangle;
+
+foreach $jangle in @junk {
+	println("Jangle is {$jangle}");
+}

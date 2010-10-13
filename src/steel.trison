@@ -128,6 +128,8 @@ SteelParser::Token SteelParser::Scan ()
 %terminal VAR_IDENTIFIER %type.cpp "AstVarIdentifier*"
 %terminal ARRAY_IDENTIFIER
 %terminal FOR
+%terminal FOREACH
+%terminal IN
 %terminal VAR
 %terminal INT %type.cpp "AstInteger*"
 %terminal FLOAT %type.cpp "AstFloat*"
@@ -495,6 +497,16 @@ SteelParser::Token SteelParser::Scan ()
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			}
+|
+	FOREACH '(' vardecl:decl ')' IN exp:exp statement:stmt
+			     %target.cpp{
+				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), decl, exp, stmt);
+			     } 
+|
+	FOREACH var_identifier:id IN exp:exp statement:stmt
+			    %target.cpp{
+				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), id, exp, stmt);
+			    } 
 
 |
 	BREAK ';' %prec CORRECT

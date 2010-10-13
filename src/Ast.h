@@ -270,6 +270,26 @@ private:
     AstStatement * m_pStatement;
 };
 
+class AstDeclaration;
+class AstVarIdentifier;
+class AstForEachStatement : public AstStatement
+{
+ public:
+  AstForEachStatement(unsigned int line, const std::string& script,
+		      AstDeclaration* decl, AstExpression * array_exp, AstStatement * stmt);
+  AstForEachStatement(unsigned int line, const std::string& script,
+		      AstVarIdentifier* lvalue, AstExpression* array_exp, AstStatement *stmt);
+  virtual ~AstForEachStatement();
+
+  virtual ostream& print(std::ostream &out);
+  virtual eStopType execute(SteelInterpreter* pInterpreter);
+ private:
+  AstDeclaration* m_pDeclaration;
+  AstVarIdentifier* m_pLValue;
+  AstExpression* m_pArrayExpression;
+  AstStatement* m_pStatement;
+};
+
 
 class AstExpression : public AstBase
 {
@@ -722,6 +742,8 @@ public:
     virtual eStopType execute(SteelInterpreter *pInterpreter);
     virtual bool hasInitializer() const { return m_pExp != NULL; }
     virtual bool isConst() const { return m_bConst; }
+
+    AstVarIdentifier * getIdentifier() const { return m_pId; }// not normally usd
 private:
     AstVarIdentifier *m_pId ;
     AstExpression * m_pExp;
