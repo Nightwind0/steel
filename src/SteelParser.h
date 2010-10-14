@@ -168,7 +168,7 @@ public:
             ARRAY_IDENTIFIER = 277,
             FOR = 278,
             FOREACH = 279,
-            IN = 280,
+            IN_ = 280,
             VAR = 281,
             INT = 282,
             FLOAT = 283,

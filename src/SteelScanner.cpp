@@ -667,7 +667,7 @@ SteelParser::Token SteelScanner::Scan () throw()
 
 #line 326 "steel.reflex"
 
-		return SteelParser::Token(SteelParser::Terminal::IN,NULL);
+		return SteelParser::Token(SteelParser::Terminal::IN_,NULL);
 	
 #line 673 "SteelScanner.cpp"
 
