@@ -582,7 +582,7 @@ AstImport::~AstImport()
 
 std::ostream & AstImport::print(ostream &out)
 {
-    out << "#include \"" << m_ns << "\";\n";
+    out << "using \"" << m_ns << "\";\n";
     return out;
 }
 AstStatement::eStopType AstImport::execute(SteelInterpreter *pInterpreter)
