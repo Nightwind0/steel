@@ -69,6 +69,7 @@ SteelInterpreter::SteelInterpreter()
     m_is_valid_f(this,&SteelInterpreter::is_valid),
     m_array_f(this,&SteelInterpreter::array)
 {
+    pushScope();
     registerBifs();
     srand(time(0));
 
@@ -76,7 +77,7 @@ SteelInterpreter::SteelInterpreter()
 
 SteelInterpreter::~SteelInterpreter()
 {
-
+    popScope();
 }
 
 
@@ -505,6 +506,10 @@ void SteelInterpreter::registerBifs()
     addFunction("rand","math", new SteelFunctorNoArgs<SteelInterpreter>(this, &SteelInterpreter::rand));
     addFunction("srand","math", new SteelFunctor1Arg<SteelInterpreter,int>(this, &SteelInterpreter::srand));
     addFunction("randf","math", new SteelFunctorNoArgs<SteelInterpreter>(this, &SteelInterpreter::randf));
+    
+    SteelType pi;
+    pi.set( 4.0 * std::atan(1.0) );
+    declare_const("$_PI",pi);
 }
 
 
