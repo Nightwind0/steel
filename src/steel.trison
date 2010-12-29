@@ -22,6 +22,7 @@
 
 	#include "SteelScanner.h"
 	#include "Ast.h"
+	#include <fstream>
 	#include <sstream>
 
 	std::string itos(int i)	// convert int to string
@@ -36,15 +37,16 @@
 %}
 
 %target.cpp.bottom_of_class {
-    void setBuffer(const char *pBuffer, const std::string &script_name);
+  	void setBuffer(const char *pBuffer, const std::string &script_name);
+	void append(const std::string& str);
 	bool hadError() const { return mbErrorEncountered; }
 	std::string getErrors() const { return mErrors; }
-    Token Scan ();
-    void SetScannerDebugSpew(bool on);
+    	Token Scan ();
+    	void SetScannerDebugSpew(bool on);
 private:
 	void addError(unsigned int line, const std::string &error);
-    SteelScanner *m_scanner;
-    const char *m_pBuffer;
+	SteelScanner *m_scanner;
+    	const char *m_pBuffer;
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 }
@@ -67,6 +69,11 @@ void SteelParser::setBuffer(const char * pBuffer, const std::string &name)
 {	
 	assert( NULL != m_scanner );
 	m_scanner->setBuffer(pBuffer,name);
+}
+
+void SteelParser::append(const std::string& str)
+{
+	m_scanner->append(str);
 }
 
 void SteelParser::SetScannerDebugSpew(bool on)
@@ -130,6 +137,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal FOR
 %terminal FOREACH
 %terminal IN
+%terminal INCLUDE
 %terminal VAR
 %terminal INT %type.cpp "AstInteger*"
 %terminal FLOAT %type.cpp "AstFloat*"
@@ -313,6 +321,52 @@ SteelParser::Token SteelParser::Scan ()
 			addError(GET_LINE(),"parse error");
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		}
+|
+	INCLUDE:inc STRING:str ';' %target.cpp { 
+		    const std::string filename = str->getString();
+		    std::ifstream instream;
+		    instream.open(filename.c_str(), std::ios::in);
+		    if(!instream.good())
+		    {
+			addError(GET_LINE(),"couldn't open file: " + filename);
+			return new AstStatement(GET_LINE(),GET_SCRIPT());
+		    }
+		    
+		    std::ostringstream strstream;
+		    while(!instream.eof())
+		    {
+			char c = instream.get();
+			strstream.put(c);
+		    }
+		    instream.close();
+		    AstBase * pBase;
+		    SteelParser parser;
+		    parser.setBuffer(strstream.str().c_str(),filename);
+
+		    if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
+    		    {
+			if(parser.hadError())
+        		{
+				addError(GET_LINE(),parser.getErrors());
+				return new AstStatement(GET_LINE(),GET_SCRIPT());
+        		} 
+        		else
+        		{
+				addError(GET_LINE(),"Unknown parse error in " + filename);
+				return new AstStatement(GET_LINE(),GET_SCRIPT());
+        		}                
+    		    }
+    		    else if (parser.hadError())
+    		    {
+			addError(GET_LINE(),parser.getErrors());
+			return new AstStatement(GET_LINE(),GET_SCRIPT());
+    		    }
+
+    		    AstScript * pScript = dynamic_cast<AstScript*> ( pBase );
+
+
+		    return pScript;
+	}
 |
 	IMPORT:imp  STRING:str  ';' %target.cpp{ return new AstImport(GET_LINE(),GET_SCRIPT(),str); }	
 |

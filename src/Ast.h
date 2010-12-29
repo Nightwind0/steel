@@ -90,7 +90,7 @@ private:
 class AstStatementList;
 class AstFunctionDefinitionList;
 
-class AstScript : public AstBase
+class AstScript : public AstStatement
 {
 public:
     AstScript(unsigned int line, const std::string &script);
@@ -98,7 +98,7 @@ public:
 
     virtual ostream & print(std::ostream &out);
     void SetList( AstStatementList * pStatement);
-    void executeScript(SteelInterpreter *pInterpreter);
+    virtual eStopType execute(SteelInterpreter *pInterpreter);
 
 private:
 
@@ -501,6 +501,7 @@ public:
 private:
     std::string m_ns;
 };
+
 
 
 class AstBinOp : public AstExpression

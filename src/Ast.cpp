@@ -112,7 +112,7 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 		if(parser.Parse(&pBase) == SteelParser::PRC_SUCCESS && !parser.hadError()){
 		    AstScript * pScript = dynamic_cast<AstScript*>(pBase);
 		    if(pScript){
-			pScript->executeScript(pInterpreter);
+			pScript->execute(pInterpreter);
 			delete pScript;
 		    }
 		    value += (std::string)pInterpreter->getReturn();
@@ -260,7 +260,7 @@ AstStatement::eStopType AstExpressionStatement::execute(SteelInterpreter *pInter
 }
 
 AstScript::AstScript(unsigned int line, const std::string &script)
-    :AstBase(line,script),m_pList(NULL)
+    :AstStatement(line,script),m_pList(NULL)
 {
 }
 AstScript::~AstScript()
@@ -275,11 +275,11 @@ ostream & AstScript::print(std::ostream &out)
     return out;
 }
 
-void AstScript::executeScript(SteelInterpreter *pInterpreter)
+AstStatement::eStopType AstScript::execute(SteelInterpreter *pInterpreter)
 {
     if(m_pList)
     {
-        m_pList->execute(pInterpreter);
+        return m_pList->execute(pInterpreter);
     }
 }
 

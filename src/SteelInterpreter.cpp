@@ -159,7 +159,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
 {
     import(kszGlobalNamespace);
     assert ( NULL != pScript );
-    pScript->executeScript(this);
+    pScript->execute(this);
 
     clear_imports();
     return getReturn();
@@ -180,7 +180,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
         assign(pVar,it->getValue());
     }
 
-    pScript->executeScript(this);
+    pScript->execute(this);
     popScope();
     clear_imports();
     return getReturn();
@@ -211,7 +211,7 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
 
     AstScript *pScript = static_cast<AstScript*>( pBase );
 
-    pScript->executeScript(this);
+    pScript->execute(this);
     
     delete pScript;
 
