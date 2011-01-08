@@ -161,6 +161,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
     assert ( NULL != pScript );
     pScript->execute(this);
 
+    remove_user_functions();
     clear_imports();
     return getReturn();
 }
@@ -182,6 +183,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
 
     pScript->execute(this);
     popScope();
+    remove_user_functions();
     clear_imports();
     return getReturn();
 }
@@ -215,6 +217,7 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
     
     delete pScript;
 
+    remove_user_functions();
     clear_imports();
     return getReturn();
 }
@@ -327,6 +330,25 @@ void SteelInterpreter::removeFunctions(const std::string &ns, bool del)
 
     m_functions.erase(ns);
 }
+
+void SteelInterpreter::remove_user_functions()
+{
+      for(std::map<std::string,FunctionSet>::iterator iter = m_functions.begin();
+        iter != m_functions.end(); iter++)
+        {
+            FunctionSet& sset = iter->second;
+            for(FunctionSet::iterator fiter = sset.begin(); fiter != sset.end(); fiter++)
+            {
+                SteelFunctor * functor = fiter->second;
+                if(functor->isUserFunction()){
+                    // No need to delete the functor itself, right?                                                                                                     
+                    sset.erase(fiter);
+                }
+            }
+        }
+
+}
+
 
 
 void SteelInterpreter::declare(const std::string &name)

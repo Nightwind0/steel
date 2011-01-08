@@ -693,7 +693,7 @@ std::string SteelType::strToDouble(double d) const
 {
     std::ostringstream str;
 
-    str << std::setprecision(32);
+    str << std::setprecision(10);
     str << d;
 
     return str.str();

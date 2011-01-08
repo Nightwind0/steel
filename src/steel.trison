@@ -136,7 +136,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal ARRAY_IDENTIFIER
 %terminal FOR
 %terminal FOREACH
-%terminal IN
+%terminal WITHIN
 %terminal INCLUDE
 %terminal VAR
 %terminal INT %type.cpp "AstInteger*"
@@ -552,12 +552,12 @@ SteelParser::Token SteelParser::Scan ()
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			}
 |
-	FOREACH '(' vardecl:decl ')' IN exp:exp statement:stmt
+	FOREACH '(' vardecl:decl ')' WITHIN exp:exp statement:stmt
 			     %target.cpp{
 				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), decl, exp, stmt);
 			     } 
 |
-	FOREACH var_identifier:id IN exp:exp statement:stmt
+	FOREACH var_identifier:id WITHIN exp:exp statement:stmt
 			    %target.cpp{
 				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), id, exp, stmt);
 			    } 

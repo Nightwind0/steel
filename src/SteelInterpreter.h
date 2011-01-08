@@ -110,6 +110,7 @@ private:
     typedef std::map<std::string,SteelFunctor*> FunctionSet;
     std::list<VariableFile> m_symbols;
 
+    void remove_user_functions();
     void clear_imports();
   
     SteelType * lookup_internal(const std::string &name);
