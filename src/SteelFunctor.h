@@ -80,6 +80,29 @@ private:
         ObjType *m_pObj;
 };
 
+template<class ObjType, class Arg1>
+class SteelFunctorHandleArg : public SteelFunctor
+{
+public:
+    typedef SteelType (ObjType::*FuncPointer)(Arg1);
+    SteelFunctorHandleArg(ObjType *pObj, FuncPointer p)
+    :m_pFunc(p),m_pObj(pObj){}
+    virtual ~SteelFunctorHandleArg(){}
+    virtual SteelType Call(SteelInterpreter*,const std::vector<SteelType> &params)
+    {
+	if(params.size() != 1) throw ParamMismatch();
+	
+	    SteelType::Handle handle = params[0];
+	    Arg1 arg1 = dynamic_cast<Arg1>(handle);
+	    if(arg1 == NULL) throw TypeMismatch();
+	
+	    return (m_pObj->*m_pFunc)(arg1);
+    }
+private:
+    FuncPointer m_pFunc;
+    ObjType *m_pObj;
+};
+
 template<class ObjType, class Arg1, class Arg2>
     class SteelFunctor2Arg : public SteelFunctor
 {
@@ -157,6 +180,14 @@ class SteelFunctorArray : public SteelFunctor
   ObjType* m_pObj;
 };
 
+
+template <class T>
+T GrabHandle(SteelType::Handle handle)
+{
+    T t = dynamic_cast<T>(handle);
+    if(t == NULL) throw TypeMismatch();
+    return t;
+}
 /*
 
 template <class Class>
