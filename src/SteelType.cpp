@@ -164,6 +164,7 @@ void SteelType::set(Handle h)
     m_storage = SteelType::HANDLE;
 }
 
+
 void SteelType::set(const std::vector<SteelType> &ref)
 {
     m_value.a = new std::vector<SteelType>(ref);

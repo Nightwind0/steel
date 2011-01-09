@@ -47,7 +47,7 @@ ParameterListItem::ParameterListItem(const std::string &name, const SteelType &v
     m_value = var;
 }
 
-ParameterListItem::ParameterListItem(const std::string &name, void* p)
+ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle p)
 {
     m_name = name;
     m_value.set(p);

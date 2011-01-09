@@ -21,7 +21,7 @@ public:
     ParameterListItem(const std::string &name, int i);
     ParameterListItem(const std::string &name, bool b);
     ParameterListItem(const std::string &name, std::string &s);
-    ParameterListItem(const std::string &name, void* p);
+    ParameterListItem(const std::string &name, SteelType::Handle);
     ParameterListItem(const std::string &name, const SteelType &var);
 
     std::string getName() const { return m_name; }

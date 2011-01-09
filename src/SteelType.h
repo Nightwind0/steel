@@ -6,23 +6,19 @@
 
 class SteelType
 {
-private:
-    enum storage
-    {
-        ARRAY,
-        BOOL,
-        INT,
-        DOUBLE,
-        STRING,
-        HANDLE
-    };
-
 public:
     SteelType();
     SteelType(const SteelType &);
     ~SteelType();
+   
+    // The only need for this class is so that dynamic_cast can be used
+    class IHandle{
+    public:
+	IHandle(){}
+	virtual ~IHandle(){}
+    };
 
-    typedef void * Handle;
+    typedef IHandle * Handle;
 
     operator int () const;
     operator unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
@@ -37,7 +33,7 @@ public:
     void set(bool b);
     void set(const std::string &);
     void set(const std::vector<SteelType> &);
-    void set(Handle p);
+    void set(Handle h);
 
     // Array stuff
     bool isArray() const { return m_storage == ARRAY; }
@@ -79,6 +75,16 @@ public:
     bool isConst()const;
     void makeConst();
 private:
+    enum storage
+    {
+        ARRAY,
+        BOOL,
+        INT,
+        DOUBLE,
+        STRING,
+        HANDLE
+    };
+
     int strInt() const ;
     double strDouble()const;
     bool strBool()const;
@@ -92,7 +98,7 @@ private:
         bool b;
         double d;
         int i;
-        void *h;
+        Handle h;
         std::string *s;
         std::vector<SteelType> *a;
     };
