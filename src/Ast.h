@@ -523,7 +523,12 @@ public:
     LT,
     GT,
     LTE,
-    GTE
+    GTE,
+    ADD_ASSIGN,
+    SUB_ASSIGN,
+    MULT_ASSIGN,
+    DIV_ASSIGN,
+    MOD_ASSIGN
     };
 
     static std::string ToString(Op op);
@@ -581,6 +586,24 @@ private:
     AstExpression *m_pLValue;
 
 };
+
+class AstPush : public AstExpression
+{
+public:
+    AstPush(unsigned int line,
+       const std::string &script,
+	    AstExpression *pLValue,
+	    AstExpression *pExp);
+    virtual ~AstPush();
+
+    virtual SteelType evaluate(SteelInterpreter *pInterpreter);
+    virtual SteelType * lvalue(SteelInterpreter *pInterpreter) { return m_pLValue->lvalue(pInterpreter); }
+    
+private:
+    AstExpression *m_pLValue;
+    AstExpression* m_pExp;
+};
+
 
 
 class AstParamList;

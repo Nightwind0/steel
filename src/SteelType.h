@@ -59,6 +59,7 @@ public:
     SteelType operator++(int); //postfix
     SteelType operator--();
     SteelType operator--(int); //postfix
+  
     // Binary operators
     SteelType  operator+(const SteelType &rhs);
     SteelType  operator-(const SteelType &rhs);
@@ -71,6 +72,12 @@ public:
     SteelType  operator>(const SteelType &rhs);
     SteelType  operator>=(const SteelType &rhs);
     SteelType  d(const SteelType &rhs);
+    // Assignment binary ops
+    SteelType operator+=(const SteelType &rhs);
+    SteelType operator-=(const SteelType &rhs);
+    SteelType operator*=(const SteelType &rhs);
+    SteelType operator/=(const SteelType &rhs);
+    SteelType operator%=(const SteelType &rhs);
 
     bool isConst()const;
     void makeConst();

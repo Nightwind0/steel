@@ -905,6 +905,16 @@ std::string AstBinOp::ToString(Op op)
         return " d ";
     case POW:
         return "^";
+    case ADD_ASSIGN:
+      return "+=";
+    case SUB_ASSIGN:
+      return "-=";
+    case MULT_ASSIGN:
+      return "*=";
+    case DIV_ASSIGN:
+      return "/=";
+    case MOD_ASSIGN:
+      return "%=";
     case EQ:
         return " == ";
     case NE:
@@ -951,7 +961,38 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
         case MOD:
             return m_left->evaluate(pInterpreter)
                 % m_right->evaluate(pInterpreter);
-        case AND:
+	case ADD_ASSIGN:{
+	  SteelType *lv =  m_left->lvalue(pInterpreter);
+	  if(!lv)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),GetScript(), "Invalid lvalue in += statement.");
+	  return *lv += m_right->evaluate(pInterpreter);
+	}case SUB_ASSIGN:{
+	  SteelType *lv =  m_left->lvalue(pInterpreter);
+	  if(!lv)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),GetScript(), "Invalid lvalue in -= statement.");
+	  return *lv -= m_right->evaluate(pInterpreter);
+	 }case MULT_ASSIGN:{
+	  SteelType *lv =  m_left->lvalue(pInterpreter);
+	  if(!lv)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),GetScript(), "Invalid lvalue in *= statement.");
+	  return *lv *= m_right->evaluate(pInterpreter);
+	  }case DIV_ASSIGN:{
+	  SteelType *lv =  m_left->lvalue(pInterpreter);
+	  if(!lv)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),GetScript(), "Invalid lvalue in /= statement.");
+	  return *lv /= m_right->evaluate(pInterpreter);
+	   }case MOD_ASSIGN:{
+	  SteelType *lv =  m_left->lvalue(pInterpreter);
+	  if(!lv)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),GetScript(), "Invalid lvalue in %= statement.");
+	  return *lv %= m_right->evaluate(pInterpreter);
+
+	    }case AND:
         {
             SteelType var;
             var.set((bool)m_left->evaluate(pInterpreter)
@@ -1137,6 +1178,38 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
     
 }
 
+
+AstPush::AstPush(unsigned int line,
+               const std::string &script,
+		 AstExpression *pLValue,
+AstExpression *pExp)
+  :AstExpression(line,script),m_pLValue(pLValue),m_pExp(pExp)
+{
+}
+
+AstPush::~AstPush()
+{
+    delete m_pLValue;
+    delete m_pExp;
+}
+
+SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
+{
+    
+    SteelType *pL = m_pLValue->lvalue(pInterpreter);
+    
+    if(NULL == pL) 
+    {
+        throw SteelException(SteelException::INVALID_LVALUE,
+                             GetLine(),
+                             GetScript(),
+                             "Invalid lvalue after push.");
+    }
+
+    pL->add(m_pExp->evaluate(pInterpreter));
+
+    return *pL;
+}
 
 
 AstCallExpression::AstCallExpression(unsigned int line,

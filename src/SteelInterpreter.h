@@ -123,6 +123,8 @@ private:
     SteelType m_return;
 private:
     // Bifs
+    SteelType add     (const SteelArray& array, const SteelType& type);
+    SteelFunctor2Arg<SteelInterpreter,const SteelArray&,const SteelType&> m_add_f;
     SteelType print   (const std::string &str);
     SteelFunctor1Arg<SteelInterpreter,const std::string &> m_print_f;
     SteelType println (const std::string &str);

@@ -146,47 +146,52 @@ public:
         {
             END_ = 256,
             ERROR_ = 257,
-            D = 258,
-            GT = 259,
-            LT = 260,
-            EQ = 261,
-            NE = 262,
-            GTE = 263,
-            LTE = 264,
-            AND = 265,
-            OR = 266,
-            NOT = 267,
-            WHILE = 268,
-            BREAK = 269,
-            CONTINUE = 270,
-            RETURN = 271,
-            IF = 272,
-            ELSE = 273,
-            FUNCTION = 274,
-            BAREWORD = 275,
-            VAR_IDENTIFIER = 276,
-            ARRAY_IDENTIFIER = 277,
-            FOR = 278,
-            FOREACH = 279,
-            WITHIN = 280,
-            INCLUDE = 281,
-            VAR = 282,
-            INT = 283,
-            FLOAT = 284,
-            STRING = 285,
-            BOOLEAN = 286,
-            INCREMENT = 287,
-            DECREMENT = 288,
-            POP = 289,
-            FINAL = 290,
-            CONSTANT = 291,
-            DO = 292,
-            IMPORT = 293,
-            SCOPE = 294,
-            SWITCH = 295,
-            CASE = 296,
-            DEFAULT = 297,
-            CASE_DELIM = 298
+            PLUS_EQUALS = 258,
+            MINUS_EQUALS = 259,
+            TIMES_EQUALS = 260,
+            DIVIDE_EQUALS = 261,
+            MODULO_EQUALS = 262,
+            D = 263,
+            GT = 264,
+            LT = 265,
+            EQ = 266,
+            NE = 267,
+            GTE = 268,
+            LTE = 269,
+            AND = 270,
+            OR = 271,
+            NOT = 272,
+            WHILE = 273,
+            BREAK = 274,
+            CONTINUE = 275,
+            RETURN = 276,
+            IF = 277,
+            ELSE = 278,
+            FUNCTION = 279,
+            BAREWORD = 280,
+            VAR_IDENTIFIER = 281,
+            ARRAY_IDENTIFIER = 282,
+            FOR = 283,
+            FOREACH = 284,
+            WITHIN = 285,
+            INCLUDE = 286,
+            VAR = 287,
+            INT = 288,
+            FLOAT = 289,
+            STRING = 290,
+            BOOLEAN = 291,
+            INCREMENT = 292,
+            DECREMENT = 293,
+            POP = 294,
+            FINAL = 295,
+            CONSTANT = 296,
+            DO = 297,
+            IMPORT = 298,
+            SCOPE = 299,
+            SWITCH = 300,
+            CASE = 301,
+            DEFAULT = 302,
+            CASE_DELIM = 303
         }; // end of enum SteelParser::Terminal::Name
     }; // end of struct SteelParser::Terminal
 
@@ -204,22 +209,22 @@ public:
           */
         enum Name
         {
-            array_identifier = 292,
-            call = 294,
-            case_list = 279,
-            exp = 281,
-            exp_statement = 283,
-            func_definition = 267,
-            func_identifier = 290,
-            int_literal = 285,
-            param_definition = 273,
-            param_id = 269,
-            param_list = 298,
+            array_identifier = 302,
+            call = 304,
+            case_list = 289,
+            exp = 291,
+            exp_statement = 293,
+            func_definition = 277,
+            func_identifier = 300,
+            int_literal = 295,
+            param_definition = 283,
+            param_id = 279,
+            param_list = 308,
             root = 0,
-            statement = 277,
-            statement_list = 275,
-            var_identifier = 288,
-            vardecl = 296,
+            statement = 287,
+            statement_list = 285,
+            var_identifier = 298,
+            vardecl = 306,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).
@@ -355,7 +360,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 359 "SteelParser.h"
+#line 364 "SteelParser.h"
 
 
 private:
@@ -369,22 +374,22 @@ private:
         enum Name
         {
             none_ = 0,
-            root = 299,
-            func_definition = 300,
-            param_id = 301,
-            param_definition = 302,
-            statement_list = 303,
-            statement = 304,
-            case_list = 305,
-            exp = 306,
-            exp_statement = 307,
-            int_literal = 308,
-            var_identifier = 309,
-            func_identifier = 310,
-            array_identifier = 311,
-            call = 312,
-            vardecl = 313,
-            param_list = 314
+            root = 304,
+            func_definition = 305,
+            param_id = 306,
+            param_definition = 307,
+            statement_list = 308,
+            statement = 309,
+            case_list = 310,
+            exp = 311,
+            exp_statement = 312,
+            int_literal = 313,
+            var_identifier = 314,
+            func_identifier = 315,
+            array_identifier = 316,
+            call = 317,
+            vardecl = 318,
+            param_list = 319
         }; // end of enum SteelParser::Nonterminal_::Name
     }; // end of struct SteelParser::Nonterminal_
     struct Transition_;
@@ -476,4 +481,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token
 
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 480 "SteelParser.h"
+#line 485 "SteelParser.h"

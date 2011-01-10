@@ -56,6 +56,7 @@ ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle 
 
 SteelInterpreter::SteelInterpreter()
 :
+  m_add_f(this,&SteelInterpreter::add),
     m_print_f(this, &SteelInterpreter::print ),
     m_println_f(this,&SteelInterpreter::println ),
     m_len_f(this, &SteelInterpreter::len ),
@@ -491,6 +492,7 @@ void SteelInterpreter::registerBifs()
 {
 
     srand(time(0));
+    addFunction("add",&m_add_f);
     addFunction("print", &m_print_f);
     addFunction("println",&m_println_f);
     addFunction("len",&m_len_f);
@@ -506,6 +508,7 @@ void SteelInterpreter::registerBifs()
 
 
     // Math functions
+  
     addFunction("ceil", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::ceil));
     addFunction("abs", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::abs));
     addFunction("floor", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::floor));
@@ -534,7 +537,14 @@ void SteelInterpreter::registerBifs()
     declare_const("$_PI",pi);
 }
 
+SteelType SteelInterpreter::add(const SteelArray &array, const SteelType &type)
+{
+  SteelType array2;
+  array2.set(array);
+  array2.add(type);
 
+  return array2;
+}
 
 SteelType SteelInterpreter::print(const std::string &str)
 {

@@ -208,6 +208,140 @@ SteelType SteelType::pop()
     return back;
 }
 
+SteelType SteelType::operator+=(const SteelType &rhs)
+{
+    storage s = std::max(m_storage,rhs.m_storage);
+    
+    
+    if(m_storage == SteelType::ARRAY)
+    {
+	add(rhs);
+	return *this;
+    }
+    else if(rhs.m_storage == SteelType::ARRAY)
+    {
+	SteelType val = *this;
+	set(std::vector<SteelType>());
+	add(val);
+	add(rhs);
+	return *this;
+    }
+
+  switch(s)
+  {
+  case SteelType::BOOL:
+  case SteelType::HANDLE:
+      throw OperationMismatch();
+  case SteelType::INT:
+      set ( (int)*this + (int)rhs );
+      break;
+  case SteelType::DOUBLE:
+      set ( (double)*this + (double)rhs );
+      break;
+  case SteelType::STRING:
+      set ( (std::string)*this + (std::string)rhs );
+      break;
+  }
+
+  return *this;
+}
+
+SteelType SteelType::operator-=(const SteelType &rhs)
+{
+  storage s = std::max(m_storage,rhs.m_storage);
+
+  switch(s)
+  {
+  case SteelType::ARRAY:
+  case SteelType::BOOL:
+  case SteelType::STRING:
+  case SteelType::HANDLE:
+      throw OperationMismatch();
+  case SteelType::INT:
+      set ( (int)*this - (int)rhs );
+      break;
+  case SteelType::DOUBLE:
+      set ( (double)*this - (double)rhs );
+      break;
+  }
+
+  return *this;
+}
+
+SteelType SteelType::operator*=(const SteelType &rhs)
+{
+  storage s = std::max(m_storage,rhs.m_storage);
+
+  switch(s)
+  {
+  case SteelType::ARRAY:
+  case SteelType::BOOL:
+  case SteelType::HANDLE:
+  case SteelType::STRING:
+      throw OperationMismatch();
+  case SteelType::INT:
+      set ( (int)*this * (int)rhs );
+      break;
+  case SteelType::DOUBLE:
+      set ( (double)*this * (double)rhs );
+      break;
+  }
+
+  return *this;
+
+}
+
+SteelType SteelType::operator/=(const SteelType &rhs)
+{
+  storage s = std::max(m_storage,rhs.m_storage);
+
+  double right = (double)rhs;
+  if(right == 0.0) throw DivideByZero();
+  switch(s)
+  {
+  case SteelType::ARRAY:
+  case SteelType::BOOL:
+  case SteelType::HANDLE:
+  case SteelType::STRING:
+      throw OperationMismatch();
+  case SteelType::INT:
+      set ( (int)*this / (int)rhs );
+      break;
+  case SteelType::DOUBLE:
+      set ( (double)*this / (double)rhs );
+      break;
+
+  }
+
+  return *this;
+
+}
+
+SteelType SteelType::operator%=(const SteelType &rhs)
+{
+  storage s = std::max(m_storage,rhs.m_storage);
+
+  if((double)rhs == 0.0) throw DivideByZero();
+
+  switch(s)
+  {
+  case SteelType::ARRAY:
+  case SteelType::BOOL:
+  case SteelType::HANDLE:
+  case SteelType::STRING:
+      throw OperationMismatch();
+  case SteelType::INT:
+      set ( (int)*this % (int)rhs );
+      break;
+  case SteelType::DOUBLE:
+      set ( (int)*this % (int)rhs );
+      break;
+
+  }
+
+  return *this;
+}
+
 SteelType  SteelType::operator+(const SteelType &rhs)
 {
     SteelType val;
@@ -216,6 +350,18 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     switch(s)
     {
     case SteelType::ARRAY:
+      if(m_storage == SteelType::ARRAY)
+      {
+	val = *this;
+	val.add(rhs);
+      }
+      else
+      {
+	val.set(std::vector<SteelType>());
+	val.add(*this);
+	val.add(rhs);
+      }
+      return val;
     case SteelType::BOOL:
     case SteelType::HANDLE:
         throw OperationMismatch();
@@ -740,7 +886,15 @@ void SteelType::add(const SteelType &var)
 {
     if( !isArray() ) throw TypeMismatch();
 
-    m_value.a->push_back ( var );
+    if(var.isArray())
+    {
+	for(int i=0;i<var.getArraySize();i++)
+	  m_value.a->push_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
+    }
+    else
+    {
+      m_value.a->push_back ( var );
+    }
 }
 
 

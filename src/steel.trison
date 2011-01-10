@@ -120,7 +120,12 @@ SteelParser::Token SteelParser::Scan ()
 
 %terminal ':'
 %terminal ';' '(' ')' '=' '{' '}' '[' ']' ','
-%terminal '-' '+' '*' '/' '^' '%'
+%terminal '-' '+' '*' '/' '^' '%' 
+%terminal PLUS_EQUALS 
+%terminal MINUS_EQUALS
+%terminal TIMES_EQUALS
+%terminal DIVIDE_EQUALS
+%terminal MODULO_EQUALS
 %terminal D
 %terminal GT LT EQ NE GTE LTE
 %terminal AND OR NOT
@@ -684,6 +689,16 @@ SteelParser::Token SteelParser::Scan ()
 |
 	exp:lvalue '=' exp:exp   %prec ASSIGNMENT %target.cpp { return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); }
 |
+	exp:lvalue PLUS_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::ADD_ASSIGN,lvalue,exp);}
+|
+	exp:lvalue MINUS_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::SUB_ASSIGN,lvalue,exp);}
+|
+	exp:lvalue TIMES_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::MULT_ASSIGN,lvalue,exp);}
+|
+	exp:lvalue DIVIDE_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::DIV_ASSIGN,lvalue,exp);}
+|
+	exp:lvalue MODULO_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::MOD_ASSIGN,lvalue,exp);}
+|
 	exp:a '^' exp:b  %prec POW %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); }
 |
 	exp:a OR exp:b %prec OR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); }
@@ -769,7 +784,6 @@ exp->GetScript(), AstUnaryOp::CAT,exp); }
 						addError(GET_LINE(),"expected expression after 'pop'.");
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()));
 							  }
-
 ;
 
 %nonterminal exp_statement %type.cpp "AstExpression*"
