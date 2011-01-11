@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 AC_INIT(steel, 0.0.1.0, dpalm@writeme.com)
 AC_CONFIG_SRCDIR([src/Ast.h])
-
+AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADER( config.h )
 # Checks for programs.
 AC_PROG_CXX
