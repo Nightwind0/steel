@@ -25,10 +25,14 @@ AC_ARG_ENABLE(debug,[--enable-debug enables debug build],
 
 if test "$debugmode" != false 
 then
-     CPPFLAGS="-g -O0 -DDEBUG"
+     CFLAGS="-g -O0 -DDEBUG"
+     CPPFLAGS="$CFLAGS"
+     CXXFLAGS="$CFLAGS"
      AC_MSG_RESULT(on)
 else
-     CPPFLAGS="-DNDEBUG -O3" 
+     CFLAGS="-DNDEBUG -O3"
+     CPPFLAGS="$CFLAGS"
+     CXXFLAGS="$CFLAGS" 
      AC_MSG_RESULT(off)
 fi
 

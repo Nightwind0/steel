@@ -1228,6 +1228,7 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
 {
     SteelType ret;
     try{
+	m_pFunctor = NULL; // Don't cache these for now
         if(!m_pFunctor)
         {
             m_pFunctor = pInterpreter->lookup_functor(m_pId->getValue(),m_pId->GetNamespace());
@@ -1261,6 +1262,12 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
         throw SteelException(SteelException::TYPE_MISMATCH,
                              GetLine(), GetScript(),
                              "Type mismatch in parameter to function '" + m_pId->getValue() + '\'');
+    }
+    catch(FileNotFound)
+    {
+      throw SteelException(SteelException::FILE_NOT_FOUND,
+			   GetLine(),GetScript(),
+			   "Couldn't open file in '" + m_pId->getValue() + '\'');
     }
 
 

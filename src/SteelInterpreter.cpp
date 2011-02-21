@@ -17,6 +17,20 @@
 const char * SteelInterpreter::kszGlobalNamespace = "_global";
 const char * SteelInterpreter::kszUnspecifiedNamespace = "?";
 
+template <class T>
+class AutoCall
+{
+public:
+  AutoCall(T* pointer, void(T::*FuncPointer)(void)):m_func(FuncPointer),m_object(pointer){
+    }
+    ~AutoCall(){
+      (m_object->*m_func)();
+    }
+private:
+  void(T::*m_func)(void);
+    T* m_object;
+};
+
 ParameterListItem::ParameterListItem(const std::string &name, double d)
 {
     m_name = name;
@@ -56,6 +70,7 @@ ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle 
 
 SteelInterpreter::SteelInterpreter()
 :
+  m_require_f(this,&SteelInterpreter::require),
   m_add_f(this,&SteelInterpreter::add),
     m_print_f(this, &SteelInterpreter::print ),
     m_println_f(this,&SteelInterpreter::println ),
@@ -68,7 +83,8 @@ SteelInterpreter::SteelInterpreter()
     m_is_array_f(this,&SteelInterpreter::is_array),
     m_is_handle_f(this,&SteelInterpreter::is_handle),
     m_is_valid_f(this,&SteelInterpreter::is_valid),
-    m_array_f(this,&SteelInterpreter::array)
+    m_array_f(this,&SteelInterpreter::array),
+    m_nContextCount(0)
 {
     pushScope();
     registerBifs();
@@ -158,13 +174,13 @@ AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
 
 SteelType SteelInterpreter::runAst(AstScript *pScript)
 {
-    import(kszGlobalNamespace);
+    push_context();
+    AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
     assert ( NULL != pScript );
     pScript->execute(this);
 
-    remove_user_functions();
-    clear_imports();
-    return getReturn();
+    SteelType returnval = getReturn();
+    return returnval;
 }
 
 // This method allows you to set up some variables at a global scope
@@ -172,7 +188,8 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
 SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &params)
 {
     assert ( NULL != pScript );
-    import(kszGlobalNamespace);
+    push_context();
+    AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
     pushScope();
     for(ParameterList::const_iterator it = params.begin(); it != params.end();
         it++)
@@ -184,15 +201,15 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
 
     pScript->execute(this);
     popScope();
-    remove_user_functions();
-    clear_imports();
-    return getReturn();
+    SteelType returnval = getReturn();
+    return returnval;
 }
 
 SteelType SteelInterpreter::run(const std::string &name,const std::string &script)
 {
     SteelParser parser;
-    import(kszGlobalNamespace);
+    push_context();
+    AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
 //    parser.SetDebugSpewLevel(2);
     parser.setBuffer(script.c_str(),name);
     AstBase * pBase;
@@ -218,9 +235,8 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
     
     delete pScript;
 
-    remove_user_functions();
-    clear_imports();
-    return getReturn();
+    SteelType returnval = getReturn();
+    return returnval;
 }
 
 void SteelInterpreter::clear_imports()
@@ -308,12 +324,13 @@ SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name, const st
 
 void SteelInterpreter::setReturn(const SteelType &var)
 {
-    m_return = var;
+    m_return_stack.pop_front();
+    m_return_stack.push_front(var);
 }
 
 SteelType SteelInterpreter::getReturn() const
 {
-    return m_return;
+    return m_return_stack.front();
 }
 
 void SteelInterpreter::removeFunctions(const std::string &ns, bool del)
@@ -332,6 +349,25 @@ void SteelInterpreter::removeFunctions(const std::string &ns, bool del)
     m_functions.erase(ns);
 }
 
+void SteelInterpreter::push_context()
+{
+    if(m_nContextCount++ == 0)
+    {
+	   import(kszGlobalNamespace);
+    }
+    m_return_stack.push_front(SteelType());
+}
+
+void SteelInterpreter::pop_context()
+{
+    if(--m_nContextCount == 0)
+    {
+	remove_user_functions();
+	clear_imports();
+    }
+    m_return_stack.pop_front();
+}
+
 void SteelInterpreter::remove_user_functions()
 {
       for(std::map<std::string,FunctionSet>::iterator iter = m_functions.begin();
@@ -347,6 +383,17 @@ void SteelInterpreter::remove_user_functions()
                 }
             }
         }
+        
+        // I created these scripts when any requires happened, but didn't delete them
+        // because I need the code to hang around in case there are functions or whatever
+        // but, I have to clean them up sometime. Now makes the most sense. 
+        for(std::map<std::string,AstScript*>::iterator iter = m_requires.begin();
+	    iter != m_requires.end(); iter++)
+	    {
+		delete iter->second;
+	    }
+	    
+	    m_requires.clear();
 
 }
 
@@ -492,6 +539,7 @@ void SteelInterpreter::registerBifs()
 {
 
     srand(time(0));
+    addFunction("require",&m_require_f);
     addFunction("add",&m_add_f);
     addFunction("print", &m_print_f);
     addFunction("println",&m_println_f);
@@ -535,6 +583,54 @@ void SteelInterpreter::registerBifs()
     SteelType pi;
     pi.set( 4.0 * std::atan(1.0) );
     declare_const("$_PI",pi);
+}
+
+SteelType SteelInterpreter::require(const std::string &filename)
+{
+    if(m_requires.find(filename) == m_requires.end())
+    {
+	std::ifstream instream;
+	instream.open(filename.c_str(),std::ios::in);
+	if(!instream.good())
+	{
+	    throw FileNotFound();
+	}
+	
+	std::ostringstream strstream;
+	while(!instream.eof())
+	{
+	    char c = instream.get();
+	    strstream.put(c);
+	}
+	instream.close();
+	m_requires[filename] = NULL;
+	
+	SteelParser parser;
+	parser.setBuffer(strstream.str().c_str(),filename);
+	AstBase * pBase;
+	if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
+	{
+	    if(parser.hadError())
+	    {
+		throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
+	    } 
+	    else
+	    {
+		throw SteelException(SteelException::PARSING,0,filename, "Unknown parsing error.");
+	    }                
+	}
+	else if (parser.hadError())
+	{
+	    throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
+	}
+
+	AstScript *pScript = static_cast<AstScript*>( pBase );
+
+	pScript->execute(this);
+    
+	m_requires[filename] = pScript;
+    }
+    return SteelType();
 }
 
 SteelType SteelInterpreter::add(const SteelArray &array, const SteelType &type)

@@ -4,7 +4,9 @@
 #include <map>
 #include <string>
 #include <list>
+#include <set>
 #include <vector>
+#include <fstream>
 #include "SteelParser.h"
 #include "SteelFunctor.h"
 
@@ -105,6 +107,9 @@ public:
 
 private:
 
+    void push_context();
+    void pop_context();
+    
     std::string name_array_ref(const std::string &array_name); 
     typedef std::map<std::string, SteelType> VariableFile;
     typedef std::map<std::string,SteelFunctor*> FunctionSet;
@@ -118,11 +123,14 @@ private:
     void registerBifs();
     std::deque<std::string> m_namespace_scope;
     std::map<std::string,FunctionSet> m_functions;
+    std::map<std::string,AstScript*> m_requires; // Files already required
 
-
-    SteelType m_return;
+    std::list<SteelType> m_return_stack;
+    int m_nContextCount;
 private:
     // Bifs
+    SteelType require (const std::string &filename);
+    SteelFunctor1Arg<SteelInterpreter,const std::string&> m_require_f;
     SteelType add     (const SteelArray& array, const SteelType& type);
     SteelFunctor2Arg<SteelInterpreter,const SteelArray&,const SteelType&> m_add_f;
     SteelType print   (const std::string &str);
