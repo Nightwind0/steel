@@ -20,9 +20,8 @@ SteelUserFunction::SteelUserFunction(AstParamDefinitionList *pParams, AstStateme
 
 SteelUserFunction::~SteelUserFunction()
 {
-    // The AstFunctionDefinition is the duder that actually
-    // Deletes crap. We don't need to delete it here.
-    // In fact, we shouldn't. 
+  delete m_pParams;
+  delete m_pList;
 }
 
 SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const std::vector<SteelType> &supplied_params)
