@@ -798,6 +798,23 @@ private:
 };
 
 
+/* A lambda definition evaluates to a pointer to a function, that 
+ * function is anonymous and is defined in line
+ *
+ */
+class AstParamDefinitionList;
+class AstAnonymousFunctionDefinition : public AstExpression 
+{
+public:
+    AstAnonymousFunctionDefinition(unsigned int line, const std::string &script, AstParamDefinitionList* params, AstStatementList * statements);
+    virtual ~AstAnonymousFunctionDefinition();
+    virtual SteelType evaluate(SteelInterpreter* pInterpreter);
+private:
+    AstParamDefinitionList* m_pParamList;
+    AstStatementList* m_pStatements;
+};
+
+
 class AstParamDefinitionList : public AstBase
 {
 public:

@@ -1806,6 +1806,25 @@ ostream & AstArrayDeclaration::print(std::ostream &out)
 }
 
 
+AstAnonymousFunctionDefinition::AstAnonymousFunctionDefinition(unsigned int line, const std::string &script, AstParamDefinitionList* params, AstStatementList * statements)
+  :AstExpression(line,script),m_pParamList(params),m_pStatements(statements)
+{
+}
+  
+AstAnonymousFunctionDefinition::~AstAnonymousFunctionDefinition()
+{
+}
+  
+SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterpreter)
+{
+    shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements,false));
+
+    SteelType functor;
+    functor.set(pFunctor);
+
+    return functor;
+}
+
 
 AstParamDefinitionList::AstParamDefinitionList(unsigned int line,
                                                const std::string &script)
