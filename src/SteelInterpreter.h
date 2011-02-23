@@ -103,8 +103,7 @@ public:
     void registerFunction(const std::string &name,
                           const std::string &ns,
                           AstParamDefinitionList *pParams, 
-                          AstStatementList *pStatements,
-                          bool final);
+                          AstStatementList *pStatements);
     void setReturn(const SteelType &var);
     SteelType getReturn() const;
 

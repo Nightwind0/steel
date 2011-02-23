@@ -151,7 +151,6 @@ SteelParser::Token SteelParser::Scan ()
 %terminal INCREMENT
 %terminal DECREMENT
 %terminal POP
-%terminal FINAL
 %terminal CONSTANT
 %terminal DO
 %terminal IMPORT
@@ -205,8 +204,7 @@ SteelParser::Token SteelParser::Scan ()
 									id->GetScript(),
 									static_cast<AstFuncIdentifier*>(id),
 									params,
-									stmts,
-									false);
+									stmts);
 				}
 |
 	FUNCTION func_identifier:id '(' %error ')' '{' statement_list:stmts '}'
@@ -217,20 +215,7 @@ SteelParser::Token SteelParser::Scan ()
 									id->GetScript(),
 									pId,
 									NULL,
-									stmts,
-									false);
-				}
-|
-	FINAL FUNCTION func_identifier:id '(' %error ')' '{' statement_list:stmts '}'
-				%target.cpp{
-					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
-					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									pId,
-									NULL,
-									stmts,
-									true);
+									stmts);
 				}
 |
 	FUNCTION %error '(' param_definition:params  ')' '{' statement_list:stmts '}'
@@ -242,33 +227,9 @@ SteelParser::Token SteelParser::Scan ()
 										GET_SCRIPT(),
 										"__%%error%%__"),
 									params,
-									stmts,
-									false);
-				}
-|
-	FINAL FUNCTION %error '(' param_definition:params ')' '{' statement_list:stmts '}'
-				%target.cpp{
-					addError(GET_LINE(),"parser error after 'function' keyword.");
-					return new AstFunctionDefinition(GET_LINE(),
-									GET_SCRIPT(),
-									new AstFuncIdentifier(GET_LINE(),
-										GET_SCRIPT(),
-										"__%%error%%__"),
-									params,
-									stmts,
-									true);
+									stmts);
 				}
 
-|
-	FINAL FUNCTION func_identifier:id '(' param_definition:params ')' '{' statement_list:stmts '}'
-				%target.cpp{
-					return new AstFunctionDefinition(id->GetLine(),
-									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
-									params,
-									stmts,
-									true);
-				}
 ;
 
 

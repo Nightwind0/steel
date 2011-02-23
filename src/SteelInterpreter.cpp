@@ -121,9 +121,7 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
 	std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
     
         if(it != sset->second.end()){
-	    shared_ptr<SteelFunctor> pointer = it->second;
-	    if(pointer->isFinal()) 
-		throw AlreadyDefined();
+	    throw AlreadyDefined();
         }
 
         sset->second[name] = pFunc;
@@ -499,10 +497,9 @@ void SteelInterpreter::assign(SteelType *pVar, const SteelType &value)
 void SteelInterpreter::registerFunction(const std::string &name, 
                                         const std::string &ns,
                                         AstParamDefinitionList *pParams, 
-                                        AstStatementList *pStatements, 
-                                        bool final)
+                                        AstStatementList *pStatements)
 {
-    shared_ptr<SteelFunctor> functor(new SteelUserFunction(pParams,pStatements,final));
+    shared_ptr<SteelFunctor> functor(new SteelUserFunction(pParams,pStatements));
     addFunction(name,ns,functor);
 }
 

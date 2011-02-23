@@ -15,8 +15,8 @@ SteelFunctor::~SteelFunctor()
 
 
 
-SteelUserFunction::SteelUserFunction(AstParamDefinitionList *pParams, AstStatementList *pList, bool final)
-    :m_pParams(pParams),m_pList(pList),mbFinal(final)
+SteelUserFunction::SteelUserFunction(AstParamDefinitionList *pParams, AstStatementList *pList)
+    :m_pParams(pParams),m_pList(pList)
 {
 }
 

@@ -1817,7 +1817,7 @@ AstAnonymousFunctionDefinition::~AstAnonymousFunctionDefinition()
   
 SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterpreter)
 {
-    shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements,false));
+    shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
 
     SteelType functor;
     functor.set(pFunctor);
@@ -1936,9 +1936,8 @@ AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
                                              const std::string &script,
                                              AstFuncIdentifier *pId,
                                              AstParamDefinitionList *pParams,
-                                             AstStatementList * pStmts,
-                                             bool final)
-    :AstStatement(line,script),m_pId(pId),m_pParams(pParams),m_pStatements(pStmts),mbFinal(final)
+                                             AstStatementList * pStmts)
+    :AstStatement(line,script),m_pId(pId),m_pParams(pParams),m_pStatements(pStmts)
 {
 
 }
@@ -1962,8 +1961,8 @@ AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterp
     try{
 	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
 	if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
-	    pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements, mbFinal );
-	}else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements, mbFinal );
+	    pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements);
+	}else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements);
     }
     catch(AlreadyDefined)
     {
