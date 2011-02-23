@@ -118,8 +118,10 @@ public:
     virtual ostream & print(std::ostream &out);
     void add(AstStatement *pStatement) { m_list.push_back(pStatement); }
     virtual eStopType execute(SteelInterpreter *pInterpreter);
+    void setTopLevel();
 private:
     std::list<AstStatement*> m_list;
+    bool m_bTopLevel;
 };
 
 class AstWhileStatement : public AstStatement

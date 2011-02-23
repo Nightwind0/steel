@@ -131,7 +131,7 @@ private:
     void registerBifs();
     std::deque<std::string> m_namespace_scope;
     std::map<std::string,FunctionSet> m_functions;
-    std::map<std::string,AstScript*> m_requires; // Files already required
+    std::set<std::string> m_requires;
 
     std::list<SteelType> m_return_stack;
     int m_nContextCount;

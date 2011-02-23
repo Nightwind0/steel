@@ -380,18 +380,6 @@ void SteelInterpreter::remove_user_functions()
                 }
             }
         }
-        
-        // I created these scripts when any requires happened, but didn't delete them
-        // because I need the code to hang around in case there are functions or whatever
-        // but, I have to clean them up sometime. Now makes the most sense. 
-        for(std::map<std::string,AstScript*>::iterator iter = m_requires.begin();
-	    iter != m_requires.end(); iter++)
-	    {
-		delete iter->second;
-	    }
-	    
-	    m_requires.clear();
-
 }
 
 
@@ -600,7 +588,8 @@ SteelType SteelInterpreter::require(const std::string &filename)
 	    strstream.put(c);
 	}
 	instream.close();
-	m_requires[filename] = NULL;
+
+	m_requires.insert(filename);
 	
 	SteelParser parser;
 	parser.setBuffer(strstream.str().c_str(),filename);
@@ -624,8 +613,8 @@ SteelType SteelInterpreter::require(const std::string &filename)
 	AstScript *pScript = static_cast<AstScript*>( pBase );
 
 	pScript->execute(this);
-    
-	m_requires[filename] = pScript;
+
+	delete pScript; // Right? We ran the code, so we're okay there... and any lingering functions we want will survive this.
     }
     return SteelType();
 }

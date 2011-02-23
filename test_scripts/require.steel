@@ -1,0 +1,6 @@
+require("header.steel");
+require("header.steel");
+println($foo);
+
+foo();
+

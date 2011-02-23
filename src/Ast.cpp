@@ -286,11 +286,12 @@ AstStatement::eStopType AstScript::execute(SteelInterpreter *pInterpreter)
 void AstScript::SetList(AstStatementList *pList)
 {
     m_pList = pList;
+    m_pList->setTopLevel();
 }
 
 
 AstStatementList::AstStatementList(unsigned int line, const std::string &script)
-    :AstStatement(line,script)
+    :AstStatement(line,script),m_bTopLevel(false)
 {
 }
 
@@ -300,10 +301,16 @@ AstStatementList::~AstStatementList()
         i != m_list.end(); i++) delete *i;
 }
 
+void AstStatementList::setTopLevel()
+{
+    m_bTopLevel = true;
+}
+
 AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter)
 {
     eStopType ret = COMPLETED;
-    pInterpreter->pushScope();
+    if(!m_bTopLevel)
+	pInterpreter->pushScope();
     for(std::list<AstStatement*>::const_iterator it = m_list.begin();
         it != m_list.end(); it++)
     {
@@ -317,7 +324,8 @@ AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter
             break;
         }
     }
-    pInterpreter->popScope();
+    if(!m_bTopLevel)
+	pInterpreter->popScope();
 
     return ret;
 }

@@ -1,0 +1,7 @@
+require("header2.steel");
+function foo()
+{
+	baz();
+}
+
+const $foo=12.3;
