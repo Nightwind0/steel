@@ -741,7 +741,7 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
     }
     catch (UnknownIdentifier e)
     {
-	throw SteelException(SteelException::UNKNOWN_IDENTIFIER, GetLine(),GetScript(),"Unknown identifier in foreach statement.");
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER, GetLine(),GetScript(),"Unknown identifier in foreach statement: '" + e.identifier + '\'');
     }
 
     pInterpreter->popScope();
@@ -800,12 +800,12 @@ SteelType AstIncrement::evaluate(SteelInterpreter *pInterpreter)
                              GetScript(),
                              "Invalid type before increment (++) operator.");
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier before increment.");
+                             "Unknown identifier before increment: '" + id.identifier + '\'');
     }
 
     return SteelType();
@@ -852,12 +852,12 @@ SteelType AstDecrement::evaluate(SteelInterpreter *pInterpreter)
                              GetScript(),
                              "Invalid type before decrement (--) operator.");
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier before decrement.");
+                             "Unknown identifier before decrement: '" + id.identifier + '\'');
     }
 
     return SteelType();
@@ -1212,32 +1212,46 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
 }
 
 
+
 AstCallExpression::AstCallExpression(unsigned int line,
-                                     const std::string &script, AstFuncIdentifier *pId, AstParamList *pList)
-    :AstExpression(line,script),m_pId(pId),m_pParams(pList)
+                                     const std::string &script, AstExpression *pExp, AstParamList *pList)
+    :AstExpression(line,script),m_pExp(pExp),m_pParams(pList)
 {
-    assert ( m_pId );
+    assert ( m_pExp );
 }
+
 AstCallExpression::~AstCallExpression()
 {
-    delete m_pId;
+    delete m_pExp;
     delete m_pParams;
 }
 
 SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
 {
     SteelType ret;
+    shared_ptr<SteelFunctor> pFunctor;
     try{
 
-        if(!m_pFunctor)
-        {
-            m_pFunctor = pInterpreter->lookup_functor(m_pId->getValue(),m_pId->GetNamespace());
-        }
+	m_functor = m_pExp->evaluate(pInterpreter);
+	pFunctor = m_functor.getFunctor();
+    }catch(TypeMismatch){
+        throw SteelException(SteelException::TYPE_MISMATCH,
+                             GetLine(), GetScript(),
+                             "Function call expression was not a valid function");
+    }
+    catch(UnknownIdentifier id)
+    {
+        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+                             GetLine(), GetScript(),
+                             "Unknown function '" + id.identifier + '\'');
+    }
+
+	try{
 
         if(m_pParams)
-            ret = m_pFunctor->Call(pInterpreter,m_pParams->getParamList(pInterpreter));
+            ret = pFunctor->Call(pInterpreter,m_pParams->getParamList(pInterpreter));
         else 
-            ret = m_pFunctor->Call(pInterpreter,std::vector<SteelType>());
+            ret = pFunctor->Call(pInterpreter,std::vector<SteelType>());
         
 #if 0
         if(m_pParams)
@@ -1249,25 +1263,19 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
     {
         throw SteelException(SteelException::PARAM_MISMATCH,
                              GetLine(),GetScript(),
-                             "Function '" + m_pId->getValue() + "' called with incorrect number of parameters.");
-    }
-    catch(UnknownIdentifier )
-    {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(), GetScript(),
-                             "Unknown function: '" + m_pId->getValue() + '\'');
+                             "Function '"+ pFunctor->getIdentifier() + "' called with incorrect number of parameters.");
     }
     catch(TypeMismatch)
     {
         throw SteelException(SteelException::TYPE_MISMATCH,
                              GetLine(), GetScript(),
-                             "Type mismatch in parameter to function '" + m_pId->getValue() + '\'');
+                             "Type mismatch in parameter to function '" + pFunctor->getIdentifier() + '\'');
     }
     catch(FileNotFound)
     {
       throw SteelException(SteelException::FILE_NOT_FOUND,
 			   GetLine(),GetScript(),
-			   "Couldn't open file in '" + m_pId->getValue() + '\'');
+			   "Couldn't open file in function '" + pFunctor->getIdentifier() + '\'');
     }
 
 
@@ -1278,12 +1286,12 @@ ostream & AstCallExpression::print(std::ostream &out)
 {
     if(m_pParams)
     {
-        out << *m_pId 
+        out << *m_pExp 
             << '(' << *m_pParams << ')';
     }
     else
     {
-        out << *m_pId << "()";
+        out << *m_pExp << "()";
     }
     
     return out;
@@ -1359,13 +1367,13 @@ SteelType * AstArrayElement::lvalue(SteelInterpreter *pInterpreter)
         // It will throw out of bounds, or what not.
         return pArray->getLValue(index);
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         // TODO: Make these exceptions carry a god damn string.
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier in array lvalue.");
+                             "Unknown identifier in array lvalue: '" + id.identifier + '\'');
                  
     }
     catch(OutOfBounds)
@@ -1414,12 +1422,12 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
     
         return pInterpreter->lookup(pL, m_pExp->evaluate(pInterpreter));
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier.");
+                             "Unknown identifier: '" + id.identifier + '\'');
     }
     catch(OutOfBounds)
     {
@@ -1443,7 +1451,7 @@ SteelType * AstArrayIdentifier::lvalue(SteelInterpreter *pInterpreter)
     {
         return pInterpreter->lookup_lvalue(getValue());
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
@@ -1465,7 +1473,7 @@ SteelType AstArrayIdentifier::evaluate(SteelInterpreter *pInterpreter)
     try {
         var = pInterpreter->lookup(getValue()); 
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
@@ -1512,12 +1520,12 @@ SteelType AstVarAssignmentExpression::evaluate(SteelInterpreter *pInterpreter)
 
         pInterpreter->assign ( pL, exp );
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier");
+                             "Unknown identifier: '" + id.identifier + '\'');
     }
     catch(TypeMismatch)
     {
@@ -1600,7 +1608,7 @@ SteelType * AstVarIdentifier::lvalue(SteelInterpreter *pInterpreter)
                              GetScript(),
                              "Cannot modify constant value '" + getValue() + '\'');
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
@@ -1693,7 +1701,7 @@ AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterprete
                              GetScript(),
                              "Type mismatch in assignment part of declaration of '" + m_pId->getValue() + '\'');
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
@@ -1777,12 +1785,12 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
                              GetScript(),
                              "Attempt to assign scalar to array in declaration of :'" + m_pId->getValue() + '\'');
     }
-    catch(UnknownIdentifier)
+    catch(UnknownIdentifier id)
     {
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier in assignment.");
+                             "Unknown identifier in assignment:" + id.identifier + '\'');
     }
 
     return COMPLETED;
@@ -1880,7 +1888,16 @@ ostream & AstParamDefinitionList::print (std::ostream &out)
             out  << *(*i) << ',';
     }
     return out;
-}          
+}    
+
+
+SteelType AstFuncIdentifier::evaluate(SteelInterpreter *pInterpreter)
+{
+    shared_ptr<SteelFunctor> pFunctor = pInterpreter->lookup_functor(getValue(),GetNamespace());
+    SteelType functor;
+    functor.set(pFunctor);
+    return functor;
+}
 
 std::string AstFuncIdentifier::GetNamespace(void) const
 {
@@ -1893,6 +1910,8 @@ std::string AstFuncIdentifier::GetNamespace(void) const
         return SteelInterpreter::kszUnspecifiedNamespace;
     }
 }
+
+
 
 AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
                                              const std::string &script,

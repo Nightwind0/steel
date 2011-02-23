@@ -65,8 +65,13 @@ class TypeMismatch
 {
 };
 
-class UnknownIdentifier
+struct UnknownIdentifier
 {
+  UnknownIdentifier(const std::string id)
+  {
+    identifier = id;
+  }
+  std::string identifier;
 };
 
 class OutOfBounds

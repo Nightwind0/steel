@@ -1,0 +1,40 @@
+
+
+function print_if(declare @array, declare $filter)
+{
+	println("Only acceptable elements:");
+	foreach (declare $element) in @array
+	{
+		if($filter($element))
+			println($element);
+	}
+}
+
+function foobar(declare $baz)
+{
+	return $baz ^ 2;
+}
+
+function is_odd(declare $number)
+{
+	return $number %2 != 0; 
+}
+
+
+declare $pFunc =foobar;
+
+println(2 *$pFunc(3) + 1);
+
+
+println((2+3)*5);
+
+println((2+$pFunc(4))*4);
+
+declare $myPrint = println;
+
+$myPrint("Hello, world!");
+
+declare @array = array(-1,1,2,3,4,5,6,-2,42,9,1001,222);
+
+print_if(@array,is_odd);
+

@@ -20,8 +20,10 @@ public:
     virtual bool isUserFunction() const { return false; }
     virtual SteelType Call(SteelInterpreter *,const std::vector<SteelType> &params)=0;
     virtual bool isFinal() const { return true; }
-
+    virtual std::string getIdentifier() const { return m_identifier;}
+    virtual void setIdentifier(const std::string& id) { m_identifier = id; }
 private:
+    std::string m_identifier;
 };
 
 class SteelUserFunction : public SteelFunctor
@@ -40,7 +42,6 @@ private:
     AstParamDefinitionList *m_pParams;
     AstStatementList *m_pList;
     bool mbFinal;
-    
 };
 
 template<class ObjType>

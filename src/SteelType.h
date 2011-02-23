@@ -2,7 +2,11 @@
 #define SR_STEELTYPE_H
 
 #include <queue>
+#include <memory>
+#include <tr1/memory>
 
+class SteelFunctor;
+using std::tr1::shared_ptr;
 
 class SteelType
 {
@@ -19,6 +23,7 @@ public:
     };
 
     typedef IHandle * Handle;
+    typedef shared_ptr<SteelFunctor> Functor;
 
     operator int () const;
     operator unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
@@ -34,6 +39,8 @@ public:
     void set(const std::string &);
     void set(const std::vector<SteelType> &);
     void set(Handle h);
+    void set(Functor f);
+   
 
     // Array stuff
     bool isArray() const { return m_storage == ARRAY; }
@@ -50,6 +57,9 @@ public:
     bool isHandle() const { return m_storage == HANDLE; }
     bool isValidHandle() const { return isHandle() && m_value.h != NULL; }
 
+    // Functor stuff
+    bool isFunctor() const { return m_storage == FUNCTOR; }
+    Functor getFunctor()const;
     // Assignment
     SteelType & operator=(const SteelType &rhs);
     // Unary operators
@@ -89,7 +99,8 @@ private:
         INT,
         DOUBLE,
         STRING,
-        HANDLE
+        HANDLE,
+	FUNCTOR
     };
 
     int strInt() const ;
@@ -109,6 +120,7 @@ private:
         std::string *s;
         std::vector<SteelType> *a;
     };
+    Functor m_functor;
     value m_value;
     storage m_storage;
     bool m_bConst;

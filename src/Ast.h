@@ -417,14 +417,14 @@ public:
 }
     virtual ~AstFuncIdentifier(){}
 
-    // Right? Because this isn't the same as a call?
-    virtual SteelType evaluate(SteelInterpreter *pInterpreter) { return SteelType(); }
+    virtual SteelType evaluate(SteelInterpreter* pInterpreter);
     virtual SteelType * lvalue(SteelInterpreter *pInterpreter){ return NULL; }
 
     std::string GetNamespace(void) const;
 private:
     std::string m_ns;
 };
+
 
 class AstArrayIdentifier : public AstIdentifier
 {
@@ -615,7 +615,7 @@ class AstCallExpression : public AstExpression
 {
 public:
     AstCallExpression(unsigned int line,
-              const std::string &script, AstFuncIdentifier *pId, AstParamList *pList=NULL);
+              const std::string &script, AstExpression *callExp, AstParamList *pList=NULL);
     virtual ~AstCallExpression();
 
     virtual ostream & print(std::ostream &out);
@@ -626,9 +626,9 @@ public:
     // Would need implementations for lvalue.
     virtual SteelType * lvalue(SteelInterpreter *pInterpreter){ return NULL; }
 private:
-    AstFuncIdentifier *m_pId;
+    AstExpression *m_pExp;
     AstParamList *m_pParams;
-    shared_ptr<SteelFunctor> m_pFunctor;
+    SteelType m_functor;
 };
 
 /* class AstArrayExpression : public AstExpression

@@ -110,6 +110,7 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
 				   shared_ptr<SteelFunctor> pFunc)
 {
+    pFunc->setIdentifier(name); // TODO: Include namespace?
     std::map<std::string,FunctionSet>::iterator sset = m_functions.find ( ns );
     if(sset == m_functions.end())
     {
@@ -284,7 +285,7 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
         }
     }
 
-    throw UnknownIdentifier();
+    throw UnknownIdentifier(name);
 
     return shared_ptr<SteelFunctor>((SteelFunctor*)NULL);
 }
@@ -310,7 +311,7 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
 
     if(setiter == m_functions.end())
     {
-        throw UnknownIdentifier();
+        throw UnknownIdentifier(ns + "::" + name);
     }
 
     FunctionSet &set = setiter->second;
@@ -324,7 +325,7 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
 
         return pFunctor;
     }
-    throw UnknownIdentifier();
+    throw UnknownIdentifier(ns + "::" + name);
 
     return shared_ptr<SteelFunctor>((SteelFunctor*)NULL);
 }
@@ -455,7 +456,7 @@ SteelType *SteelInterpreter::lookup_lvalue(const std::string &name)
 {
     SteelType *p = lookup_internal(name);
 
-    if(p == NULL) throw UnknownIdentifier();
+    if(p == NULL) throw UnknownIdentifier(name);
 
     if(p->isConst()) throw ConstViolation();
 
@@ -468,7 +469,7 @@ SteelType SteelInterpreter::lookup(const std::string &name)
 {
     // if strict, throw Unknown Identifier
     SteelType * pVar = lookup_internal(name);
-    if(pVar == NULL) throw UnknownIdentifier();
+    if(pVar == NULL) throw UnknownIdentifier(name);
     return *pVar;
 }
 
@@ -476,7 +477,7 @@ SteelType SteelInterpreter::lookup(SteelType *pVar, int index)
 {
     // if strict, throw Unknown Identifier
     // TODO: Unknown ID, or was it not an lvalue
-    if(pVar == NULL) throw UnknownIdentifier();
+    if(pVar == NULL) throw UnknownIdentifier("???");
     if(!pVar->isArray()) throw TypeMismatch();
   
     return pVar->getElement(index);
@@ -485,7 +486,7 @@ SteelType SteelInterpreter::lookup(SteelType *pVar, int index)
 void SteelInterpreter::assign(SteelType *pVar, const SteelType &value)
 {
     // if strict, throw unknown id
-    if(pVar == NULL) throw UnknownIdentifier();
+    if(pVar == NULL) throw UnknownIdentifier("???");
 
     if(pVar->isArray() && (! value.isArray() ))
         throw TypeMismatch();

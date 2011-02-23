@@ -90,7 +90,6 @@ int main(int argc, char * argv[])
 
     try{
       AstScript * pScript = interpreter.prebuildAst(filename,script,bDebug,bScanDebug);
-
         if(bPrint)
             pScript->print(std::cout);
 

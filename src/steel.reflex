@@ -204,6 +204,11 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		return SteelParser::Token(SteelParser::Terminal::DEFAULT,NULL);
 	}
 |
+	(lambda)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::LAMBDA,NULL);
+	}
+|
 	(::)
 	%target.cpp {
 		return SteelParser::Token(SteelParser::Terminal::SCOPE,NULL);

@@ -118,7 +118,7 @@ SteelParser::Token SteelParser::Scan ()
 
 
 
-%terminal ':'
+%terminal ':' 
 %terminal ';' '(' ')' '=' '{' '}' '[' ']' ','
 %terminal '-' '+' '*' '/' '^' '%' 
 %terminal PLUS_EQUALS 
@@ -160,6 +160,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal CASE
 %terminal DEFAULT
 %terminal CASE_DELIM
+%terminal LAMBDA
 
 %prec.left CORRECT
 %prec.left NON_ELSE_INCORRECT
@@ -173,9 +174,11 @@ SteelParser::Token SteelParser::Scan ()
 %prec.left COMPARATOR
 %prec.left ADD_SUB
 %prec.left MULT_DIV_MOD
+%prec.left CALL
 %prec.right UNARY
 %prec.right POW
 %prec.left PAREN
+
 
 
 %default_parse_nonterminal root
@@ -654,6 +657,8 @@ SteelParser::Token SteelParser::Scan ()
 |
 	array_identifier:id %target.cpp{ return id; }
 |
+	func_identifier:id %target.cpp { return id; }
+|
 	exp:a '+' exp:b %prec ADD_SUB %target.cpp{ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); }
 |
 	exp:a '+'  %prec ADD_SUB %target.cpp{ 
@@ -827,39 +832,16 @@ exp->GetScript(), AstUnaryOp::CAT,exp); }
 
 %nonterminal call %type.cpp "AstCallExpression*"
 :
-	func_identifier:id '(' ')' %prec CORRECT %target.cpp { return new AstCallExpression(id->GetLine(),id->GetScript(),id);}
-|
-	func_identifier:id '(' param_list:params ')' %prec CORRECT %target.cpp { return new AstCallExpression(id->GetLine(),id->GetScript(),id,params);}
-|
-	func_identifier:id '(' param_list:params 
-			%target.cpp{
-				addError(GET_LINE(),"expected ')' before ';'.");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id,params); 
+
+	exp:exp '(' ')' %prec CALL
+		        %target.cpp {
+			        return new AstCallExpression(exp->GetLine(),exp->GetScript(),exp);
 			}
 |
-	func_identifier:id '('
-			%target.cpp {
-				addError(GET_LINE(),"expected ')' before ';'");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			}
-|
-	func_identifier:id %error ')'
-			%target.cpp {
-				addError(GET_LINE(),"missing '(' in function call");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			}
-|
-	func_identifier:id %error
-			%target.cpp {
-				addError(GET_LINE(),"function call missing parentheses.");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			}
-|
-	func_identifier:id
-			%target.cpp {
-				addError(GET_LINE(),"invalid bareword. function call missing parentheses?");
-				return new AstCallExpression(id->GetLine(),id->GetScript(),id); 
-			}
+	exp:exp '(' param_list:params ')' %prec CALL
+		        %target.cpp {
+				return new AstCallExpression(exp->GetLine(),exp->GetScript(),exp,params);
+			}	
 
 ;
 
