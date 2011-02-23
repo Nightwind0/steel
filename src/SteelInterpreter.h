@@ -7,6 +7,8 @@
 #include <set>
 #include <vector>
 #include <fstream>
+#include <memory>
+#include <tr1/memory>
 #include "SteelParser.h"
 #include "SteelFunctor.h"
 
@@ -35,6 +37,8 @@ private:
 
 typedef std::vector<ParameterListItem> ParameterList;
 
+using std::tr1::shared_ptr;
+
 class SteelInterpreter
 {
 public:
@@ -42,18 +46,23 @@ public:
     virtual ~SteelInterpreter();
 
     // Add function to the global namespace
-    void addFunction(const std::string &name, SteelFunctor *pFunc);
+    void addFunction(const std::string &name, std::tr1::shared_ptr<SteelFunctor> pFunc);
+    // Function will be deleted, do not pass stack variables
+    void addFunction(const std::string &name, SteelFunctor* pFunc);
 
     // Add a function with a namespace
-    void addFunction(const std::string &name, const std::string &ns, SteelFunctor *pFunc);
+    void addFunction(const std::string &name, const std::string &ns, shared_ptr<SteelFunctor> pFunc);
+    // Function will be deleted, do not pass stack variables
+    void addFunction(const std::string &name, const std::string &ns, SteelFunctor* pFunc);
+
     // Removes a function and returns the pointer to it
     // (mostly so that you can deallocate it)
     // (but don't forget to check if it's an user function.. you don't
     // want to delete those.)
-    SteelFunctor *removeFunction(const std::string &name, const std::string &ns=kszGlobalNamespace);
+    shared_ptr<SteelFunctor> removeFunction(const std::string &name, const std::string &ns=kszGlobalNamespace);
 
     // Removes all functions with corresponding namespace
-    void removeFunctions(const std::string &ns, bool delete_too = false);
+    void removeFunctions(const std::string &ns);
 
     // Call a method with parameters.
     // This method builds the Ast then executes it
@@ -99,8 +108,8 @@ public:
     void setReturn(const SteelType &var);
     SteelType getReturn() const;
 
-    SteelFunctor* lookup_functor(const std::string &name, const std::string &ns);
-    SteelFunctor* lookup_functor(const std::string &name);
+    shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
+    shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
 
     static const char * kszGlobalNamespace;
     static const char * kszUnspecifiedNamespace;
@@ -112,7 +121,7 @@ private:
     
     std::string name_array_ref(const std::string &array_name); 
     typedef std::map<std::string, SteelType> VariableFile;
-    typedef std::map<std::string,SteelFunctor*> FunctionSet;
+    typedef std::map<std::string,shared_ptr<SteelFunctor> > FunctionSet;
     std::list<VariableFile> m_symbols;
 
     void remove_user_functions();
@@ -130,33 +139,19 @@ private:
 private:
     // Bifs
     SteelType require (const std::string &filename);
-    SteelFunctor1Arg<SteelInterpreter,const std::string&> m_require_f;
     SteelType add     (const SteelArray& array, const SteelType& type);
-    SteelFunctor2Arg<SteelInterpreter,const SteelArray&,const SteelType&> m_add_f;
     SteelType print   (const std::string &str);
-    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_print_f;
     SteelType println (const std::string &str);
-    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_println_f;
     SteelType len     (const SteelArray &ref);
-    SteelFunctor1Arg<SteelInterpreter,const SteelArray&> m_len_f;
     SteelType real    (const SteelType &str);
-    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_real_f;
     SteelType integer (const SteelType &str);
-    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_integer_f;
     SteelType boolean (const SteelType &str);
-    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_boolean_f;
     SteelType substr  (const std::string &str, int start, int len);
-    SteelFunctor3Arg<SteelInterpreter,const std::string&,int, int> m_substr_f;
     SteelType strlen  (const std::string &str);
-    SteelFunctor1Arg<SteelInterpreter,const std::string &> m_strlen_f;
     SteelType is_array(const SteelType &);
-    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_array_f;
     SteelType is_handle(const SteelType&);
-    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_handle_f;
     SteelType is_valid(const SteelType&);
-    SteelFunctor1Arg<SteelInterpreter,const SteelType&> m_is_valid_f;
     SteelType array   (const SteelArray&);
-    SteelFunctorArray<SteelInterpreter> m_array_f;
 
 
     // Math built-ins

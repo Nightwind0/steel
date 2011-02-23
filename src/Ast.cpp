@@ -103,7 +103,7 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 		in_subexpr = false;
 		subexpr += ';';
 	
-#ifndef NDEBUG
+#ifdef DEBUG
 		std::cerr << "Sub expression: " << subexpr << std::endl;
 #endif
 		SteelParser parser;
@@ -1214,7 +1214,7 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
 
 AstCallExpression::AstCallExpression(unsigned int line,
                                      const std::string &script, AstFuncIdentifier *pId, AstParamList *pList)
-    :AstExpression(line,script),m_pId(pId),m_pParams(pList),m_pFunctor(NULL)
+    :AstExpression(line,script),m_pId(pId),m_pParams(pList)
 {
     assert ( m_pId );
 }
@@ -1228,7 +1228,7 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
 {
     SteelType ret;
     try{
-	m_pFunctor = NULL; // Don't cache these for now
+
         if(!m_pFunctor)
         {
             m_pFunctor = pInterpreter->lookup_functor(m_pId->getValue(),m_pId->GetNamespace());
@@ -1906,9 +1906,17 @@ AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
 }
 AstFunctionDefinition::~AstFunctionDefinition()
 {
+  delete m_pId;
+  /*
     delete m_pId;
     delete m_pParams;
     delete m_pStatements;
+  
+    // The SteelUserFunctor is the duder that actually
+    // Deletes crap. We don't need to delete it here.
+    // In fact, we shouldn't.
+    // cause those puppies are ref. counted
+    */
 }
 
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)

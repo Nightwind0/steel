@@ -4,9 +4,12 @@
 #include <string>
 #include <list>
 #include <iostream>
+#include <memory>
+#include <tr1/memory>
 #include "SteelType.h"
 
 using std::ostream;
+using std::tr1::shared_ptr;
 
 class SteelInterpreter;
 class SteelFunctor;
@@ -625,7 +628,7 @@ public:
 private:
     AstFuncIdentifier *m_pId;
     AstParamList *m_pParams;
-    SteelFunctor *m_pFunctor;
+    shared_ptr<SteelFunctor> m_pFunctor;
 };
 
 /* class AstArrayExpression : public AstExpression

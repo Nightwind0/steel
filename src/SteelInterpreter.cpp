@@ -70,20 +70,6 @@ ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle 
 
 SteelInterpreter::SteelInterpreter()
 :
-  m_require_f(this,&SteelInterpreter::require),
-  m_add_f(this,&SteelInterpreter::add),
-    m_print_f(this, &SteelInterpreter::print ),
-    m_println_f(this,&SteelInterpreter::println ),
-    m_len_f(this, &SteelInterpreter::len ),
-    m_real_f(this,&SteelInterpreter::real ),
-    m_integer_f(this,&SteelInterpreter::integer ),
-    m_boolean_f(this,&SteelInterpreter::boolean ),
-    m_substr_f(this,&SteelInterpreter::substr ),
-    m_strlen_f(this,&SteelInterpreter::strlen),
-    m_is_array_f(this,&SteelInterpreter::is_array),
-    m_is_handle_f(this,&SteelInterpreter::is_handle),
-    m_is_valid_f(this,&SteelInterpreter::is_valid),
-    m_array_f(this,&SteelInterpreter::array),
     m_nContextCount(0)
 {
     pushScope();
@@ -99,14 +85,30 @@ SteelInterpreter::~SteelInterpreter()
 
 
 void SteelInterpreter::addFunction(const std::string &name,
-                                   SteelFunctor *pFunc)
+                                   shared_ptr<SteelFunctor> pFunc)
 {
     // global namespace
     addFunction(name,kszGlobalNamespace,pFunc);    
 }
 
+void SteelInterpreter::addFunction(const std::string &name,
+                                   SteelFunctor* pFunc)
+{
+    // global namespace
+    shared_ptr<SteelFunctor> functor(pFunc);
+    addFunction(name,kszGlobalNamespace,functor);    
+}
+
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
-                                  SteelFunctor * pFunc)
+				   SteelFunctor* pFunc)
+{
+    shared_ptr<SteelFunctor> functor(pFunc);
+    addFunction(name,ns,functor);
+}
+
+
+void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
+				   shared_ptr<SteelFunctor> pFunc)
 {
     std::map<std::string,FunctionSet>::iterator sset = m_functions.find ( ns );
     if(sset == m_functions.end())
@@ -115,18 +117,22 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
     }
     else
     {
-        std::map<std::string,SteelFunctor*>::iterator it = sset->second.find ( name );
+	std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
     
-        if(it != sset->second.end() && it->second->isFinal()) throw AlreadyDefined();
+        if(it != sset->second.end()){
+	    shared_ptr<SteelFunctor> pointer = it->second;
+	    if(pointer->isFinal()) 
+		throw AlreadyDefined();
+        }
 
         sset->second[name] = pFunc;
     }
 }
 
-SteelFunctor *SteelInterpreter::removeFunction(const std::string &name, const std::string &ns)
+shared_ptr<SteelFunctor> SteelInterpreter::removeFunction(const std::string &name, const std::string &ns)
 {
     std::map<std::string,FunctionSet>::iterator set = m_functions.find ( ns );
-    std::map<std::string,SteelFunctor*>::iterator it = set->second.find ( name );
+    std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = set->second.find ( name );
 
     set->second.erase(it);
 
@@ -177,8 +183,9 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
     push_context();
     AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
     assert ( NULL != pScript );
+    pushScope();
     pScript->execute(this);
-
+    popScope();
     SteelType returnval = getReturn();
     return returnval;
 }
@@ -259,18 +266,18 @@ SteelType SteelInterpreter::call(const std::string &name, const std::vector<Stee
     return lookup_functor(name)->Call(this,pList);
 }
 
-SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name)
+shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name)
 {
     for(std::deque<std::string>::reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
         it++)
     {
         FunctionSet &set = m_functions[*it];
 
-        std::map<std::string,SteelFunctor*>::iterator iter = set.find( name );
+        std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
 
         if( iter != set.end() )
         {
-            SteelFunctor * pFunctor = iter->second;
+            shared_ptr<SteelFunctor> pFunctor = iter->second;
             assert ( pFunctor != NULL );
 
             return pFunctor;
@@ -279,17 +286,17 @@ SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name)
 
     throw UnknownIdentifier();
 
-    return NULL;
+    return shared_ptr<SteelFunctor>((SteelFunctor*)NULL);
 }
 
 SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList)
 {
-    SteelFunctor * pFunctor = lookup_functor(name,ns);
+    shared_ptr<SteelFunctor> pFunctor = lookup_functor(name,ns);
 
     return pFunctor->Call(this,pList);
 }
 
-SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name, const std::string &ns)
+shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name, const std::string &ns)
 {
     static std::string unspecifiedNS(kszUnspecifiedNamespace);
     // If this call has no namespace, we have to search for it using this
@@ -308,18 +315,18 @@ SteelFunctor* SteelInterpreter::lookup_functor(const std::string &name, const st
 
     FunctionSet &set = setiter->second;
 
-    std::map<std::string,SteelFunctor*>::iterator iter = set.find( name );
+    std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
 
     if( iter != set.end() )
     {
-        SteelFunctor * pFunctor = iter->second;
+        shared_ptr<SteelFunctor> pFunctor = iter->second;
         assert ( pFunctor != NULL );
 
         return pFunctor;
     }
     throw UnknownIdentifier();
 
-    return NULL;
+    return shared_ptr<SteelFunctor>((SteelFunctor*)NULL);
 }
 
 void SteelInterpreter::setReturn(const SteelType &var)
@@ -333,18 +340,9 @@ SteelType SteelInterpreter::getReturn() const
     return m_return_stack.front();
 }
 
-void SteelInterpreter::removeFunctions(const std::string &ns, bool del)
+void SteelInterpreter::removeFunctions(const std::string &ns)
 {
     FunctionSet &set = m_functions[ns];
-
-    if(del)
-    {
-        for(FunctionSet::iterator it=set.begin();it!=set.end(); it++)
-        {
-            SteelFunctor *pFunc = it->second;
-            delete pFunc;
-        }
-    }
 
     m_functions.erase(ns);
 }
@@ -376,7 +374,7 @@ void SteelInterpreter::remove_user_functions()
             FunctionSet& sset = iter->second;
             for(FunctionSet::iterator fiter = sset.begin(); fiter != sset.end(); fiter++)
             {
-                SteelFunctor * functor = fiter->second;
+                shared_ptr<SteelFunctor> functor = fiter->second;
                 if(functor->isUserFunction()){
                     // No need to delete the functor itself, right?                                                                                                     
                     sset.erase(fiter);
@@ -503,7 +501,8 @@ void SteelInterpreter::registerFunction(const std::string &name,
                                         AstStatementList *pStatements, 
                                         bool final)
 {
-    addFunction(name,ns,new SteelUserFunction( pParams, pStatements, final ));
+    shared_ptr<SteelFunctor> functor(new SteelUserFunction(pParams,pStatements,final));
+    addFunction(name,ns,functor);
 }
 
 SteelType * SteelInterpreter::lookup_internal(const std::string &name)
@@ -539,20 +538,20 @@ void SteelInterpreter::registerBifs()
 {
 
     srand(time(0));
-    addFunction("require",&m_require_f);
-    addFunction("add",&m_add_f);
-    addFunction("print", &m_print_f);
-    addFunction("println",&m_println_f);
-    addFunction("len",&m_len_f);
-    addFunction("real",&m_real_f);
-    addFunction("integer",&m_integer_f);
-    addFunction("boolean",&m_boolean_f);
-    addFunction("substr",&m_substr_f);
-    addFunction("strlen",&m_strlen_f);
-    addFunction("is_array",&m_is_array_f);
-    addFunction("is_handle",&m_is_handle_f);
-    addFunction("is_valid",&m_is_valid_f);
-    addFunction("array",&m_array_f);
+    addFunction("require",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::require));
+    addFunction("add",new SteelFunctor2Arg<SteelInterpreter,const SteelArray&,const SteelType&>(this,&SteelInterpreter::add));
+    addFunction("print", new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::print));
+    addFunction("println",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::println));
+    addFunction("len",new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len));
+    addFunction("real",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real));
+    addFunction("integer",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer));
+    addFunction("boolean",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean));
+    addFunction("substr",new SteelFunctor3Arg<SteelInterpreter,const std::string&,int,int>(this,&SteelInterpreter::substr));
+    addFunction("strlen",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::strlen));
+    addFunction("is_array",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_array));
+    addFunction("is_handle",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_handle));
+    addFunction("is_valid",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_valid));
+    addFunction("array",new SteelFunctorArray<SteelInterpreter>(this,&SteelInterpreter::array));
 
 
     // Math functions
