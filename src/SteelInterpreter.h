@@ -152,6 +152,7 @@ private:
     SteelType array   (const SteelArray&);
 
 
+
     // Math built-ins
     SteelType ceil (double f);
     SteelType abs  (double f);

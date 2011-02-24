@@ -1,0 +1,67 @@
+function merge_sort(declare @m, declare $comparator)
+{
+	if(len(@m) <= 1)
+		return @m;
+	declare @left;
+	declare @right;
+	declare $middle = len(@m) / 2;
+	declare $x=0;
+	for(;$x<$middle;$x++)
+		@left += @m[$x];
+	for(;$x<len(@m);$x++)
+		@right += @m[$x];
+	@left = merge_sort(@left,$comparator);
+	@right = merge_sort(@right,$comparator);
+	return merge(@left,@right,$comparator);
+}
+
+
+function merge(declare @left,declare @right, declare $comparator)
+{
+	declare @result;
+	while(len(@left) > 0 or len(@right) > 0)
+	{
+		if(len(@left) > 0 and len(@right) > 0)
+		{
+			if($comparator(@left[0],@right[0]))
+				  pushb @result, pop @left;
+			else
+				  @result += pop @right;
+		}
+		else if(len(@left) > 0)
+		{
+			@result += pop @left;
+		}
+		else if(len(@right) > 0)
+		{
+			@result += pop @right;
+		}
+	}
+	return @result;
+}
+
+function generate_array(declare $num_elements)
+{
+	declare @array;
+	declare $i=0;
+	for(;$i<$num_elements;$i++)
+	{
+		pushb @array ,math::rand() % $num_elements;
+	}
+
+	return @array;
+}
+
+function less(declare $a, declare $b)
+{
+	return $a <= $b;
+}
+
+
+require("array_print.steel");
+
+declare @array = generate_array(1000);
+
+printarray(@array);
+@array = merge_sort(@array, less);
+printarray(@array);

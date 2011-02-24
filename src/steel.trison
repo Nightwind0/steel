@@ -384,15 +384,14 @@ SteelParser::Token SteelParser::Scan ()
 		}
 |
 	WHILE '(' exp:exp ')' statement:stmt %prec CORRECT %target.cpp { return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); }
-/*
+
 |
-	WHILE '('   
+	WHILE '('   %error
 			%target.cpp{ 
 				addError(GET_LINE(),"expected ')'");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT())); 
 			}
-*/
 |
 	WHILE %error  
 			%target.cpp{ 
@@ -717,11 +716,7 @@ SteelParser::Token SteelParser::Scan ()
 |
 
 	NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); }
-/*
-|
-	CAT exp:exp  %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(),
-exp->GetScript(), AstUnaryOp::CAT,exp); }
-*/
+
 |
 	exp:lvalue '[' exp:index ']' %prec PAREN %target.cpp { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
 |
@@ -778,16 +773,16 @@ exp->GetScript(), AstUnaryOp::CAT,exp); }
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
 							  }
 |
-	PUSH exp:lvalue ',' exp:rvalue %prec CALL %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,true); }
+	PUSH exp:lvalue ',' exp:rvalue  %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,true); }
 |
-	PUSH %error %prec CALL %target.cpp {
+	PUSH %error  %target.cpp {
 						addError(GET_LINE(),"expected expression after 'push'.");
 						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
 							  }
 |
-	PUSHB exp:lvalue ',' exp:rvalue %prec CALL %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,false); }
+	PUSHB exp:lvalue ',' exp:rvalue  %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,false); }
 |
-	PUSHB %error %prec CALL %target.cpp {
+	PUSHB %error  %target.cpp {
 						addError(GET_LINE(),"expected expression after 'pushb'.");
 						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),false);
 							  }
@@ -824,7 +819,7 @@ exp->GetScript(), AstUnaryOp::CAT,exp); }
 				return pId; 
 				}
 |
-	BAREWORD:ns SCOPE BAREWORD:func 
+	BAREWORD:ns SCOPE BAREWORD:func %prec UNARY
 				%target.cpp{
 				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),func->GetWord(),ns->GetWord());
 				return pId;

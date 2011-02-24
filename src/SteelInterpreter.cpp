@@ -539,6 +539,7 @@ void SteelInterpreter::registerBifs()
     addFunction("array",new SteelFunctorArray<SteelInterpreter>(this,&SteelInterpreter::array));
 
 
+
     // Math functions
   
     addFunction("ceil", "math", new SteelFunctor1Arg<SteelInterpreter,double>(this,&SteelInterpreter::ceil));

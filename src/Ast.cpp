@@ -1835,7 +1835,7 @@ AstAnonymousFunctionDefinition::~AstAnonymousFunctionDefinition()
 SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterpreter)
 {
     shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
-
+    pFunctor->setIdentifier("Anonymous");
     SteelType functor;
     functor.set(pFunctor);
 

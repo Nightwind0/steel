@@ -17,3 +17,6 @@ print_if(array(1,2,3,4,5,6), function (declare $element){ return $element %2 == 
 declare $expression = function(declare $element){ return $element %2; };
 
 if($expression(3)) println("Yep");
+
+function (declare $a,declare $b){ println("My favorite number is {$a}"); }(12); // This is a really weird line!
+
