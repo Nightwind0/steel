@@ -1159,8 +1159,9 @@ ostream & AstUnaryOp::print(std::ostream &out)
 
 AstPop::AstPop(unsigned int line,
                const std::string &script,
-               AstExpression *pLValue)
-    :AstExpression(line,script),m_pLValue(pLValue)
+               AstExpression *pLValue,
+	       bool popBack)
+    :AstExpression(line,script),m_pLValue(pLValue),m_bPopBack(popBack)
 {
 }
 
@@ -1182,7 +1183,10 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
                              "Invalid lvalue after pop.");
     }
 
-    return pL->pop();
+    if(m_bPopBack)
+        return pL->pop_back();
+    else
+        return pL->pop();
     
 }
 
@@ -1190,8 +1194,9 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
 AstPush::AstPush(unsigned int line,
                const std::string &script,
 		 AstExpression *pLValue,
-AstExpression *pExp)
-  :AstExpression(line,script),m_pLValue(pLValue),m_pExp(pExp)
+		 AstExpression *pExp,
+		 bool pushFront)
+    :AstExpression(line,script),m_pLValue(pLValue),m_pExp(pExp),m_bPushFront(pushFront)
 {
 }
 
@@ -1214,7 +1219,11 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
                              "Invalid lvalue after push.");
     }
 
-    pL->add(m_pExp->evaluate(pInterpreter));
+    if(!m_bPushFront){
+      pL->add(m_pExp->evaluate(pInterpreter));
+    }else{
+      pL->push(m_pExp->evaluate(pInterpreter));
+    }
 
     return *pL;
 }
@@ -1259,12 +1268,12 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
         if(m_pParams)
             ret = pFunctor->Call(pInterpreter,m_pParams->getParamList(pInterpreter));
         else 
-            ret = pFunctor->Call(pInterpreter,std::vector<SteelType>());
+            ret = pFunctor->Call(pInterpreter,SteelType::Container());
         
 #if 0
         if(m_pParams)
             ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),m_pParams->getParamList(pInterpreter) );
-        else ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),std::vector<SteelType>() );
+        else ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),SteelType::Container() );
 #endif
     }
     catch(ParamMismatch )
@@ -1565,9 +1574,9 @@ AstParamList::~AstParamList()
         i != m_params.end(); i++) delete *i;
 }
 
-std::vector<SteelType> AstParamList::getParamList(SteelInterpreter *pInterpreter) const 
+SteelType::Container AstParamList::getParamList(SteelInterpreter *pInterpreter) const 
 {
-    std::vector<SteelType> params;
+    SteelType::Container params;
 
     for(std::list<AstExpression*>::const_iterator i = m_params.begin();
         i != m_params.end(); i++)
@@ -1884,7 +1893,7 @@ int AstParamDefinitionList::defaultCount() const
 
 
 void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter, 
-                                                 const std::vector<SteelType> &params)
+                                                 const SteelType::Container &params)
 {
     assert ( params.size() == m_params.size() );
 

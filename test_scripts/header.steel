@@ -5,3 +5,9 @@ function foo()
 }
 
 const $foo=12.3;
+
+{ 
+  const $foo=6.6;
+}
+
+println("Including or requiring a header executes its code.");

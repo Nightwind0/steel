@@ -1,7 +1,7 @@
 #ifndef SR_STEELTYPE_H
 #define SR_STEELTYPE_H
 
-#include <queue>
+#include <deque>
 #include <memory>
 #include <tr1/memory>
 
@@ -24,20 +24,21 @@ public:
 
     typedef IHandle * Handle;
     typedef shared_ptr<SteelFunctor> Functor;
+    typedef std::deque<SteelType> Container;
 
     operator int () const;
     operator unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
     operator double () const;
     operator std::string () const;
     operator bool () const;
-    operator std::vector<SteelType> () const;
+    operator Container () const;
     operator Handle () const;
 
     void set(int i);
     void set(double d);
     void set(bool b);
     void set(const std::string &);
-    void set(const std::vector<SteelType> &);
+    void set(const Container &);
     void set(Handle h);
     void set(Functor f);
    
@@ -48,10 +49,11 @@ public:
     SteelType *getLValue(int index) const;
     void setElement(int index,const SteelType &);
     int getArraySize()const;
-    void add(const SteelType &var);
-    void removeTail();
-    void reserveArray(int index);
+    void add(const SteelType &var); // adds to the tail (append)
     SteelType pop();
+    SteelType pop_back();
+    void push(const SteelType &var); // adds to the front
+
 
     // Handle stuff
     bool isHandle() const { return m_storage == HANDLE; }
@@ -118,7 +120,7 @@ private:
         int i;
         Handle h;
         std::string *s;
-        std::vector<SteelType> *a;
+        Container *a;
     };
     Functor m_functor;
     value m_value;
@@ -128,7 +130,9 @@ private:
 };
 
 
-typedef std::vector<SteelType> SteelArray;
+// Why two typedefs for the same thing? One is truly an array of steeltypes,
+// the other is a special array type that HAPPENS to only be an array of steeltypes as well
+typedef SteelType::Container SteelArray;
 
 bool operator==(const SteelType &lhs, const SteelType &rhs);
 bool operator!=(const SteelType &lhs, const SteelType &rhs);

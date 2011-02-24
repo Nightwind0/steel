@@ -66,10 +66,10 @@ public:
 
     // Call a method with parameters.
     // This method builds the Ast then executes it
-    SteelType call(const std::string &name, const std::vector<SteelType> &pList);
+    SteelType call(const std::string &name, const SteelType::Container &pList);
 
     // Call with a funciton in a specific namespace
-    SteelType call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList);
+    SteelType call(const std::string &name, const std::string &ns, const SteelType::Container &pList);
     // This allows you to pre-parse a script and keep a pointer to it
     // around, which can be run over and over, and the deletion of it is
     // up to the user of SteelInterpreter
@@ -138,7 +138,6 @@ private:
 private:
     // Bifs
     SteelType require (const std::string &filename);
-    SteelType add     (const SteelArray& array, const SteelType& type);
     SteelType print   (const std::string &str);
     SteelType println (const std::string &str);
     SteelType len     (const SteelArray &ref);

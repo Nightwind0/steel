@@ -581,7 +581,8 @@ class AstPop : public AstExpression
 public:
     AstPop(unsigned int line,
        const std::string &script,
-       AstExpression *pLValue);
+	   AstExpression *pLValue,
+	   bool pop_back=false);
     virtual ~AstPop();
 
     virtual SteelType evaluate(SteelInterpreter *pInterpreter);
@@ -589,7 +590,7 @@ public:
     
 private:
     AstExpression *m_pLValue;
-
+    bool m_bPopBack;
 };
 
 class AstPush : public AstExpression
@@ -598,7 +599,8 @@ public:
     AstPush(unsigned int line,
        const std::string &script,
 	    AstExpression *pLValue,
-	    AstExpression *pExp);
+	    AstExpression *pExp,
+	    bool push_front=false);
     virtual ~AstPush();
 
     virtual SteelType evaluate(SteelInterpreter *pInterpreter);
@@ -607,6 +609,7 @@ public:
 private:
     AstExpression *m_pLValue;
     AstExpression* m_pExp;
+    bool m_bPushFront;
 };
 
 
@@ -733,7 +736,7 @@ public:
 
     void add(AstExpression *pExp);
     virtual ostream & print(std::ostream &out);
-    std::vector<SteelType> getParamList(SteelInterpreter *p) const;
+    SteelType::Container getParamList(SteelInterpreter *p) const;
 private:
     std::list<AstExpression*> m_params;
 };
@@ -833,7 +836,7 @@ public:
 
     void executeDeclarations(SteelInterpreter *pInterpreter);
     void executeDeclarations(SteelInterpreter *pInterpreter, 
-                 const std::vector<SteelType> &params);
+                 const SteelType::Container &params);
 private:
     int mnDefaults;
     std::list<AstDeclaration*> m_params;

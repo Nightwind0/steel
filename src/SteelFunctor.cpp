@@ -26,7 +26,7 @@ SteelUserFunction::~SteelUserFunction()
   delete m_pList;
 }
 
-SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const std::vector<SteelType> &supplied_params)
+SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelType::Container &supplied_params)
 {
     SteelType ret;
     pInterpreter->pushScope();

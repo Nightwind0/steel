@@ -132,7 +132,7 @@ SteelType::operator bool () const
     return true;
 }
 
-SteelType::operator std::vector<SteelType> () const
+SteelType::operator SteelType::Container () const
 {
     if( !isArray() ) throw TypeMismatch();
 
@@ -177,9 +177,9 @@ void SteelType::set(Functor f)
 }
 
 
-void SteelType::set(const std::vector<SteelType> &ref)
+void SteelType::set(const Container &ref)
 {
-    m_value.a = new std::vector<SteelType>(ref);
+    m_value.a = new SteelType::Container(ref);
     m_storage = SteelType::ARRAY;
 }
 
@@ -219,7 +219,7 @@ SteelType::Functor SteelType::getFunctor() const
   return m_functor; 
 }
 
-SteelType SteelType::pop()
+SteelType SteelType::pop_back()
 {
     if( ! isArray() ) throw TypeMismatch();
 
@@ -227,6 +227,23 @@ SteelType SteelType::pop()
     (*m_value.a).pop_back();
     return back;
 }
+
+SteelType SteelType::pop()
+{
+    if( ! isArray() ) throw TypeMismatch();
+
+    SteelType front = (*m_value.a).front();
+    (*m_value.a).pop_front();
+    return front;
+}
+
+void SteelType::push(const SteelType &var) // adds to the front
+{
+  if (! isArray() ) throw TypeMismatch();
+
+  (*m_value.a).push_front(var);
+}
+
 
 SteelType SteelType::operator+=(const SteelType &rhs)
 {
@@ -241,7 +258,7 @@ SteelType SteelType::operator+=(const SteelType &rhs)
     else if(rhs.m_storage == SteelType::ARRAY)
     {
 	SteelType val = *this;
-	set(std::vector<SteelType>());
+	set(Container());
 	add(val);
 	add(rhs);
 	return *this;
@@ -382,7 +399,7 @@ SteelType  SteelType::operator+(const SteelType &rhs)
       }
       else
       {
-	val.set(std::vector<SteelType>());
+	val.set(Container());
 	val.add(*this);
 	val.add(rhs);
       }
@@ -929,32 +946,19 @@ void SteelType::add(const SteelType &var)
 {
     if( !isArray() ) throw TypeMismatch();
 
+#if 0 // This seems wrong.... you could very well want to add an array as an element....
     if(var.isArray())
     {
 	for(int i=0;i<var.getArraySize();i++)
 	  m_value.a->push_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
     }
     else
+#endif
     {
       m_value.a->push_back ( var );
     }
 }
 
-
-void SteelType::removeTail()
-{
-    if(!isArray()) throw TypeMismatch();
-
-    m_value.a->pop_back();
-}
-
-
-void SteelType::reserveArray(int index)
-{
-    if ( ! isArray() ) throw TypeMismatch();
-
-    m_value.a->reserve ( index );
-}
 
 bool SteelType::isConst()const
 {

@@ -260,7 +260,7 @@ void SteelInterpreter::import(const std::string &ns)
     m_namespace_scope.push_back(ns);
 }
 
-SteelType SteelInterpreter::call(const std::string &name, const std::vector<SteelType> &pList)
+SteelType SteelInterpreter::call(const std::string &name, const SteelType::Container &pList)
 {
     return lookup_functor(name)->Call(this,pList);
 }
@@ -288,7 +288,7 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
     return shared_ptr<SteelFunctor>((SteelFunctor*)NULL);
 }
 
-SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const std::vector<SteelType> &pList)
+SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const SteelType::Container &pList)
 {
     shared_ptr<SteelFunctor> pFunctor = lookup_functor(name,ns);
 
@@ -525,7 +525,6 @@ void SteelInterpreter::registerBifs()
 
     srand(time(0));
     addFunction("require",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::require));
-    addFunction("add",new SteelFunctor2Arg<SteelInterpreter,const SteelArray&,const SteelType&>(this,&SteelInterpreter::add));
     addFunction("print", new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::print));
     addFunction("println",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::println));
     addFunction("len",new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len));
@@ -619,14 +618,7 @@ SteelType SteelInterpreter::require(const std::string &filename)
     return SteelType();
 }
 
-SteelType SteelInterpreter::add(const SteelArray &array, const SteelType &type)
-{
-  SteelType array2;
-  array2.set(array);
-  array2.add(type);
 
-  return array2;
-}
 
 SteelType SteelInterpreter::print(const std::string &str)
 {
@@ -895,7 +887,6 @@ SteelType SteelInterpreter::pow (double f, double g)
 SteelType SteelInterpreter::srand ( int s )
 {
   ::srand(s);
-
   return SteelType();
 }
 

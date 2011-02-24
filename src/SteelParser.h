@@ -183,15 +183,18 @@ public:
             INCREMENT = 292,
             DECREMENT = 293,
             POP = 294,
-            CONSTANT = 295,
-            DO = 296,
-            IMPORT = 297,
-            SCOPE = 298,
-            SWITCH = 299,
-            CASE = 300,
-            DEFAULT = 301,
-            CASE_DELIM = 302,
-            LAMBDA = 303
+            POPB = 295,
+            PUSH = 296,
+            PUSHB = 297,
+            CONSTANT = 298,
+            DO = 299,
+            IMPORT = 300,
+            SCOPE = 301,
+            SWITCH = 302,
+            CASE = 303,
+            DEFAULT = 304,
+            CASE_DELIM = 305,
+            LAMBDA = 306
         }; // end of enum SteelParser::Terminal::Name
     }; // end of struct SteelParser::Terminal
 
@@ -209,22 +212,22 @@ public:
           */
         enum Name
         {
-            array_identifier = 293,
-            call = 295,
-            case_list = 280,
-            exp = 282,
-            exp_statement = 284,
-            func_definition = 267,
-            func_identifier = 291,
-            int_literal = 286,
-            param_definition = 274,
-            param_id = 270,
-            param_list = 300,
+            array_identifier = 315,
+            call = 317,
+            case_list = 302,
+            exp = 304,
+            exp_statement = 306,
+            func_definition = 290,
+            func_identifier = 313,
+            int_literal = 308,
+            param_definition = 296,
+            param_id = 292,
+            param_list = 322,
             root = 0,
-            statement = 278,
-            statement_list = 276,
-            var_identifier = 289,
-            vardecl = 298,
+            statement = 300,
+            statement_list = 298,
+            var_identifier = 311,
+            vardecl = 320,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).
@@ -360,7 +363,7 @@ private:
 	bool mbErrorEncountered;
 	std::string mErrors;	 
 
-#line 364 "SteelParser.h"
+#line 367 "SteelParser.h"
 
 
 private:
@@ -374,22 +377,22 @@ private:
         enum Name
         {
             none_ = 0,
-            root = 304,
-            func_definition = 305,
-            param_id = 306,
-            param_definition = 307,
-            statement_list = 308,
-            statement = 309,
-            case_list = 310,
-            exp = 311,
-            exp_statement = 312,
-            int_literal = 313,
-            var_identifier = 314,
-            func_identifier = 315,
-            array_identifier = 316,
-            call = 317,
-            vardecl = 318,
-            param_list = 319
+            root = 307,
+            func_definition = 308,
+            param_id = 309,
+            param_definition = 310,
+            statement_list = 311,
+            statement = 312,
+            case_list = 313,
+            exp = 314,
+            exp_statement = 315,
+            int_literal = 316,
+            var_identifier = 317,
+            func_identifier = 318,
+            array_identifier = 319,
+            call = 320,
+            vardecl = 321,
+            param_list = 322
         }; // end of enum SteelParser::Nonterminal_::Name
     }; // end of struct SteelParser::Nonterminal_
     struct Transition_;
@@ -481,4 +484,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token
 
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 485 "SteelParser.h"
+#line 488 "SteelParser.h"

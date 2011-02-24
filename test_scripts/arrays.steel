@@ -1,36 +1,5 @@
 
-function printarray(var @array)
-{
-	printarray_(@array);
-	print("\n");
-}
-
-
-function printarray_(var @array)
-{
-	var $i;
-	print("{");	
-	for($i=0;$i<len(@array);$i++)
-	{
-		if( is_array (@array[$i] ) )
-		{
-			printarray_(@array[$i]);
-		}
-		else 
-		{				
-			print(@array[$i]);
-			
-		}
-
-		if( $i != len(@array) -1 )
-		{
-			print(",");
-		}
-
-
-	}
-	print("}");
-}
+require("array_print.steel");
 
 function make_2d(var $size_a, var $size_b)
 {
@@ -67,7 +36,7 @@ var @second;
 @second = array(@second , 5 , "Bob");
 @copy = array(@copy , @second);
 @copy = array(@copy , 12 , 15);
-println(pop @copy);
+printarray(pop @copy);
 
 var $count;
 

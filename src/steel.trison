@@ -151,6 +151,9 @@ SteelParser::Token SteelParser::Scan ()
 %terminal INCREMENT
 %terminal DECREMENT
 %terminal POP
+%terminal POPB
+%terminal PUSH
+%terminal PUSHB
 %terminal CONSTANT
 %terminal DO
 %terminal IMPORT
@@ -173,9 +176,9 @@ SteelParser::Token SteelParser::Scan ()
 %prec.left COMPARATOR
 %prec.left ADD_SUB
 %prec.left MULT_DIV_MOD
-%prec.left CALL
 %prec.right UNARY
 %prec.right POW
+%prec.left CALL
 %prec.left PAREN
 
 
@@ -218,7 +221,7 @@ SteelParser::Token SteelParser::Scan ()
 									stmts);
 				}
 |
-	FUNCTION %error '(' param_definition:params  ')' '{' statement_list:stmts '}'
+	FUNCTION '(' param_definition:params  ')' '{' %error
 				%target.cpp{
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -227,8 +230,20 @@ SteelParser::Token SteelParser::Scan ()
 										GET_SCRIPT(),
 										"__%%error%%__"),
 									params,
-									stmts);
+									new AstStatementList(GET_LINE(),GET_SCRIPT()));
 				}
+|
+	FUNCTION func_identifier:id '(' param_definition:params ')' '{' statement_list:stmts %error 
+		 		    %target.cpp {
+				    	addError(GET_LINE(),"parse error in function definition. expected '}'");
+					return new AstFunctionDefinition(GET_LINE(),
+									GET_SCRIPT(),
+									new AstFuncIdentifier(GET_LINE(),
+										GET_SCRIPT(),
+										"__%%error%%__"),
+									params,
+									stmts);
+				    }
 
 ;
 
@@ -286,7 +301,7 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal statement %type.cpp "AstStatement*"
 :
-	%error %target.cpp{ 
+	%error ';' %target.cpp{ 
 			addError(GET_LINE(),"parse error");
 			return new AstStatement(GET_LINE(),GET_SCRIPT());
 		}
@@ -344,6 +359,11 @@ SteelParser::Token SteelParser::Scan ()
 	func_definition:func %target.cpp { return func; }
 |
 	'{' statement_list:list '}' %prec CORRECT %target.cpp { return list; }
+|
+	'{' statement_list:list %error %target.cpp {
+	    addError(GET_LINE(),"expected }");
+	    return list;
+	}
 |
 	'{' '}' %target.cpp {
 			 return new AstStatement(GET_LINE(),GET_SCRIPT());
@@ -749,6 +769,27 @@ exp->GetScript(), AstUnaryOp::CAT,exp); }
 	POP %error %prec UNARY %target.cpp {
 						addError(GET_LINE(),"expected expression after 'pop'.");
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()));
+							  }
+|
+	POPB exp:lvalue %prec UNARY %target.cpp { return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue,true); }
+|
+	POPB %error %prec UNARY %target.cpp {
+						addError(GET_LINE(),"expected expression after 'pop'.");
+						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
+							  }
+|
+	PUSH exp:lvalue ',' exp:rvalue %prec CALL %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,true); }
+|
+	PUSH %error %prec CALL %target.cpp {
+						addError(GET_LINE(),"expected expression after 'push'.");
+						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
+							  }
+|
+	PUSHB exp:lvalue ',' exp:rvalue %prec CALL %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,false); }
+|
+	PUSHB %error %prec CALL %target.cpp {
+						addError(GET_LINE(),"expected expression after 'pushb'.");
+						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),false);
 							  }
 |
 	FUNCTION '(' param_definition:params ')' '{' statement_list:stmts '}'
