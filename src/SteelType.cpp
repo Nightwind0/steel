@@ -946,17 +946,25 @@ void SteelType::add(const SteelType &var)
 {
     if( !isArray() ) throw TypeMismatch();
 
-#if 0 // This seems wrong.... you could very well want to add an array as an element....
+
     if(var.isArray())
     {
 	for(int i=0;i<var.getArraySize();i++)
 	  m_value.a->push_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
     }
     else
-#endif
     {
       m_value.a->push_back ( var );
     }
+}
+
+// Difference between this and add is that it won't flatten an array
+void SteelType::pushb(const SteelType& var)
+{
+    if( !isArray() ) throw TypeMismatch();
+
+    
+    m_value.a->push_back ( var );
 }
 
 

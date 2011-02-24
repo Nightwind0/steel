@@ -1220,7 +1220,7 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
     }
 
     if(!m_bPushFront){
-      pL->add(m_pExp->evaluate(pInterpreter));
+      pL->pushb(m_pExp->evaluate(pInterpreter));
     }else{
       pL->push(m_pExp->evaluate(pInterpreter));
     }
