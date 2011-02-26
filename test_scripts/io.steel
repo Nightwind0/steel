@@ -1,0 +1,6 @@
+using "io";
+declare $input = read($_IN);
+io::write($_OUT,"Your input was '{$input}'\n");
+declare $file = open("junk.txt","w");
+write($file,"{$input}\n");
+close($file);

@@ -16,6 +16,7 @@
 class AstScript;
 class AstStatementList; 
 class AstParamDefinitionList;
+class FileHandle;
 
 
 class ParameterListItem
@@ -125,6 +126,7 @@ private:
 
     void remove_user_functions();
     void clear_imports();
+    void free_file_handles();
   
     SteelType * lookup_internal(const std::string &name);
   
@@ -134,6 +136,8 @@ private:
     std::set<std::string> m_requires;
 
     std::list<SteelType> m_return_stack;
+    
+    std::set<FileHandle*> m_file_handles;
     int m_nContextCount;
 private:
     // Bifs
@@ -144,11 +148,13 @@ private:
     SteelType real    (const SteelType &str);
     SteelType integer (const SteelType &str);
     SteelType boolean (const SteelType &str);
+    SteelType string  (const SteelType& str);
     SteelType substr  (const std::string &str, int start, int len);
     SteelType strlen  (const std::string &str);
     SteelType is_array(const SteelType &);
     SteelType is_handle(const SteelType&);
     SteelType is_valid(const SteelType&);
+    SteelType is_function(const SteelType&);
     SteelType array   (const SteelArray&);
 
 
@@ -176,6 +182,24 @@ private:
     SteelType randf (); // Returns double between 0 and 1
     SteelType rand ( );
     SteelType srand ( int );
+    
+    // IO built-ins
+    
+    SteelType open(const std::string& filename, const std::string& mode);
+    SteelType close(SteelType::Handle file);
+    SteelType is_good(SteelType::Handle file);
+    SteelType is_eof(SteelType::Handle file);
+    SteelType read_integer(SteelType::Handle file);
+    SteelType read(SteelType::Handle file);
+    SteelType read_real(SteelType::Handle file);
+    SteelType read_byte(SteelType::Handle file);
+    SteelType read_bytes(SteelType::Handle file, int count);
+    SteelType write_byte(SteelType::Handle file, int byte);
+    SteelType write_bytes(SteelType::Handle file, const SteelArray& byte_array);
+    SteelType write_integer(SteelType::Handle file, int integer);
+    SteelType write(SteelType::Handle file, const std::string& string);
+    SteelType write_real(SteelType::Handle file, double real);
+    
 };
 
 

@@ -26,15 +26,15 @@ function merge(declare @left,declare @right, declare $comparator)
 			if($comparator(@left[0],@right[0]))
 				  pushb @result, pop @left;
 			else
-				  @result += pop @right;
+				  pushb @result, pop @right;
 		}
 		else if(len(@left) > 0)
 		{
-			@result += pop @left;
+			pushb @result , pop @left;
 		}
 		else if(len(@right) > 0)
 		{
-			@result += pop @right;
+			pushb @result , pop @right;
 		}
 	}
 	return @result;

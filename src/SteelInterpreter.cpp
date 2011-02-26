@@ -17,6 +17,46 @@
 const char * SteelInterpreter::kszGlobalNamespace = "_global";
 const char * SteelInterpreter::kszUnspecifiedNamespace = "?";
 
+class FileHandle : public SteelType::IHandle
+{
+public:
+    FileHandle(){}
+    virtual ~FileHandle(){}
+    
+    virtual std::ios* GetIos() const = 0;
+private:
+    
+};
+
+
+class FileInHandle : public FileHandle
+{
+public:
+    FileInHandle(){
+    }
+    virtual ~FileInHandle(){
+    }
+    virtual std::ios* GetIos() const { return m_fstream; }
+    std::istream* GetStream() const { return m_fstream; }
+    void SetStream(std::istream* stream) { m_fstream = stream; }
+private:
+    std::istream* m_fstream;
+};
+
+class FileOutHandle : public FileHandle
+{
+public:
+    FileOutHandle(){
+    }
+    virtual ~FileOutHandle(){
+    }
+    virtual std::ios* GetIos() const { return m_fstream; }
+    std::ostream* GetStream() const { return m_fstream; }
+    void SetStream(std::ostream* stream) { m_fstream = stream; }
+private:
+    std::ostream* m_fstream;
+};
+
 template <class T>
 class AutoCall
 {
@@ -361,9 +401,38 @@ void SteelInterpreter::pop_context()
     {
 	remove_user_functions();
 	clear_imports();
+	free_file_handles();
     }
     m_return_stack.pop_front();
 }
+
+void SteelInterpreter::free_file_handles()
+{
+    for(std::set<FileHandle*>::iterator iter=m_file_handles.begin();iter!=m_file_handles.end();iter++)
+    {
+	FileInHandle* inhandle = dynamic_cast<FileInHandle*>(*iter);
+	FileOutHandle* outhandle = dynamic_cast<FileOutHandle*>(*iter);
+	
+	if(inhandle){ 
+	    std::ifstream * stream = dynamic_cast<std::ifstream*>(inhandle->GetStream());
+	    if(stream){ 
+		stream->close();
+		delete stream;
+	    }
+	    delete inhandle;
+	}
+	if(outhandle){
+	    std::ofstream * stream = dynamic_cast<std::ofstream*>(outhandle->GetStream());
+	    if(stream){
+		stream->flush();
+		stream->close();
+		delete stream;
+	    }
+	    delete outhandle;
+	}
+    }
+}
+
 
 void SteelInterpreter::remove_user_functions()
 {
@@ -535,6 +604,7 @@ void SteelInterpreter::registerBifs()
     addFunction("strlen",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::strlen));
     addFunction("is_array",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_array));
     addFunction("is_handle",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_handle));
+    addFunction("is_function",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_function));    
     addFunction("is_valid",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_valid));
     addFunction("array",new SteelFunctorArray<SteelInterpreter>(this,&SteelInterpreter::array));
 
@@ -565,9 +635,29 @@ void SteelInterpreter::registerBifs()
     addFunction("srand","math", new SteelFunctor1Arg<SteelInterpreter,int>(this, &SteelInterpreter::srand));
     addFunction("randf","math", new SteelFunctorNoArgs<SteelInterpreter>(this, &SteelInterpreter::randf));
     
+    
+    addFunction("read","io", new SteelFunctor1Arg<SteelInterpreter,SteelType::Handle>(this,&SteelInterpreter::read));
+    addFunction("close","io", new SteelFunctor1Arg<SteelInterpreter,SteelType::Handle>(this,&SteelInterpreter::close));
+    addFunction("write","io", new SteelFunctor2Arg<SteelInterpreter,SteelType::Handle,const std::string&>(this,&SteelInterpreter::write));
+    addFunction("open","io", new SteelFunctor2Arg<SteelInterpreter,const std::string&,const std::string&>(this,&SteelInterpreter::open));
+    
     SteelType pi;
     pi.set( 4.0 * std::atan(1.0) );
     declare_const("$_PI",pi);
+    
+    SteelType io_in;
+    FileInHandle* io_in_handle = new FileInHandle();
+    io_in_handle->SetStream(&std::cin);
+    io_in.set(io_in_handle);
+    declare_const("$_IN",io_in);
+    SteelType io_out;
+    FileOutHandle* io_out_handle = new FileOutHandle();
+    io_out_handle->SetStream(&std::cout);
+    io_out.set(io_out_handle);
+    declare_const("$_OUT",io_out);
+    
+    m_file_handles.insert(io_in_handle);
+    m_file_handles.insert(io_out_handle);
 }
 
 SteelType SteelInterpreter::require(const std::string &filename)
@@ -713,6 +803,14 @@ SteelType SteelInterpreter::is_handle(const SteelType &handle)
 {
     SteelType var;
     var.set ( handle.isHandle() );
+
+    return var;
+}
+
+SteelType SteelInterpreter::is_function(const SteelType &handle)
+{
+    SteelType var;
+    var.set ( handle.isFunctor() );
 
     return var;
 }
@@ -904,3 +1002,127 @@ SteelType SteelInterpreter::randf ( )
   var.set( (double)::rand() / ((double)RAND_MAX + 1) );
   return var;
 }
+
+
+
+
+SteelType SteelInterpreter::is_good(SteelType::Handle file)
+{
+    FileHandle* hstream = dynamic_cast<FileHandle*>(file);
+    if(hstream == NULL) throw TypeMismatch();
+    std::ios* stream = hstream->GetIos();
+    
+    SteelType var;
+    var.set ( stream->good() );
+    return var;
+}
+
+SteelType SteelInterpreter::is_eof(SteelType::Handle file)
+{
+    FileHandle* hstream = dynamic_cast<FileHandle*>(file);
+    if(hstream == NULL) throw TypeMismatch();
+    std::ios* stream = hstream->GetIos();
+    SteelType var;
+    var.set ( stream->eof() );
+    return var;
+}
+
+SteelType SteelInterpreter::read(SteelType::Handle file)
+{
+    FileInHandle* hstream = dynamic_cast<FileInHandle*>(file);
+    if(hstream == NULL) throw TypeMismatch();
+    std::istream * stream = hstream->GetStream();
+    std::string str;
+    SteelType var;
+    std::getline(*stream,str);
+    var.set(str);
+    return var;
+}
+
+SteelType SteelInterpreter::write(SteelType::Handle file, const std::string &string)
+{
+
+    FileOutHandle* hstream = dynamic_cast<FileOutHandle*>(file);
+    if(hstream == NULL) throw TypeMismatch();
+    std::ostream * stream = hstream->GetStream();
+    std::string str;
+    SteelType var;
+    *stream << string;
+    var.set(string);
+    return var;
+}
+
+
+SteelType SteelInterpreter::open(const std::string& filename, const std::string& mode)
+{
+    SteelType var;
+    FileHandle * handle;
+    bool write = false;
+    bool append = false;
+    for(int i=0;i<mode.length();i++){
+	if(mode[i] == 'w') write = true;
+	else if(mode[i] == '+') append = true;
+    }
+    
+    if(write){
+	FileOutHandle * _handle = new FileOutHandle();
+
+	std::ios_base::openmode mode = std::ostream::out;
+	
+	if(append)
+	    mode |= std::ostream::app;
+	
+	std::ostream * stream = new std::ofstream(filename.c_str(),mode);
+	_handle->SetStream(stream);
+	handle = _handle;
+    }else{
+	FileInHandle * _handle = new FileInHandle();
+
+	std::ios::openmode mode = std::istream::in;
+	
+	std::istream * stream = new std::ifstream(filename.c_str(),mode);
+	_handle->SetStream(stream);
+	handle = _handle;
+    }
+    m_file_handles.insert(handle);
+    var.set(handle);
+    return var;    
+}
+
+SteelType SteelInterpreter::close(SteelType::Handle file)
+{
+    FileInHandle * inhandle = dynamic_cast<FileInHandle*>(file);
+    FileOutHandle * outhandle = dynamic_cast<FileOutHandle*>(file);
+    
+    if(inhandle)
+    {
+	std::ifstream * stream = dynamic_cast<std::ifstream*>(inhandle->GetStream());
+	
+	if(stream){
+	    stream->close();
+	}
+	// otherwise its probably some other kind of istream, and doesnt need closing
+    }
+    else if(outhandle)
+    {
+	std::ofstream * stream = dynamic_cast<std::ofstream*>(outhandle->GetStream());
+	
+	if(stream){
+	    stream->close();
+	}
+    }
+    else
+    {
+	throw TypeMismatch();
+    }
+    
+    return SteelType();
+}
+
+
+
+
+
+
+
+
