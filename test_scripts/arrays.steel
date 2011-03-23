@@ -79,3 +79,7 @@ println ( array(1,2,"Three","Four")[2] );
 
 
 
+declare @pa[15];
+
+@pa[2] = "hi";
+println (@pa[2]);

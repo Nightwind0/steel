@@ -402,6 +402,7 @@ void SteelInterpreter::pop_context()
 	remove_user_functions();
 	clear_imports();
 	free_file_handles();
+	m_requires.clear();
     }
     m_return_stack.pop_front();
 }
@@ -431,6 +432,7 @@ void SteelInterpreter::free_file_handles()
 	    delete outhandle;
 	}
     }
+    m_file_handles.clear();
 }
 
 
