@@ -3,8 +3,9 @@
 
 #include <deque>
 #include <memory>
+#ifndef _WINDOWS
 #include <tr1/memory>
-
+#endif
 class SteelFunctor;
 using std::tr1::shared_ptr;
 

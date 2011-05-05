@@ -442,13 +442,15 @@ void SteelInterpreter::remove_user_functions()
         iter != m_functions.end(); iter++)
         {
             FunctionSet& sset = iter->second;
-            for(FunctionSet::iterator fiter = sset.begin(); fiter != sset.end(); fiter++)
+            for(FunctionSet::iterator fiter = sset.begin(); fiter != sset.end(); )
             {
                 shared_ptr<SteelFunctor> functor = fiter->second;
                 if(functor->isUserFunction()){
                     // No need to delete the functor itself, right?                                                                                                     
-                    sset.erase(fiter);
-                }
+                    sset.erase(fiter++);
+				}else{
+					++fiter;
+				}
             }
         }
 }
