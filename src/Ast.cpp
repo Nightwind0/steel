@@ -1228,6 +1228,36 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
     return *pL;
 }
 
+AstRemove::AstRemove(unsigned int line,
+               const std::string &script,
+                 AstExpression *pLValue,
+                 AstExpression *pExp)
+    :AstExpression(line,script),m_pLValue(pLValue),m_pExp(pExp)
+{
+}
+
+AstRemove::~AstRemove()
+{
+    delete m_pLValue;
+    delete m_pExp;
+}
+
+SteelType AstRemove::evaluate(SteelInterpreter *pInterpreter)
+{
+    
+    SteelType *pL = m_pLValue->lvalue(pInterpreter);
+    
+    if(NULL == pL) 
+    {
+        throw SteelException(SteelException::INVALID_LVALUE,
+                             GetLine(),
+                             GetScript(),
+                             "Invalid lvalue in remove.");
+    }
+    
+    return pL->removeElement(m_pExp->evaluate(pInterpreter));
+}
+
 
 
 AstCallExpression::AstCallExpression(unsigned int line,

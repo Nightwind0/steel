@@ -6,6 +6,7 @@
 #include <cassert>
 #include <iomanip>
 #include <stdlib.h>
+#include <algorithm>
 
 SteelType::SteelType()
 {
@@ -236,6 +237,23 @@ SteelType SteelType::pop()
     (*m_value.a).pop_front();
     return front;
 }
+
+SteelType SteelType::removeElement ( int index )
+{
+    if( ! isArray() ) throw TypeMismatch();
+    
+    SteelType val = (*m_value.a)[index];
+    m_value.a->erase(m_value.a->begin() + index);
+    return val;
+}
+
+void SteelType::shuffle () 
+{
+    if( ! isArray() ) throw TypeMismatch();
+    
+    std::random_shuffle(m_value.a->begin(),m_value.a->end());
+}
+
 
 void SteelType::push(const SteelType &var) // adds to the front
 {

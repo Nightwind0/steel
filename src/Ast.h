@@ -614,6 +614,22 @@ private:
     bool m_bPushFront;
 };
 
+class AstRemove : public AstExpression 
+{
+public:
+    AstRemove(unsigned int line,
+       const std::string &script,
+            AstExpression *pLValue,
+            AstExpression *pExp);
+    virtual ~AstRemove();
+
+    virtual SteelType evaluate(SteelInterpreter *pInterpreter);
+    virtual SteelType * lvalue(SteelInterpreter *pInterpreter) { return m_pLValue->lvalue(pInterpreter); }
+    
+private:
+    AstExpression *m_pLValue;
+    AstExpression* m_pExp;
+};
 
 
 class AstParamList;

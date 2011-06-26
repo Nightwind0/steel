@@ -154,6 +154,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal POPB
 %terminal PUSH
 %terminal PUSHB
+%terminal REMOVE
 %terminal CONSTANT
 %terminal DO
 %terminal IMPORT
@@ -758,6 +759,8 @@ SteelParser::Token SteelParser::Scan ()
 									return new AstDecrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstDecrement::POST);
 									}
 */
+|
+        REMOVE '(' exp:lvalue ',' exp:exp ')' %prec UNARY %target.cpp { return new AstRemove(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); }
 |
 	POP exp:lvalue %prec UNARY %target.cpp { return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); }
 |

@@ -51,8 +51,10 @@ public:
     void setElement(int index,const SteelType &);
     int getArraySize()const;
     void add(const SteelType &var); // adds to the tail (append) (Note: Different from pushb)
+    SteelType removeElement(int index);
     SteelType pop();
     SteelType pop_back();
+    void shuffle();
     void push(const SteelType &var); // adds to the front
     void pushb(const SteelType &var); // adds to the back (adds an array as a single element)
 
