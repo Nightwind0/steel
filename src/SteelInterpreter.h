@@ -105,8 +105,8 @@ public:
     void popScope();
     void registerFunction(const std::string &name,
                           const std::string &ns,
-                          AstParamDefinitionList *pParams, 
-                          AstStatementList *pStatements);
+                          shared_ptr<AstParamDefinitionList> pParams, 
+                          shared_ptr<AstStatementList> pStatements);
     void setReturn(const SteelType &var);
     SteelType getReturn() const;
 

@@ -161,7 +161,7 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
 	std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
     
         if(it != sset->second.end()){
-	    throw AlreadyDefined();
+	    throw AlreadyDefined(name);
         }
 
         sset->second[name] = pFunc;
@@ -465,7 +465,7 @@ void SteelInterpreter::declare(const std::string &name)
 
     if(it != file.end() )
     {
-        throw AlreadyDefined();
+        throw AlreadyDefined(name);
     }
 
     file[name] = SteelType();
@@ -501,7 +501,7 @@ void SteelInterpreter::declare_array(const std::string &array_name, int size)
 
     if(it != file.end() )
     {
-        throw AlreadyDefined();
+        throw AlreadyDefined(array_name);
     }
 
     SteelType var;
@@ -557,8 +557,8 @@ void SteelInterpreter::assign(SteelType *pVar, const SteelType &value)
 
 void SteelInterpreter::registerFunction(const std::string &name, 
                                         const std::string &ns,
-                                        AstParamDefinitionList *pParams, 
-                                        AstStatementList *pStatements)
+                                        shared_ptr<AstParamDefinitionList> pParams, 
+                                        shared_ptr<AstStatementList> pStatements)
 {
     shared_ptr<SteelFunctor> functor(new SteelUserFunction(pParams,pStatements));
     addFunction(name,ns,functor);

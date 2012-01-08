@@ -28,17 +28,15 @@ private:
 class SteelUserFunction : public SteelFunctor
 {
 public:
-    SteelUserFunction(AstParamDefinitionList *, AstStatementList *);
+    SteelUserFunction(shared_ptr<AstParamDefinitionList>, shared_ptr<AstStatementList>);
     virtual ~SteelUserFunction();
     virtual bool isUserFunction() const { return true; }
     virtual SteelType Call(SteelInterpreter * pInterpreter,const SteelType::Container &params);
     
-    void setParamDefinitionList(AstParamDefinitionList *pParams);
-    void setStatementList(AstStatementList *pList);
-
+ 
 private:
-    AstParamDefinitionList *m_pParams;
-    AstStatementList *m_pList;
+    shared_ptr<AstParamDefinitionList> m_pParams;
+    shared_ptr<AstStatementList> m_pList;
 };
 
 template<class ObjType>
@@ -161,8 +159,9 @@ private:
         ObjType *m_pObj;
 };
 
+
 template<class ObjType, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5>
-class SteelFunctor5Arg : public SteelFunctor
+    class SteelFunctor5Arg : public SteelFunctor
 {
 public:
     typedef SteelType (ObjType::*FuncPointer)(Arg1,Arg2,Arg3,Arg4,Arg5);
@@ -176,12 +175,14 @@ public:
                                       params[1],
                                       params[2],
                                       params[3],
-									  params[4]);
+                                      params[4]
+                                     );
         }
 private:
         FuncPointer m_pFunc;
         ObjType *m_pObj;
 };
+
 
 template<class ObjType>
 class SteelFunctorArray : public SteelFunctor

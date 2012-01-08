@@ -833,8 +833,8 @@ public:
     virtual ~AstAnonymousFunctionDefinition();
     virtual SteelType evaluate(SteelInterpreter* pInterpreter);
 private:
-    AstParamDefinitionList* m_pParamList;
-    AstStatementList* m_pStatements;
+    shared_ptr<AstParamDefinitionList> m_pParamList;
+    shared_ptr<AstStatementList> m_pStatements;
 };
 
 
@@ -875,8 +875,8 @@ public:
     
 private:
     AstFuncIdentifier * m_pId;
-    AstParamDefinitionList *m_pParams;
-    AstStatementList * m_pStatements;
+    shared_ptr<AstParamDefinitionList> m_pParams;
+    shared_ptr<AstStatementList> m_pStatements;
 };
 
 

@@ -15,15 +15,16 @@ SteelFunctor::~SteelFunctor()
 
 
 
-SteelUserFunction::SteelUserFunction(AstParamDefinitionList *pParams, AstStatementList *pList)
+SteelUserFunction::SteelUserFunction(shared_ptr<AstParamDefinitionList> pParams, shared_ptr<AstStatementList> pList)
     :m_pParams(pParams),m_pList(pList)
 {
 }
 
 SteelUserFunction::~SteelUserFunction()
 {
-  delete m_pParams;
+/*  delete m_pParams;
   delete m_pList;
+  */
 }
 
 SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelType::Container &supplied_params)
@@ -52,17 +53,6 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
 
     pInterpreter->popScope();
     return ret;
-}
-
-
-void SteelUserFunction::setParamDefinitionList(AstParamDefinitionList *pParams)
-{
-    m_pParams = pParams;
-}
-
-void SteelUserFunction::setStatementList(AstStatementList *pList)
-{
-    m_pList = pList;
 }
 
 
