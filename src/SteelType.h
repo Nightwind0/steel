@@ -96,6 +96,9 @@ public:
 
     bool isConst()const;
     void makeConst();
+#ifndef NDEBUG
+    void debugPrint();
+#endif
 private:
     enum storage
     {

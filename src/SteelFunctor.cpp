@@ -30,6 +30,7 @@ SteelUserFunction::~SteelUserFunction()
 SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelType::Container &supplied_params)
 {
     SteelType ret;
+    
     pInterpreter->pushScope();
 
     if( m_pParams != NULL)
@@ -47,8 +48,9 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
 
     if(m_pList)
     {
-        m_pList->execute(pInterpreter);
-        ret = pInterpreter->getReturn();
+       
+        if(m_pList->execute(pInterpreter) == AstStatement::RETURN)
+            ret = pInterpreter->getReturn();
     }
 
     pInterpreter->popScope();

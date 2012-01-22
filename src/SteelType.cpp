@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <stdlib.h>
 #include <algorithm>
+#include <iostream>
 
 SteelType::SteelType()
 {
@@ -995,4 +996,28 @@ void SteelType::makeConst()
 {
     m_bConst=true;
 }
+
+#ifndef NDEBUG
+void SteelType::debugPrint()
+{
+    switch(m_storage){
+        case INT:
+        case DOUBLE:
+        case BOOL:
+            std::cout << (std::string)*this << std::endl;
+            break;
+        case ARRAY:
+            std::cout << "Array with " << m_value.a->size() << std::endl;
+            break;
+        case HANDLE:
+            std::cout << "Handle" << std::endl;
+            break;
+        case FUNCTOR:
+            std::cout << "Functor Count:" << m_functor.use_count() << std::endl;
+            break;
+        default:
+            std::cout << "Bogus storage type" << std::endl;
+    }
+}
+#endif
 

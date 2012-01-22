@@ -376,6 +376,7 @@ void SteelInterpreter::setReturn(const SteelType &var)
 
 SteelType SteelInterpreter::getReturn() const
 {
+    assert(!m_return_stack.empty());
     return m_return_stack.front();
 }
 

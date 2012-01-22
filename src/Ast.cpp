@@ -1995,11 +1995,10 @@ AstFunctionDefinition::~AstFunctionDefinition()
     delete m_pId;
     delete m_pParams;
     delete m_pStatements;
-  
-    // The SteelUserFunctor is the duder that actually
-    // Deletes crap. We don't need to delete it here.
-    // In fact, we shouldn't.
-    // cause those puppies are ref. counted
+    We use shared pointers here because
+    SteelUserFunction actually keeps these around
+    and can outlive the Ast. Though, sometimes the
+    Ast outlives the user function too. Hence, ref counting.
     */
 }
 
