@@ -1125,6 +1125,18 @@ SteelType SteelInterpreter::close(SteelType::Handle file)
 }
 
 
+void SteelInterpreter::operator== ( const SteelInterpreter& other )
+{
+    m_symbols = other.m_symbols;
+    m_namespace_scope = other.m_namespace_scope;
+    m_functions = other.m_functions;
+    m_requires = other.m_requires;
+    
+    /* Intentionally not copying return stack or context count
+     * 
+     */
+    
+}
 
 
 

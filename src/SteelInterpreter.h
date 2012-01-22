@@ -80,6 +80,8 @@ public:
                             const std::string &script,
                             bool debugparser=false,
 			    bool debugscanner=false);
+    
+    void operator==(const SteelInterpreter& other);
 
     // After using prebuildAst, you can later run it using runAst
     SteelType runAst(AstScript *pAst);
