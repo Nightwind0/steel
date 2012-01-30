@@ -182,6 +182,29 @@ private:
         FuncPointer m_pFunc;
         ObjType *m_pObj;
 };
+template<class ObjType, class Arg1, class Arg2, class Arg3, class Arg4, class Arg5,class Arg6>
+    class SteelFunctor6Arg : public SteelFunctor
+{
+public:
+    typedef SteelType (ObjType::*FuncPointer)(Arg1,Arg2,Arg3,Arg4,Arg5,Arg6);
+    SteelFunctor6Arg(ObjType *pObj, FuncPointer p):
+        m_pFunc(p),m_pObj(pObj){}
+        virtual ~SteelFunctor6Arg(){}
+        virtual SteelType Call(SteelInterpreter*,const SteelType::Container &params)
+        {
+            if(params.size() != 6) throw ParamMismatch();
+            return (m_pObj->*m_pFunc)(params[0],
+                                      params[1],
+                                      params[2],
+                                      params[3],
+                                      params[4],
+									  params[5]
+                                     );
+        }
+private:
+        FuncPointer m_pFunc;
+        ObjType *m_pObj;
+};
 
 
 template<class ObjType>
