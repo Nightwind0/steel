@@ -363,13 +363,18 @@ SteelParser::Token SteelParser::Scan ()
 		   }
 |
 	exp:exp %error %target.cpp { 
-	addError(GET_LINE(),"missing semi-colon after expression?");
-	return new AstExpressionStatement(exp->GetLine(),exp->GetScript(),exp);
+		addError(GET_LINE(),"missing semi-colon after expression?");
+		return new AstExpressionStatement(exp->GetLine(),exp->GetScript(),exp);
 	}
 |
 	exp:exp ';'  %target.cpp { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
 |
 	func_definition:func %target.cpp { return func; }
+|
+	'}' %error %target.cpp { 
+	    addError(GET_LINE(),"unmatched '}'");
+	    return new AstStatement(GET_LINE(),GET_SCRIPT());
+	}
 |
 	'{' statement_list:list '}' %prec CORRECT  %target.cpp { return list; }
 |
