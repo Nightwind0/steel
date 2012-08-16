@@ -184,6 +184,7 @@ SteelParser::Token SteelParser::Scan ()
 
 
 
+
 %default_parse_nonterminal root
 %%
 
@@ -197,7 +198,6 @@ SteelParser::Token SteelParser::Scan ()
 		        pScript->SetList(list);
 				return pScript;
 			} 
-
 ;
 
 %nonterminal func_definition %type.cpp "AstFunctionDefinition*"
@@ -301,12 +301,12 @@ SteelParser::Token SteelParser::Scan ()
 ;
 
 %nonterminal statement %type.cpp "AstStatement*"
-:
-	%error ';' %target.cpp{ 
-			addError(GET_LINE(),"parse error");
-			return new AstStatement(GET_LINE(),GET_SCRIPT());
-		}
-|
+:/*
+	%error %target.cpp { 
+	       addError(GET_LINE(),"bad statement");
+	       return new AstStatement(GET_LINE(),GET_SCRIPT());
+	       }
+|*/
 	INCLUDE:inc STRING:str ';' %target.cpp { 
 		    const std::string filename = str->getString();
 		    std::ifstream instream;
@@ -355,28 +355,30 @@ SteelParser::Token SteelParser::Scan ()
 |
 	IMPORT:imp  STRING:str  ';' %target.cpp{ return new AstImport(GET_LINE(),GET_SCRIPT(),str); }	
 |
-	exp_statement:exp  %target.cpp { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
+	';' %target.cpp { return new AstExpressionStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT())); }
+|
+	%error ';' %target.cpp { 
+	       	   addError(GET_LINE(),"error before ;");
+		   return new AstExpressionStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT())); 
+		   }
+|
+	exp:exp %error %target.cpp { 
+	addError(GET_LINE(),"missing semi-colon after expression?");
+	return new AstExpressionStatement(exp->GetLine(),exp->GetScript(),exp);
+	}
+|
+	exp:exp ';'  %target.cpp { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
 |
 	func_definition:func %target.cpp { return func; }
 |
-	'{' statement_list:list '}' %prec CORRECT %target.cpp { return list; }
+	'{' statement_list:list '}' %prec CORRECT  %target.cpp { return list; }
 |
-	'{' statement_list:list %error %target.cpp {
-	    addError(GET_LINE(),"expected }");
-	    return list;
+	'{' statement_list:list %error %target.cpp { 
+	addError(GET_LINE(),"'{' without matching '}'");
+	return new AstStatement(GET_LINE(),GET_SCRIPT()); 
 	}
 |
-	'{' '}' %target.cpp {
-			 return new AstStatement(GET_LINE(),GET_SCRIPT());
-			}
-|
 	vardecl:vardecl ';' %target.cpp { return vardecl; }
-|
-	%error vardecl:decl 
-		%target.cpp {
-				addError(decl->GetLine(),"unexpected tokens found before variable declaration.");
-				return decl;
-			}
 |
 	vardecl:decl %error ';'
 		%target.cpp{
@@ -488,15 +490,8 @@ SteelParser::Token SteelParser::Scan ()
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
 			}
 */
-
 |
-	FOR '(' exp_statement:start exp_statement:condition ')' statement:stmt %prec CORRECT
-			%target.cpp{
-				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition, 
-						new AstExpression (start->GetLine(),start->GetScript()), stmt); 
-			}
-|
-	FOR '(' exp_statement:start exp_statement:condition  exp:iteration ')' statement:stmt %prec CORRECT
+	FOR '(' optionalexp:start ';' optionalexp:condition ';' optionalexp:iteration ')' statement:stmt %prec CORRECT
 			%target.cpp{
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			}
@@ -509,7 +504,7 @@ SteelParser::Token SteelParser::Scan ()
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			}
 |
-	FOR '(' exp_statement:start %error
+	FOR '(' optionalexp:start %error
 			%target.cpp{
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
@@ -517,7 +512,7 @@ SteelParser::Token SteelParser::Scan ()
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			}
 |
-	FOR '(' exp_statement:start exp_statement:condition %error
+	FOR '(' optionalexp:start ';' exp:condition %error
 			%target.cpp{
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
@@ -525,7 +520,7 @@ SteelParser::Token SteelParser::Scan ()
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			}
 |
-	FOR '(' exp_statement:start exp_statement:condition exp:iteration
+	FOR '(' optionalexp:start ';' optionalexp:condition ';' optionalexp:iteration %error
 			%target.cpp{
 				addError(GET_LINE(),"malformed for loop. Expected ')'");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
@@ -594,6 +589,20 @@ SteelParser::Token SteelParser::Scan ()
 
 ;
 
+
+%nonterminal optionalexp %type.cpp "AstExpression*"
+:
+	%target.cpp {
+		    return new AstExpression(GET_LINE(),GET_SCRIPT());
+	}
+|
+	exp:exp %target.cpp { 
+		return exp;
+	}
+;
+
+
+
 %nonterminal case_list %type.cpp "AstCaseStatementList*"
 :
 	case_list:list CASE INT:i CASE_DELIM statement_list:stmt %target.cpp { list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
@@ -624,6 +633,11 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal exp %type.cpp "AstExpression*"
 :
+	%error %target.cpp {
+	       addError(GET_LINE(),"bad expression"); 
+	       return new AstExpression(GET_LINE(),GET_SCRIPT()); 
+	       }	
+|
 	call:call %target.cpp{ return call; }
 |
 	INT:i %target.cpp{ return i;}
@@ -796,14 +810,6 @@ SteelParser::Token SteelParser::Scan ()
 				}
 ;
 
-%nonterminal exp_statement %type.cpp "AstExpression*"
-:
-	';' %target.cpp{
-			return new AstExpression(GET_LINE(),GET_SCRIPT()); 
-		}
-|
-	exp:exp ';' %target.cpp { return exp; }
-;
 
 %nonterminal int_literal %type.cpp "AstInteger*"
 :

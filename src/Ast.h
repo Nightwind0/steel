@@ -80,18 +80,6 @@ private:
 };
 
 
-class AstExpressionStatement : public AstStatement
-{
-public:
-    AstExpressionStatement(unsigned int line, const std::string &script, AstExpression *pExp);
-    virtual ~AstExpressionStatement();
-
-    virtual ostream & print(std::ostream &out);
-    virtual eStopType execute(SteelInterpreter *pInterpreter);
-private:
-    AstExpression *m_pExp;
-};
-
 class AstStatementList;
 class AstFunctionDefinitionList;
 
@@ -108,6 +96,19 @@ public:
 private:
 
     AstStatementList *m_pList;
+};
+
+class AstExpressionStatement : public AstStatement
+{
+ public:
+  AstExpressionStatement(unsigned int line, const std::string& script, AstExpression* pExp);
+  virtual ~AstExpressionStatement();
+
+  virtual ostream & print(std::ostream &out);
+  virtual eStopType execute(SteelInterpreter *pInterpreter);
+  void setTopLevel();
+ private:
+  AstExpression* m_pExp;
 };
 
 

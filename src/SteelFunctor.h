@@ -207,6 +207,7 @@ private:
 };
 
 
+
 template<class ObjType>
 class SteelFunctorArray : public SteelFunctor
 {
