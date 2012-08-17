@@ -190,7 +190,7 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal root %type.cpp "AstScript*"
 :
-	statement_list:list 
+	statement_list:list %end 
 			%target.cpp{
 				AstScript * pScript =   new AstScript(
 							list->GetLine(),
@@ -301,12 +301,7 @@ SteelParser::Token SteelParser::Scan ()
 ;
 
 %nonterminal statement %type.cpp "AstStatement*"
-:/*
-	%error %target.cpp { 
-	       addError(GET_LINE(),"bad statement");
-	       return new AstStatement(GET_LINE(),GET_SCRIPT());
-	       }
-|*/
+:
 	INCLUDE:inc STRING:str ';' %target.cpp { 
 		    const std::string filename = str->getString();
 		    std::ifstream instream;
@@ -368,6 +363,18 @@ SteelParser::Token SteelParser::Scan ()
 	}
 |
 	exp:exp ';'  %target.cpp { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
+|
+	'('  %error ')' %target.cpp { 
+	    addError(GET_LINE(),"expected expression between '(' and ')'");
+	    return new AstStatement(GET_LINE(),GET_SCRIPT());
+	}
+
+|
+	'('  %error %target.cpp {
+	    addError(GET_LINE(),"unmatched ')'");
+	    return new AstStatement(GET_LINE(),GET_SCRIPT());
+	    }
+
 |
 	func_definition:func %target.cpp { return func; }
 |
@@ -480,21 +487,6 @@ SteelParser::Token SteelParser::Scan ()
 			%target.cpp{
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			}
-/*
-|
-	RETURN %error
-			%target.cpp{
-				addError(GET_LINE(),"expected ';' after 'return'");
-				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
-			}
-
-|
-	RETURN 
-			%target.cpp{
-				addError(GET_LINE(),"expected ';' after 'return'");
-				return new AstReturnStatement(GET_LINE(),GET_SCRIPT()); 
-			}
-*/
 |
 	FOR '(' optionalexp:start ';' optionalexp:condition ';' optionalexp:iteration ')' statement:stmt %prec CORRECT
 			%target.cpp{
@@ -721,6 +713,19 @@ SteelParser::Token SteelParser::Scan ()
 	exp:a LTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); }
 |
 	exp:a GTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }	
+/*|
+	exp:exp ')' %error %target.cpp {
+		addError(exp->GetLine(),"unmatched ')'"); 
+		return exp; 
+	}
+
+|
+	'(' %error  %target.cpp { 
+	    addError(GET_LINE(),"expectex expression between '(' and ')'");
+	    return AstExpression(GET_LINE(),GET_SCRIPT()); 
+	    }
+*/
+
 |
 	'(' exp:exp ')' %prec PAREN %target.cpp { return exp; }
 |
@@ -747,14 +752,6 @@ SteelParser::Token SteelParser::Scan ()
 										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
 												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
 										}
-/*
-|
-	%error INCREMENT %prec PAREN %target.cpp { 
-									addError(GET_LINE(),"expected lvalue before '++'");
-									return new AstIncrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstIncrement::POST);
-	   							}
-
-*/
 |
 	exp:lvalue INCREMENT %prec PAREN %target.cpp { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);}
 |
@@ -771,13 +768,6 @@ SteelParser::Token SteelParser::Scan ()
 									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
 
 									}
-/*
-|
-	%error DECREMENT %prec PAREN  %target.cpp { 
-									addError(GET_LINE(),"expected lvalue before '--'");
-									return new AstDecrement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()), AstDecrement::POST);
-									}
-*/
 |
         REMOVE '(' exp:lvalue ',' exp:exp ')' %prec UNARY %target.cpp { return new AstRemove(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); }
 |

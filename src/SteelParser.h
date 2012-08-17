@@ -213,22 +213,22 @@ public:
           */
         enum Name
         {
-            array_identifier = 321,
-            call = 323,
-            case_list = 310,
-            exp = 312,
-            func_definition = 296,
-            func_identifier = 319,
-            int_literal = 314,
-            optionalexp = 308,
-            param_definition = 302,
-            param_id = 298,
-            param_list = 328,
+            array_identifier = 325,
+            call = 327,
+            case_list = 314,
+            exp = 316,
+            func_definition = 300,
+            func_identifier = 323,
+            int_literal = 318,
+            optionalexp = 312,
+            param_definition = 306,
+            param_id = 302,
+            param_list = 332,
             root = 0,
-            statement = 306,
-            statement_list = 304,
-            var_identifier = 317,
-            vardecl = 326,
+            statement = 310,
+            statement_list = 308,
+            var_identifier = 321,
+            vardecl = 330,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).
