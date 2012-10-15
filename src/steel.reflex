@@ -264,6 +264,12 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		    return SteelParser::Token(SteelParser::Terminal::DIVIDE_EQUALS,NULL);
 	}
 |
+	(d)
+	 %target.cpp{ 
+		 return SteelParser::Token(SteelParser::Terminal::D,NULL);
+	 }
+
+|
 	(%=)
 	%target.cpp {
 		    return SteelParser::Token(SteelParser::Terminal::MODULO_EQUALS,NULL);
@@ -333,11 +339,6 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 	 %target.cpp{
 		 return SteelParser::Token(SteelParser::Terminal::GT,NULL);
 	}
-|
-	(d)
-	 %target.cpp{ 
-		 return SteelParser::Token(SteelParser::Terminal::D,NULL);
-	 }
 |
 	(and|&&) 
 	%target.cpp{ 

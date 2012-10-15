@@ -630,11 +630,6 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal exp %type.cpp "AstExpression*"
 :
-	%error %target.cpp {
-	       addError(GET_LINE(),"bad expression"); 
-	       return new AstExpression(GET_LINE(),GET_SCRIPT()); 
-	       }	
-|
 	call:call %target.cpp{ return call; }
 |
 	INT:i %target.cpp{ return i;}
@@ -713,14 +708,14 @@ SteelParser::Token SteelParser::Scan ()
 	exp:a LTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); }
 |
 	exp:a GTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }	
-/*|
-	exp:exp ')' %error %target.cpp {
+|
+	'(' %error  %target.cpp {
 		addError(exp->GetLine(),"unmatched ')'"); 
 		return exp; 
 	}
-
+/*
 |
-	'(' %error  %target.cpp { 
+	'(' %error ')' %target.cpp { 
 	    addError(GET_LINE(),"expectex expression between '(' and ')'");
 	    return AstExpression(GET_LINE(),GET_SCRIPT()); 
 	    }
@@ -734,7 +729,7 @@ SteelParser::Token SteelParser::Scan ()
 	'+' exp:exp  %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); }
 |
 	NOT %error %prec UNARY %target.cpp {
-						addError(GET_LINE(),"expected expression after unary minus.");
+						addError(GET_LINE(),"expected expression after not.");
 						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
 								  }
 
@@ -803,6 +798,12 @@ SteelParser::Token SteelParser::Scan ()
 	       	   		%target.cpp {
 					    return new AstAnonymousFunctionDefinition (GET_LINE(),GET_SCRIPT(), params,stmts);
 				}
+|
+	%error %target.cpp {
+	       addError(GET_LINE(),"bad expression"); 
+	       return new AstExpression(GET_LINE(),GET_SCRIPT()); 
+	       }	
+
 ;
 
 
