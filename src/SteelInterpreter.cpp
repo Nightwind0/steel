@@ -8,11 +8,13 @@
 #include <ctime>
 #include <sstream>
 #include <iostream>
+#include <cstring>
 #include <string>
-#include <stdlib.h>
+#include <cstdlib>
 
 #pragma warning(disable: 4355)
 
+namespace Steel { 
 
 const char * SteelInterpreter::kszGlobalNamespace = "_global";
 const char * SteelInterpreter::kszUnspecifiedNamespace = "?";
@@ -112,10 +114,10 @@ SteelInterpreter::SteelInterpreter()
 :
     m_nContextCount(0)
 {
+	m_file_provider = &m_default_file_provider;
     pushScope();
     registerBifs();
     srand(time(0));
-
 }
 
 SteelInterpreter::~SteelInterpreter()
@@ -187,6 +189,7 @@ AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
 {
     SteelParser parser;
     parser.setBuffer(script.c_str(),script_name);
+	parser.setFileProvider(m_file_provider);
 
     AstBase *pBase;
 
@@ -257,6 +260,7 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
     push_context();
     AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
 //    parser.SetDebugSpewLevel(2);
+	parser.setFileProvider(m_file_provider);
     parser.setBuffer(script.c_str(),name);
     AstBase * pBase;
     if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
@@ -592,6 +596,10 @@ void SteelInterpreter::popScope()
     m_symbols.pop_front();
 }
 
+void SteelInterpreter::setFileProvider( IFileProvider* provider )
+{
+	m_file_provider = provider;
+}
 
 
 void SteelInterpreter::registerBifs()
@@ -669,48 +677,51 @@ SteelType SteelInterpreter::require(const std::string &filename)
 {
     if(m_requires.find(filename) == m_requires.end())
     {
-	std::ifstream instream;
-	instream.open(filename.c_str(),std::ios::in);
-	if(!instream.good())
-	{
-	    throw FileNotFound();
-	}
+		IFile * file = m_file_provider->create();
+		if(!file->open(filename.c_str()))
+		{
+			throw FileNotFound();
+		}
 	
-	std::ostringstream strstream;
-	while(!instream.eof())
-	{
-	    char c = instream.get();
-	    strstream.put(c);
-	}
-	instream.close();
-
-	m_requires.insert(filename);
+		std::ostringstream strstream;
+		while(!file->eof())
+		{
+			char buffer[1024];
+			memset(buffer,0,1024);
+			int r = file->read(buffer,1024);
+			strstream.write(buffer,r);
+		}
+		file->close();
+		delete file;
 	
-	SteelParser parser;
-	parser.setBuffer(strstream.str().c_str(),filename);
-	AstBase * pBase;
-	if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
-	{
-	    if(parser.hadError())
-	    {
-		throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
-	    } 
-	    else
-	    {
-		throw SteelException(SteelException::PARSING,0,filename, "Unknown parsing error.");
-	    }                
+		m_requires.insert(filename);
+		
+		SteelParser parser;
+		parser.setFileProvider(m_file_provider);
+		parser.setBuffer(strstream.str().c_str(),filename);
+		AstBase * pBase;
+		if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
+		{
+			if(parser.hadError())
+			{
+			throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
+			} 
+			else
+			{
+			throw SteelException(SteelException::PARSING,0,filename, "Unknown parsing error.");
+			}                
+		}
+		else if (parser.hadError())
+		{
+			throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
+		}
+
+		AstScript *pScript = static_cast<AstScript*>( pBase );
+
+		pScript->execute(this);
+
+		delete pScript; // Right? We ran the code, so we're okay there... and any lingering functions we want will survive this.
 	}
-	else if (parser.hadError())
-	{
-	    throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
-	}
-
-	AstScript *pScript = static_cast<AstScript*>( pBase );
-
-	pScript->execute(this);
-
-	delete pScript; // Right? We ran the code, so we're okay there... and any lingering functions we want will survive this.
-    }
     return SteelType();
 }
 
@@ -1139,7 +1150,7 @@ void SteelInterpreter::operator== ( const SteelInterpreter& other )
 }
 
 
-
+}
 
 
 

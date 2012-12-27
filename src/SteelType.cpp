@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <iostream>
 
+namespace Steel { 
+
 SteelType::SteelType()
 {
     m_value.i = 0;
@@ -1021,3 +1023,4 @@ void SteelType::debugPrint()
 }
 #endif
 
+}

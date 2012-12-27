@@ -6,6 +6,8 @@
 #ifndef _WINDOWS
 #include <tr1/memory>
 #endif
+
+namespace Steel { 
 class SteelFunctor;
 using std::tr1::shared_ptr;
 
@@ -142,6 +144,8 @@ typedef SteelType::Container SteelArray;
 
 bool operator==(const SteelType &lhs, const SteelType &rhs);
 bool operator!=(const SteelType &lhs, const SteelType &rhs);
+
+}
 #endif
 
 

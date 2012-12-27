@@ -7,6 +7,8 @@
 #include "SteelType.h"
 #include "SteelException.h"
 
+namespace Steel { 
+
 // Fowards
 class AstParamDefinitionList;
 class AstStatementList;
@@ -247,6 +249,7 @@ private:
 };
 
 */
+}
 #endif
 
 

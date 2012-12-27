@@ -1,5 +1,7 @@
 #include "SteelException.h"
 
+namespace Steel { 
+
 SteelException::SteelException(eType type, 
                                int line,
                                std::string script,
@@ -35,3 +37,4 @@ std::string SteelException::getMessage() const
 }
 
 
+}

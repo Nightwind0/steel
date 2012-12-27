@@ -11,11 +11,12 @@
 #define _STEEL_SCANNER_H
 
 #include "SteelParser.h"
-
+namespace Steel { 
 class AstBase;
 %}
 
 %target.cpp.bottom_of_header_file %{
+} // namespace
 #endif // _STEEL_SCANNER_H
 %}
 
@@ -24,6 +25,8 @@ class AstBase;
 #include <cassert>
 #include "SteelScanner.h"
 #include "Ast.h"
+#include "File.h"
+namespace Steel { 
 %}
 
 
@@ -87,7 +90,7 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 	str >> std::hex >> i;
 	return i;
 }
-
+} // namespace
 %}
 
 %target.cpp.constructor_actions {

@@ -4,6 +4,9 @@
 #include "SteelInterpreter.h"
 #include "SteelException.h"
 
+using Steel::SteelInterpreter;
+using Steel::AstScript;
+using Steel::SteelException;
 
 void usage(){
   std::cout << "steel [options] <filename>" << std::endl << 

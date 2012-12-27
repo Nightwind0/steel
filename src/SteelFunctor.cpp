@@ -4,6 +4,8 @@
 #include "SteelInterpreter.h"
 #include "Ast.h"
 
+namespace Steel { 
+
 SteelFunctor::SteelFunctor()
 {
 }
@@ -58,3 +60,4 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
 }
 
 
+}

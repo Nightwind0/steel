@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cassert>
 
+namespace Steel { 
 
 ostream & operator<<(ostream &,AstBase&);
 
@@ -2037,4 +2038,4 @@ ostream & operator<<(ostream & out,AstBase & ast)
 
 
 
-
+}

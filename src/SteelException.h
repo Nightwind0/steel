@@ -2,6 +2,7 @@
 #define SR_STEEL_EXCEPTION_H
 
 #include <string>
+namespace Steel { 
 
 class SteelException
 {
@@ -96,6 +97,7 @@ class DivideByZero
 {
 };
 
+}
 #endif
 
 

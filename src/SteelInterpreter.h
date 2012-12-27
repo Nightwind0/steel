@@ -14,6 +14,10 @@
 #include "SteelParser.h"
 #include "SteelFunctor.h"
 
+#include "File.h"
+
+namespace Steel { 
+
 // fwd
 class AstScript;
 class AstStatementList; 
@@ -114,6 +118,8 @@ public:
 
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
+	
+	void setFileProvider(IFileProvider* provider);
 
     static const char * kszGlobalNamespace;
     static const char * kszUnspecifiedNamespace;
@@ -142,6 +148,8 @@ private:
     std::list<SteelType> m_return_stack;
     
     std::set<FileHandle*> m_file_handles;
+	FileProvider m_default_file_provider;
+	IFileProvider * m_file_provider;
     int m_nContextCount;
 private:
     // Bifs
@@ -207,6 +215,7 @@ private:
 };
 
 
+}
 #endif
 
 

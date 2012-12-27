@@ -8,6 +8,7 @@ libsteel_la_SOURCES = SteelParser.cpp \
 			SteelException.cpp \
 			Ast.cpp \
 			SteelType.cpp \
+			File.cpp \
 			steel.trison \
 			steel.reflex
 
@@ -18,7 +19,8 @@ libsteel_la_HEADERS =   Ast.h \
 						SteelType.h \
 						SteelParser.h \
 						SteelScanner.h \
-						SteelInterpreter.h
+						SteelInterpreter.h \
+						File.h
 
 SteelParser.h : SteelParser.cpp 
 SteelParser.cpp : steel.trison

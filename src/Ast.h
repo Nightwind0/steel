@@ -13,6 +13,7 @@
 using std::ostream;
 using std::tr1::shared_ptr;
 
+namespace Steel { 
 class SteelInterpreter;
 class SteelFunctor;
 
@@ -880,7 +881,7 @@ private:
     shared_ptr<AstStatementList> m_pStatements;
 };
 
-
+}
 #endif
 
 

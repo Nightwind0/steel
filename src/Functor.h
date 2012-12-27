@@ -5,6 +5,8 @@
 #include <string>
 #include <queue>
 
+namespace Steel { 
+
 class SteelType
 {
 public:
@@ -97,6 +99,7 @@ private:
 };
 
 */
+}
 #endif
 
 
