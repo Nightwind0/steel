@@ -59,6 +59,7 @@ public:
 	void setElement(const std::string& key, const SteelType&);
     int getArraySize()const;
     void add(const SteelType &var); // adds to the tail (append) (Note: Different from pushb)
+    void add(const Map& map);
     SteelType removeElement(int index);
     SteelType pop();
     SteelType pop_back();

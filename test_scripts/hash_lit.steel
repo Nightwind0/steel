@@ -2,6 +2,15 @@ declare #hash = ["foo"=>5, "bar"=>12];
 println(#hash["foo"]);
 println(#hash["bar"]);
 
-#hash = ["jerk"=>"wonk"];
+#hash += ["jerk"=>"wonk"];
 
 println(#hash["jerk"]);
+println(#hash["foo"]);
+
+declare #superhash = #hash + ["hoo"=>68];
+
+println(#superhash["hoo"]);
+
+#superhash -= "hoo";
+
+println(#superhash["hoo"]);

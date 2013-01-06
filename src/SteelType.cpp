@@ -331,17 +331,26 @@ SteelType SteelType::operator+=(const SteelType &rhs)
     
     if(m_storage == SteelType::ARRAY)
     {
-	add(rhs);
-	return *this;
+		add(rhs);
+		return *this;
     }
     else if(rhs.m_storage == SteelType::ARRAY)
     {
-	SteelType val = *this;
-	set(Container());
-	add(val);
-	add(rhs);
-	return *this;
+		SteelType val = *this;
+		set(Container());
+		add(val);
+		add(rhs);
+		return *this;
     }
+    
+    if(m_storage == SteelType::HASHMAP){
+		if(rhs.m_storage == SteelType::HASHMAP){
+			add(*rhs.m_value.m);
+			return *this;
+		}else{
+			throw OperationMismatch();
+		}
+	}
 
   switch(s)
   {
@@ -480,19 +489,18 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     case SteelType::ARRAY:
       if(m_storage == SteelType::ARRAY)
       {
-	val = *this;
-	val.add(rhs);
+		val = *this;
+		val.add(rhs);
       }
       else
       {
-	val.set(Container());
-	val.add(*this);
-	val.add(rhs);
+		val.set(Container());
+		val.add(*this);
+		val.add(rhs);
       }
       return val;
     case SteelType::FUNCTOR:
     case SteelType::BOOL:
-	case SteelType::HASHMAP:
     case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
@@ -505,10 +513,32 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     case SteelType::STRING:
         val.set ( (std::string)*this + (std::string)rhs);
         return val;
-    }
+	case SteelType::HASHMAP:{
+		if(m_storage == SteelType::HASHMAP && rhs.m_storage == HASHMAP){
+		    val = *this;
+			val.add(*rhs.m_value.m);
+			return val;
+		}else{
+			throw OperationMismatch();
+		}
+      }
+      return val;		
+	}
+    
 
     assert ( 0 );
     return val;
+}
+
+
+void SteelType::add(const SteelType::Map& i_map)
+{
+	if(!isHashMap()) throw OperationMismatch();
+	for(SteelType::Map::const_iterator it = i_map.begin(); it != i_map.end(); it++){
+		//m_value.m->insert(SteelType::Map::value_type(it->first,it->second));
+		// TODO: Overwrite existing values?? Add them with operator+??? ignore them??
+		(*m_value.m)[it->first] = it->second;
+	}
 }
 
 SteelType  SteelType::operator-(const SteelType &rhs)
