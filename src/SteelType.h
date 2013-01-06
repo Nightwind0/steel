@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <memory>
+#include <map>
 #ifndef _WINDOWS
 #include <tr1/memory>
 #endif
@@ -28,6 +29,7 @@ public:
     typedef IHandle * Handle;
     typedef shared_ptr<SteelFunctor> Functor;
     typedef std::deque<SteelType> Container;
+	typedef std::map<std::string,SteelType> Map;
 
     operator int () const;
     operator unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
@@ -44,13 +46,17 @@ public:
     void set(const Container &);
     void set(Handle h);
     void set(Functor f);
-   
+    void set(const Map& );
 
     // Array stuff
     bool isArray() const { return m_storage == ARRAY; }
+    bool isHashMap() const { return m_storage == HASHMAP; }
     SteelType getElement(int index) const;
+	SteelType getElement(const std::string& key) const;
+	SteelType *getLValue(const std::string& key) const;
     SteelType *getLValue(int index) const;
     void setElement(int index,const SteelType &);
+	void setElement(const std::string& key, const SteelType&);
     int getArraySize()const;
     void add(const SteelType &var); // adds to the tail (append) (Note: Different from pushb)
     SteelType removeElement(int index);
@@ -110,7 +116,8 @@ private:
         DOUBLE,
         STRING,
         HANDLE,
-	FUNCTOR
+		FUNCTOR,
+		HASHMAP
     };
 
     int strInt() const ;
@@ -129,6 +136,7 @@ private:
         Handle h;
         std::string *s;
         Container *a;
+		Map* m;
     };
     Functor m_functor;
     value m_value;

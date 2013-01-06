@@ -547,6 +547,17 @@ SteelType SteelInterpreter::lookup(SteelType *pVar, int index)
     return pVar->getElement(index);
 }
 
+SteelType SteelInterpreter::lookup(SteelType *pVar, const std::string& key)
+{
+    // if strict, throw Unknown Identifier
+    // TODO: Unknown ID, or was it not an lvalue
+    if(pVar == NULL) throw UnknownIdentifier("???");
+    if(!pVar->isHashMap()) throw TypeMismatch();
+  
+    return pVar->getElement(key);
+}
+
+
 void SteelInterpreter::assign(SteelType *pVar, const SteelType &value)
 {
     // if strict, throw unknown id

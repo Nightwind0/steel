@@ -153,6 +153,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal BAREWORD %type.cpp "AstBareword*"
 %terminal VAR_IDENTIFIER %type.cpp "AstVarIdentifier*"
 %terminal ARRAY_IDENTIFIER
+%terminal HASHMAP_IDENTIFIER
 %terminal FOR
 %terminal FOREACH
 %terminal WITHIN
@@ -269,6 +270,8 @@ SteelParser::Token SteelParser::Scan ()
 	VAR_IDENTIFIER:id %target.cpp{ return id; }
 |
 	ARRAY_IDENTIFIER:id %target.cpp{ return id; }
+|
+	HASHMAP_IDENTIFIER:id %target.cpp { return id; }
 ;
 
 %nonterminal param_definition %type.cpp "AstParamDefinitionList*"
@@ -668,6 +671,8 @@ SteelParser::Token SteelParser::Scan ()
 |
 	array_identifier:id %target.cpp{ return id; }
 |
+	hashmap_identifier:id %target.cpp { return id; }
+|
 	func_identifier:id %target.cpp { return id; }
 |
 	exp:a '+' exp:b %prec ADD_SUB %target.cpp{ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); }
@@ -860,6 +865,11 @@ SteelParser::Token SteelParser::Scan ()
 	ARRAY_IDENTIFIER:id %target.cpp { return id; }
 ;
 
+%nonterminal hashmap_identifier %type.cpp "AstHashMapIdentifier*"
+:
+	HASHMAP_IDENTIFIER:id %target.cpp { return id; }
+;
+
 
 %nonterminal call %type.cpp "AstCallExpression*"
 :
@@ -893,6 +903,8 @@ SteelParser::Token SteelParser::Scan ()
 	VAR array_identifier:id '[' exp:i ']' %target.cpp { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); }
 |
 	VAR array_identifier:id %target.cpp { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); }
+|
+	VAR hashmap_identifier:id %target.cpp { return new AstHashMapDeclaration(id->GetLine(),id->GetScript(),id); }
 |
 	VAR array_identifier:id '=' exp:exp      %target.cpp {
 							AstArrayDeclaration *pDecl =  new AstArrayDeclaration(id->GetLine(),id->GetScript(),id);

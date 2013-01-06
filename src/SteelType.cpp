@@ -17,6 +17,7 @@ SteelType::SteelType()
     m_value.s = NULL;
     m_value.a = NULL;
     m_value.h = NULL;
+	m_value.m = NULL;
     m_storage = SteelType::INT;
     m_bConst = false;
 }
@@ -34,6 +35,8 @@ SteelType::~SteelType()
         delete m_value.s;
     else if (m_storage == SteelType::ARRAY)
         delete m_value.a;
+	else if (m_storage == SteelType::HASHMAP)
+		delete m_value.m;
 
     m_storage = SteelType::INT;
 }
@@ -56,6 +59,7 @@ SteelType::operator int () const
         return strInt();
     case SteelType::FUNCTOR:
     case SteelType::HANDLE:
+	case SteelType::HASHMAP:
         throw TypeMismatch();
     }
     assert ( 0 );
@@ -86,6 +90,7 @@ SteelType::operator double () const
         return strDouble();
     case SteelType::FUNCTOR:
     case SteelType::HANDLE:
+	case SteelType::HASHMAP:
         throw TypeMismatch();
     }
     assert( 0 );
@@ -96,14 +101,29 @@ SteelType::operator std::string () const
 {
     switch(m_storage)
     {
-    case SteelType::FUNCTOR:
-    case SteelType::ARRAY:
-        throw TypeMismatch();
     case SteelType::BOOL:
         if(m_value.b) return "TRUE";
         else return "FALSE";
-    case SteelType::HANDLE:
-        // Intentional fallthrough.. kind of hacky
+    case SteelType::FUNCTOR:{
+		std::ostringstream os;
+		os << "#F(" << std::hex << m_functor.get() << ')';
+		return os.str();
+	}
+    case SteelType::ARRAY:	{
+		std::ostringstream os;
+		os << "#A(" << std::hex << m_value.a << ')';
+		return os.str();
+	}
+    case SteelType::HANDLE:{
+        std::ostringstream os;
+		os << "#H(" << std::hex << m_value.h << ')';
+		return os.str();
+	}
+	case SteelType::HASHMAP:{
+		std::ostringstream os;
+		os << "#M(" << std::hex << m_value.m << ')';
+		return os.str();
+	}
     case SteelType::INT:
         return strToInt(m_value.i);
     case SteelType::DOUBLE:
@@ -114,12 +134,14 @@ SteelType::operator std::string () const
     return "";
 }
 
+
 SteelType::operator bool () const
 {
     switch(m_storage)
     {
     case SteelType::FUNCTOR:
       return m_functor != NULL;
+	case SteelType::HASHMAP:
     case SteelType::ARRAY:
         return true;
     case SteelType::HANDLE:
@@ -187,6 +209,12 @@ void SteelType::set(const Container &ref)
     m_storage = SteelType::ARRAY;
 }
 
+void SteelType::set(const Map &ref)
+{
+	m_value.m = new SteelType::Map(ref);
+	m_storage = SteelType::HASHMAP;
+}
+
 SteelType & SteelType::operator=(const SteelType &rhs)
 {
     if(&rhs == this) return *this;
@@ -195,6 +223,8 @@ SteelType & SteelType::operator=(const SteelType &rhs)
         delete m_value.s;
     else if (m_storage == SteelType::ARRAY)
         delete m_value.a;
+	else if(m_storage == SteelType::HASHMAP)
+		delete m_value.m;
 
     m_storage = SteelType::INT;
 
@@ -211,7 +241,9 @@ SteelType & SteelType::operator=(const SteelType &rhs)
     else if ( rhs.m_storage == SteelType::HANDLE)
         set ( rhs.m_value.h );
     else if ( rhs.m_storage == SteelType::FUNCTOR)
-	set ( rhs.m_functor );
+		set ( rhs.m_functor );
+	else if ( rhs.m_storage == SteelType::HASHMAP)
+		set ( *rhs.m_value.m );
 
     return *this;
 }
@@ -249,6 +281,32 @@ SteelType SteelType::removeElement ( int index )
     m_value.a->erase(m_value.a->begin() + index);
     return val;
 }
+
+SteelType* SteelType::getLValue( const std::string& key ) const 
+{
+	if ( !isHashMap() ) throw TypeMismatch();
+	Map::const_iterator findit = m_value.m->find(key);
+	if(findit == m_value.m->end()) {
+		// Throw exception... or silent but graceful failure?
+		//throw UnknownIdentifier();
+		(*m_value.m)[key] = SteelType();
+	}
+	return &((*m_value.m)[key]);
+}
+
+
+SteelType SteelType::getElement( const std::string& key ) const 
+{
+	if ( !isHashMap() ) throw TypeMismatch();
+	return (*m_value.m)[key];
+}
+
+void SteelType::setElement( const std::string& key, const SteelType& value ) 
+{
+	if ( !isHashMap() ) throw TypeMismatch();
+	(*m_value.m)[key] = value;
+}
+
 
 void SteelType::shuffle () 
 {
@@ -290,6 +348,7 @@ SteelType SteelType::operator+=(const SteelType &rhs)
   case SteelType::FUNCTOR:
   case SteelType::BOOL:
   case SteelType::HANDLE:
+  case SteelType::HASHMAP:
       throw OperationMismatch();
   case SteelType::INT:
       set ( (int)*this + (int)rhs );
@@ -323,6 +382,9 @@ SteelType SteelType::operator-=(const SteelType &rhs)
   case SteelType::DOUBLE:
       set ( (double)*this - (double)rhs );
       break;
+  case SteelType::HASHMAP:
+	  m_value.m->erase((std::string)rhs);
+	  break;
   }
 
   return *this;
@@ -339,6 +401,7 @@ SteelType SteelType::operator*=(const SteelType &rhs)
   case SteelType::HANDLE:
   case SteelType::STRING:
   case SteelType::FUNCTOR:
+  case SteelType::HASHMAP:
       throw OperationMismatch();
   case SteelType::INT:
       set ( (int)*this * (int)rhs );
@@ -365,6 +428,7 @@ SteelType SteelType::operator/=(const SteelType &rhs)
   case SteelType::HANDLE:
   case SteelType::STRING:
   case SteelType::FUNCTOR:
+  case SteelType::HASHMAP:
       throw OperationMismatch();
   case SteelType::INT:
       set ( (int)*this / (int)rhs );
@@ -392,6 +456,7 @@ SteelType SteelType::operator%=(const SteelType &rhs)
   case SteelType::HANDLE:
   case SteelType::STRING:
   case SteelType::FUNCTOR:
+  case SteelType::HASHMAP:
       throw OperationMismatch();
   case SteelType::INT:
       set ( (int)*this % (int)rhs );
@@ -427,6 +492,7 @@ SteelType  SteelType::operator+(const SteelType &rhs)
       return val;
     case SteelType::FUNCTOR:
     case SteelType::BOOL:
+	case SteelType::HASHMAP:
     case SteelType::HANDLE:
         throw OperationMismatch();
         return val;
@@ -467,6 +533,10 @@ SteelType  SteelType::operator-(const SteelType &rhs)
     case SteelType::STRING:
         throw OperationMismatch();
         return val;
+	case SteelType::HASHMAP:
+		val.set(*m_value.m);
+		val.m_value.m->erase((std::string)rhs);
+		return val;
     }
 
     assert ( 0 );
@@ -484,6 +554,7 @@ SteelType  SteelType::operator*(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -512,6 +583,7 @@ SteelType  SteelType::operator^(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -544,6 +616,7 @@ SteelType  SteelType::operator/(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -576,6 +649,7 @@ SteelType  SteelType::operator%(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -631,8 +705,16 @@ bool  operator==(const SteelType &lhs, const SteelType &rhs)
 	    lhs.m_storage == SteelType::FUNCTOR &&
 	    rhs.m_functor == lhs.m_functor)
 	    val= true;
-    }
-
+ 
+		break;
+	case SteelType::HASHMAP:
+		if(rhs.m_storage == SteelType::HASHMAP &&
+			lhs.m_storage == SteelType::HASHMAP && 
+			*rhs.m_value.m == *lhs.m_value.m)
+			val = true;
+		break;
+	}
+	
     return val;
 }
 
@@ -652,8 +734,11 @@ SteelType  SteelType::operator<(const SteelType &rhs)
     case SteelType::ARRAY:
     case SteelType::BOOL:
     case SteelType::HANDLE:
-    case SteelType::FUNCTOR:
-        throw OperationMismatch();
+    case SteelType::FUNCTOR:{
+		
+		val.set( (std::string)*this < (std::string)rhs );
+	}
+	break;
     case SteelType::INT:
         if((int)*this < (int)rhs)
             val.set(true);
@@ -684,7 +769,8 @@ SteelType  SteelType::operator<=(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-        throw OperationMismatch();
+        val.set( (std::string)*this <= (std::string)rhs);
+		break;
     case SteelType::INT:
         if((int)*this <= (int)rhs)
             val.set(true);
@@ -759,6 +845,7 @@ SteelType SteelType::operator-()
     case SteelType::ARRAY:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
     case SteelType::INT:
         var.set(0 - m_value.i);
@@ -806,8 +893,11 @@ SteelType SteelType::operator!()
 	break;
     case SteelType::ARRAY:
         throw OperationMismatch();
-    }
-
+    
+	case SteelType::HASHMAP:
+		var.set(m_value.m == NULL);
+		break;
+	}
     return var;
 }
 
@@ -820,6 +910,7 @@ SteelType SteelType::operator++()
     case SteelType::STRING:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
     case SteelType::INT:
         m_value.i = m_value.i + 1;
@@ -850,6 +941,7 @@ SteelType SteelType::operator--()
     case SteelType::STRING:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
+	case SteelType::HASHMAP:
         throw OperationMismatch();
     case SteelType::INT:
         m_value.i = m_value.i - 1;
@@ -1017,6 +1109,9 @@ void SteelType::debugPrint()
         case FUNCTOR:
             std::cout << "Functor Count:" << m_functor.use_count() << std::endl;
             break;
+		case HASHMAP:
+			std::cout << "Hash Map with " << m_value.m->size() << std::endl;
+			break;
         default:
             std::cout << "Bogus storage type" << std::endl;
     }

@@ -97,6 +97,7 @@ public:
     SteelType lookup(const std::string &name);
     // Array element lookup
     SteelType lookup(SteelType *pVar, int index);
+	SteelType lookup(SteelType *pVar, const std::string& key);
     SteelType *lookup_lvalue(const std::string &name);
     // Add namespace
     void import(const std::string &ns);

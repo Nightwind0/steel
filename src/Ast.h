@@ -447,6 +447,21 @@ private:
 };
 
 
+class AstHashMapIdentifier : public AstIdentifier
+{
+public:
+    AstHashMapIdentifier(unsigned int line,
+               const std::string &script,
+               const std::string &value)
+    :AstIdentifier(line,script,value){}
+    virtual ~AstHashMapIdentifier(){}
+
+    virtual SteelType evaluate(SteelInterpreter *pInterpreter);
+    virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
+private:
+};
+
+
 
 class AstIncDec : public AstExpression
 {
@@ -819,6 +834,27 @@ public:
 private:
     AstArrayIdentifier *m_pId;
     AstExpression *m_pIndex;
+    AstExpression *m_pExp;
+};
+
+
+class AstHashMapDeclaration: public AstDeclaration
+{
+public:
+    AstHashMapDeclaration(unsigned int line,
+            const std::string &script,
+            AstHashMapIdentifier *pId,
+			AstExpression* pExp=NULL
+ 						);
+
+    void assign(AstExpression *pExp);
+
+    virtual ~AstHashMapDeclaration();
+    virtual ostream & print(std::ostream &out);
+    virtual bool hasInitializer() const { return m_pExp != NULL; }
+    virtual eStopType execute(SteelInterpreter *pInterpreter);
+private:
+    AstHashMapIdentifier *m_pId;
     AstExpression *m_pExp;
 };
 

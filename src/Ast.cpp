@@ -104,7 +104,7 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 		in_subexpr = false;
 		subexpr += ';';
 	
-#ifdef DEBUG
+#if 0 && defined(DEBUG)
 		std::cerr << "Sub expression: " << subexpr << std::endl;
 #endif
 		SteelParser parser;
@@ -1402,18 +1402,26 @@ SteelType * AstArrayElement::lvalue(SteelInterpreter *pInterpreter)
                                  "Invalid lvalue before subscript.");
         }
 
-        if(!pArray->isArray())
+        if(!pArray->isArray() && !pArray->isHashMap())
         {
             throw SteelException(SteelException::TYPE_MISMATCH,
                                  GetLine(),
                                  GetScript(),
-                                 "Lvalue is not an array.");
+                                 "Lvalue is not an array or hash map.");
         }
 
-        int index = m_pExp->evaluate(pInterpreter);
-    
+	if(pArray->isArray())
+	{
+	  int index = m_pExp->evaluate(pInterpreter);
+	  return pArray->getLValue(index);
+	}
+	else if(pArray->isHashMap())
+	{
+	  std::string index = m_pExp->evaluate(pInterpreter);
+	  return pArray->getLValue(index);
+	}
         // It will throw out of bounds, or what not.
-        return pArray->getLValue(index);
+        
     }
     catch(UnknownIdentifier id)
     {
@@ -1421,7 +1429,7 @@ SteelType * AstArrayElement::lvalue(SteelInterpreter *pInterpreter)
         throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
                              GetLine(),
                              GetScript(),
-                             "Unknown identifier in array lvalue: '" + id.identifier + '\'');
+                             "Unknown identifier in array or hashmap lvalue: '" + id.identifier + '\'');
                  
     }
     catch(OutOfBounds)
@@ -1454,7 +1462,10 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
         
             try
             {
-                return val.getElement(m_pExp->evaluate(pInterpreter)); 
+				if(pL->isArray())
+					return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
+				else if(pL->isHashMap())
+					return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
             }
             catch(TypeMismatch)
             {
@@ -1467,8 +1478,10 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
             // The rest of the exceptions should be cought by the outer try.
             // Such as out of bounds.. and anything that goes wrong inside the index expression
         }
-    
-        return pInterpreter->lookup(pL, m_pExp->evaluate(pInterpreter));
+		if(pL->isArray())
+			return pInterpreter->lookup(pL, (int)m_pExp->evaluate(pInterpreter));
+		else if(pL->isHashMap())
+			return pInterpreter->lookup(pL, (const std::string)m_pExp->evaluate(pInterpreter));
     }
     catch(UnknownIdentifier id)
     {
@@ -1527,6 +1540,45 @@ SteelType AstArrayIdentifier::evaluate(SteelInterpreter *pInterpreter)
                              GetLine(),
                              GetScript(),
                              "Unknown array identifier:'" + getValue() + '\'');
+    }
+
+    return var;
+}
+
+SteelType * AstHashMapIdentifier::lvalue(SteelInterpreter *pInterpreter)
+{
+    try
+    {
+        return pInterpreter->lookup_lvalue(getValue());
+    }
+    catch(UnknownIdentifier id)
+    {
+        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+                             GetLine(),
+                             GetScript(),
+                             "Unknown hash map identifier:'" + getValue() + '\'');
+
+    }
+
+    return NULL;
+}
+
+
+SteelType AstHashMapIdentifier::evaluate(SteelInterpreter *pInterpreter)
+{
+    
+    // Find our reference variable in the file. 
+    SteelType var;
+
+    try {
+        var = pInterpreter->lookup(getValue()); 
+    }
+    catch(UnknownIdentifier id)
+    {
+        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+                             GetLine(),
+                             GetScript(),
+                             "Unknown hash map identifier:'" + getValue() + '\'');
     }
 
     return var;
@@ -1852,6 +1904,82 @@ ostream & AstArrayDeclaration::print(std::ostream &out)
     out << ';' << std::endl;
     return out;
 }
+
+
+
+AstHashMapDeclaration::AstHashMapDeclaration(unsigned int line,
+                                         const std::string &script,
+                                         AstHashMapIdentifier *pId,
+                                         AstExpression *pInt)
+    :AstDeclaration(line,script),m_pId(pId),m_pExp(NULL)
+{
+}
+
+AstHashMapDeclaration::~AstHashMapDeclaration()
+{
+    delete m_pId;
+	delete m_pExp;
+}
+
+void AstHashMapDeclaration::assign(AstExpression *pExp)
+{
+    // Todo: Actually evaluate this here and toss it
+    m_pExp = pExp;
+}
+
+
+AstStatement::eStopType AstHashMapDeclaration::execute(SteelInterpreter *pInterpreter)
+{
+    try
+    {
+       pInterpreter->declare (m_pId->getValue());
+    }
+    catch(AlreadyDefined)
+    {
+        throw SteelException(SteelException::VARIABLE_DEFINED,
+                             GetLine(),
+                             GetScript(),
+                             "HashMap: '" + m_pId->getValue() + "' was previously defined.");
+    }
+
+    try{
+        SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
+        // If this is null here, we're in a BAD way. Programming error.
+        assert ( NULL != pVar);
+		pVar->set(SteelType::Map());
+#if 0 // Enable this when I have the syntax in place to create hashes similar to how array(blah,blah,blah) works
+        if(m_pExp)
+            pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+
+        if(m_bHasValue) pInterpreter->assign( pVar, m_value);
+#endif
+    }
+    catch(TypeMismatch)
+    {
+        throw SteelException(SteelException::TYPE_MISMATCH,
+                             GetLine(),
+                             GetScript(),
+                             "Attempt to assign scalar to hash map in declaration of :'" + m_pId->getValue() + '\'');
+    }
+    catch(UnknownIdentifier id)
+    {
+        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+                             GetLine(),
+                             GetScript(),
+                             "Unknown identifier in assignment:" + id.identifier + '\'');
+    }
+
+    return COMPLETED;
+}
+
+ostream & AstHashMapDeclaration::print(std::ostream &out)
+{
+    out << "var " << *m_pId ;
+    if(m_pExp) out << '=' << *m_pExp;
+    out << ';' << std::endl;
+    return out;
+}
+
 
 
 AstAnonymousFunctionDefinition::AstAnonymousFunctionDefinition(unsigned int line, const std::string &script, AstParamDefinitionList* params, AstStatementList * statements)

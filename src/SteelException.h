@@ -22,7 +22,7 @@ public:
         DEFAULTS_MISMATCH,
         ASSIGNMENT_REQUIRED,
         VALUE_IS_CONSTANT,
-	FILE_NOT_FOUND
+		FILE_NOT_FOUND
     };
 
 

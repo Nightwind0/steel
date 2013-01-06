@@ -303,12 +303,17 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		return SteelParser::Token(SteelParser::Terminal::ARRAY_IDENTIFIER, new AstArrayIdentifier(m_line,m_script_name,accepted_string));
 	}
 |
+	(#[a-zA-Z_][a-zA-Z0-9_]*)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::HASHMAP_IDENTIFIER, new AstHashMapIdentifier(m_line,m_script_name,accepted_string));
+	}
+|
 	(;|\{|\})
 	%target.cpp {
 		return SteelParser::Token((SteelParser::Terminal::Name)accepted_string[0],NULL);
 	}
 |
-	(@|\$|\(|\)|,|%|\+|\-|\^|\*|\=|\[|\]|/)
+	(@|\$|\(|\)|,|%|\+|\-|\^|\*|\=|\[|\]|/|#)
 	%target.cpp{
 		return SteelParser::Token((SteelParser::Terminal::Name)accepted_string[0],NULL);
 	}
