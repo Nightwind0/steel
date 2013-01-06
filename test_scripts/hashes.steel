@@ -1,0 +1,32 @@
+declare @myarray[1];
+declare #myhash;
+
+@myarray[0] = 5;
+#myhash["Doom"] = 5;
+println(@myarray[0]);
+println(#myhash["Doom"]);
+
+#myhash["Doom"] = @myarray;
+
+println(#myhash["Doom"][0]);
+
+println(#myhash["New"]);
+
+#myhash["Nitz"] = "Ted";
+#myhash["Function"] = function () { return  "Nitz" ; };
+println(#myhash[#myhash["Function"]()]);
+
+
+declare $f = function() { return "Function"; };
+
+#myhash[$f] = "Hi";
+
+println(#myhash[$f]);
+
+println(@myarray);
+println(@myarray);
+println($f);
+
+declare #hash = ["foo"=>5,"bar"=>"junk"];
+#hash = ["foo"=>5];
+println(#hash["foo"]);

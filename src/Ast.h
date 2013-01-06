@@ -697,21 +697,22 @@ private:
     SteelType m_functor;
 };
 
-/* class AstArrayExpression : public AstExpression
+class AstArrayLiteral : public AstExpression
 {
 public:
-    AstArrayExpression(unsigned int line,
-               const std::string &script,
-               AstArrayIdentifier * pId,
-               AstExpression * pExp);
-    virtual ~AstArrayExpression();
+    AstArrayLiteral(unsigned int line,
+		    const std::string &script);
+    virtual ~AstArrayLiteral();
 
-    virtual ostream & print(std::ostream &out);
+    void add(AstExpression* pExp);
+
+    virtual SteelType evaluate(SteelInterpreter* pInterpreter);
+    virtual SteelType* lvalue(SteelInterpreter* pInterpreter){ return NULL; }
+
 private:
-    AstArrayIdentifier *m_pId;
-    AstExpression * m_pExpression;
+    std::list<AstExpression*> m_list;
 };
-*/
+
 
 class AstArrayElement : public AstExpression
 {

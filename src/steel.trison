@@ -318,6 +318,21 @@ SteelParser::Token SteelParser::Scan ()
 				}
 ;
 
+%nonterminal array_literal %type.cpp "AstArrayLiteral*"
+:
+	exp:exp
+		%target.cpp {
+			    AstArrayLiteral * array = new AstArrayLiteral(exp->GetLine(),exp->GetScript());
+			    array->add(exp);
+			    return array;
+		}
+|
+	array_literal:array ',' exp:exp
+			    %target.cpp {
+			    	array->add ( exp );
+				return array; 
+			    }
+;
 %nonterminal pair_list %type.cpp "AstPairList*"
 :
 	pair:pair 
@@ -852,6 +867,10 @@ SteelParser::Token SteelParser::Scan ()
 	'(' %error  %target.cpp {
 		addError(GET_LINE(),"unmatched ')'");
 		return new AstExpression(GET_LINE(),GET_SCRIPT());
+	}
+|
+	'[' array_literal:array ']' %target.cpp {
+	    return array;
 	}
 |
 	'[' pair_list:list ']' %target.cpp {

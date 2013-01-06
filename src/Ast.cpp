@@ -1344,6 +1344,37 @@ ostream & AstCallExpression::print(std::ostream &out)
     
     return out;
 }
+
+AstArrayLiteral::AstArrayLiteral(unsigned int line, const std::string& script):AstExpression(line,script)
+{
+}
+
+AstArrayLiteral::~AstArrayLiteral()
+{
+  for(std::list<AstExpression*>::iterator it = m_list.begin(); it!= m_list.end(); it++){
+    delete *it;
+  }
+}
+
+void AstArrayLiteral::add(AstExpression* pExp)
+{
+  m_list.push_back(pExp);
+}
+
+SteelType AstArrayLiteral::evaluate(SteelInterpreter* pInterpreter)
+{
+  SteelType array;
+  array.set(SteelType::Container());
+
+  for(std::list<AstExpression*>::iterator it = m_list.begin(); it!= m_list.end(); it++){
+    array.pushb((*it)->evaluate(pInterpreter));
+  }
+
+  return array;  
+}
+
+
+
 /*
   AstArrayExpression::AstArrayExpression(unsigned int line,
   const std::string &script,

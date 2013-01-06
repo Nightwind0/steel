@@ -1,0 +1,7 @@
+declare #hash = ["foo"=>5, "bar"=>12];
+println(#hash["foo"]);
+println(#hash["bar"]);
+
+#hash = ["jerk"=>"wonk"];
+
+println(#hash["jerk"]);
