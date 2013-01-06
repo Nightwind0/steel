@@ -278,6 +278,11 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		    return SteelParser::Token(SteelParser::Terminal::MODULO_EQUALS,NULL);
 	}
 |
+	(=>)
+	%target.cpp { 
+		    return SteelParser::Token(SteelParser::Terminal::MAKE_PAIR,NULL);
+	}
+|
 	(0|[1-9][0-9]*)
 	%target.cpp{
 		return SteelParser::Token(SteelParser::Terminal::INT,new AstInteger(m_line,m_script_name,ToInt(accepted_string)));

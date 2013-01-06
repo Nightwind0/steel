@@ -179,6 +179,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal DEFAULT
 %terminal CASE_DELIM
 %terminal LAMBDA
+%terminal MAKE_PAIR
 
 %prec.left CORRECT
 %prec.left NON_ELSE_INCORRECT
@@ -315,6 +316,30 @@ SteelParser::Token SteelParser::Scan ()
 					list->add( stmt );
 					return list;
 				}
+;
+
+%nonterminal pair_list %type.cpp "AstPairList*"
+:
+	pair:pair 
+		%target.cpp {
+			    AstPairList * pList =  new AstPairList(m_scanner->getCurrentLine(), m_scanner->getScriptName());
+			    pList->add(pair);
+			    return pList;
+		}
+|
+	pair_list:list ',' pair:pair 
+		       %target.cpp {
+		            list->add ( pair ) ;
+			    return list;
+		       }
+;
+
+%nonterminal pair %type.cpp "AstPair*"
+:
+	exp:key MAKE_PAIR exp:value 
+		%target.cpp {
+			    return new AstPair(key->GetLine(),key->GetScript(),key,value);
+		}
 ;
 
 %nonterminal statement %type.cpp "AstStatement*"
@@ -829,6 +854,10 @@ SteelParser::Token SteelParser::Scan ()
 		return new AstExpression(GET_LINE(),GET_SCRIPT());
 	}
 |
+	'[' pair_list:list ']' %target.cpp {
+		       return list; 
+	}
+|
 	%error %target.cpp {
 	       addError(GET_LINE(),"bad expression");
 	       return new AstExpression(GET_LINE(),GET_SCRIPT());
@@ -905,6 +934,8 @@ SteelParser::Token SteelParser::Scan ()
 	VAR array_identifier:id %target.cpp { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); }
 |
 	VAR hashmap_identifier:id %target.cpp { return new AstHashMapDeclaration(id->GetLine(),id->GetScript(),id); }
+|
+	VAR hashmap_identifier:id '=' exp:exp %target.cpp { return new AstHashMapDeclaration(id->GetLine(),id->GetScript(),id,exp); }
 |
 	VAR array_identifier:id '=' exp:exp      %target.cpp {
 							AstArrayDeclaration *pDecl =  new AstArrayDeclaration(id->GetLine(),id->GetScript(),id);

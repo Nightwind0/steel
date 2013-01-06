@@ -462,6 +462,32 @@ private:
 };
 
 
+class AstPair : public AstBase
+{
+ public:
+  AstPair(unsigned int line, const std::string& script, AstExpression* key, AstExpression* value);
+  virtual ~AstPair();
+  
+  std::string GetKey(SteelInterpreter* pInterpreter);
+  SteelType GetValue(SteelInterpreter* pInterpreter);
+ private:
+  AstExpression* m_key;
+  AstExpression* m_value;
+};
+
+class AstPairList: public AstExpression
+{
+ public:
+  AstPairList(unsigned int line, const std::string& script);
+  virtual ~AstPairList();
+
+  void add(AstPair* pair);
+  virtual SteelType evaluate(SteelInterpreter *pInterpreter);
+  virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
+ private:
+  std::list<AstPair*> m_list;
+};
+
 
 class AstIncDec : public AstExpression
 {

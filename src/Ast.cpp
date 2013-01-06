@@ -1584,6 +1584,48 @@ SteelType AstHashMapIdentifier::evaluate(SteelInterpreter *pInterpreter)
     return var;
 }
 
+AstPair::AstPair(unsigned int line, const std::string& script, AstExpression* pKey, AstExpression* pValue)
+  :AstBase(line,script),m_key(pKey),m_value(pValue){
+}
+
+AstPair::~AstPair(){
+}
+
+std::string AstPair::GetKey(SteelInterpreter* pInterpreter){
+  return (std::string) m_key->evaluate(pInterpreter);
+}
+
+SteelType AstPair::GetValue(SteelInterpreter* pInterpreter){
+  return m_value->evaluate(pInterpreter);
+}
+
+AstPairList::AstPairList(unsigned int line, const std::string& script):AstExpression(line,script)
+{
+}
+
+AstPairList::~AstPairList()
+{
+}
+
+void AstPairList::add(AstPair* pair)
+{
+  m_list.push_back(pair);
+}
+
+SteelType AstPairList::evaluate(SteelInterpreter *pInterpreter)
+{
+  SteelType hashmap;
+  hashmap.set(SteelType::Map());
+  for(std::list<AstPair*>::iterator it = m_list.begin(); it != m_list.end(); it++){
+    hashmap.setElement((*it)->GetKey(pInterpreter),(*it)->GetValue(pInterpreter));
+  }
+  return hashmap;
+}
+
+SteelType* AstPairList::lvalue(SteelInterpreter *pInterpreter)
+{
+  return NULL;
+}
 
 AstVarAssignmentExpression::AstVarAssignmentExpression(unsigned int line,
                                                        const std::string &script,
@@ -1910,8 +1952,8 @@ ostream & AstArrayDeclaration::print(std::ostream &out)
 AstHashMapDeclaration::AstHashMapDeclaration(unsigned int line,
                                          const std::string &script,
                                          AstHashMapIdentifier *pId,
-                                         AstExpression *pInt)
-    :AstDeclaration(line,script),m_pId(pId),m_pExp(NULL)
+                                         AstExpression *pExp)
+    :AstDeclaration(line,script),m_pId(pId),m_pExp(pExp)
 {
 }
 
@@ -1946,12 +1988,11 @@ AstStatement::eStopType AstHashMapDeclaration::execute(SteelInterpreter *pInterp
         SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
         // If this is null here, we're in a BAD way. Programming error.
         assert ( NULL != pVar);
-		pVar->set(SteelType::Map());
-#if 0 // Enable this when I have the syntax in place to create hashes similar to how array(blah,blah,blah) works
+	pVar->set(SteelType::Map());
+#if 1 // Enable this when I have the syntax in place to create hashes similar to how array(blah,blah,blah) works
         if(m_pExp)
             pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
 
-        if(m_bHasValue) pInterpreter->assign( pVar, m_value);
 #endif
     }
     catch(TypeMismatch)
