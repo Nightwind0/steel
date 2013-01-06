@@ -14,3 +14,7 @@ println(#superhash["hoo"]);
 #superhash -= "hoo";
 
 println(#superhash["hoo"]);
+
+
+
+println(["f"=>4]["f"]);

@@ -1493,9 +1493,9 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
         
             try
             {
-				if(pL->isArray())
+				if(val.isArray())
 					return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
-				else if(pL->isHashMap())
+				else if(val.isHashMap())
 					return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
             }
             catch(TypeMismatch)
