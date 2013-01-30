@@ -578,7 +578,9 @@ public:
     SUB_ASSIGN,
     MULT_ASSIGN,
     DIV_ASSIGN,
-    MOD_ASSIGN
+    MOD_ASSIGN,
+    BIN_AND,
+    BIN_OR
     };
 
     static std::string ToString(Op op);
@@ -605,7 +607,8 @@ public:
     MINUS,
     PLUS,
     NOT,
-    CAT
+    CAT,
+    BIN_NOT
     };
     static std::string ToString(Op op);
     AstUnaryOp(unsigned int line,

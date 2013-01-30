@@ -311,7 +311,7 @@ AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter
 {
     eStopType ret = COMPLETED;
     if(!m_bTopLevel)
-	pInterpreter->pushScope();
+		pInterpreter->pushScope();
     for(std::list<AstStatement*>::const_iterator it = m_list.begin();
         it != m_list.end(); it++)
     {
@@ -326,7 +326,7 @@ AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter
         }
     }
     if(!m_bTopLevel)
-	pInterpreter->popScope();
+		pInterpreter->popScope();
 
     return ret;
 }
@@ -1048,6 +1048,17 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
         case GTE:
             return m_left->evaluate(pInterpreter)
                 >= m_right->evaluate(pInterpreter);
+	case BIN_AND:{
+	  SteelType var;
+	  var.set ( (int)m_left->evaluate(pInterpreter) 
+		    & (int)m_right->evaluate(pInterpreter));
+	  return var;
+	}
+	case BIN_OR:{
+	  SteelType var;
+	  var.set((int)m_left->evaluate(pInterpreter) | (int)m_right->evaluate(pInterpreter));
+	  return var;
+	}
         default:
             assert(0);
     
@@ -1120,6 +1131,11 @@ SteelType AstUnaryOp::evaluate(SteelInterpreter *pInterpreter)
             return - m_operand->evaluate(pInterpreter);
         case PLUS:
             return m_operand->evaluate(pInterpreter);
+	case BIN_NOT:{
+	  SteelType var;
+	  var.set(~int(m_operand->evaluate(pInterpreter)));
+	  return var;
+	}
         case NOT:
             return ! m_operand->evaluate(pInterpreter);
 #if 0 // We no longer allow unary cat. Use array() 
@@ -2174,7 +2190,7 @@ std::string AstFuncIdentifier::GetNamespace(void) const
     }
     else
     {
-        return SteelInterpreter::kszUnspecifiedNamespace;
+        return kszUnspecifiedNamespace;
     }
 }
 
@@ -2207,8 +2223,8 @@ AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterp
 {
     try{
 	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
-	if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
-	    pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements);
+	if(m_pId->GetNamespace() == kszUnspecifiedNamespace){
+	    pInterpreter->registerFunction( m_pId->getValue(), kszGlobalNamespace, m_pParams, m_pStatements);
 	}else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements);
     }
     catch(AlreadyDefined)

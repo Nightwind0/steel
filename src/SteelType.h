@@ -38,6 +38,7 @@ public:
     operator bool () const;
     operator Container () const;
     operator Handle () const;
+    operator Functor () const;
 
     void set(int i);
     void set(double d);
@@ -137,7 +138,7 @@ private:
         Handle h;
         std::string *s;
         Container *a;
-		Map* m;
+	Map* m;
     };
     Functor m_functor;
     value m_value;

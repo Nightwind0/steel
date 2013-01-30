@@ -13,8 +13,13 @@
 #endif
 #include "SteelParser.h"
 #include "SteelFunctor.h"
-
+#include "Mutex.h"
 #include "File.h"
+
+
+#define kszGlobalNamespace "_global"
+#define kszUnspecifiedNamespace "?"
+
 
 namespace Steel { 
 
@@ -120,17 +125,21 @@ public:
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
 	
-	void setFileProvider(IFileProvider* provider);
-
-    static const char * kszGlobalNamespace;
-    static const char * kszUnspecifiedNamespace;
+    void setFileProvider(IFileProvider* provider);
 
 private:
 
     void push_context();
     void pop_context();
     
-    std::string name_array_ref(const std::string &array_name); 
+    std::string name_array_ref(const std::string &array_name);
+#if  USE_STEEL_MUTEX
+    mutable Mutex m_symbol_mutex;
+    mutable Mutex m_function_mutex;
+    mutable Mutex m_scope_mutex;
+    mutable Mutex m_stack_mutex;
+    mutable Mutex m_import_mutex;
+#endif 
     typedef std::map<std::string, SteelType> VariableFile;
     typedef std::map<std::string,shared_ptr<SteelFunctor> > FunctionSet;
     std::list<VariableFile> m_symbols;
@@ -152,6 +161,7 @@ private:
 	FileProvider m_default_file_provider;
 	IFileProvider * m_file_provider;
     int m_nContextCount;
+
 private:
     // Bifs
     SteelType require (const std::string &filename);
@@ -195,6 +205,8 @@ private:
     SteelType randf (); // Returns double between 0 and 1
     SteelType rand ( );
     SteelType srand ( int );
+    SteelType rad2deg ( double r );
+    SteelType deg2rad ( double deg);
     
     // IO built-ins
     

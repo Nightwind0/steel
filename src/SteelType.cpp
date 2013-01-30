@@ -73,6 +73,13 @@ SteelType::operator Handle() const
     else return m_value.h;
 }
 
+SteelType::operator Functor() const
+{
+  if(m_storage != SteelType::FUNCTOR)
+    throw TypeMismatch();
+  else return m_functor;
+}
+
 SteelType::operator double () const
 {
     switch(m_storage)

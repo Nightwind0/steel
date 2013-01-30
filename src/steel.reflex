@@ -358,6 +358,21 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		 return SteelParser::Token(SteelParser::Terminal::AND,NULL);
 	 }
 |
+	(&)
+	%target.cpp {
+		    return SteelParser::Token(SteelParser::Terminal::BIN_AND,NULL);
+	}
+|
+	(\|)
+	%target.cpp { 
+		    return SteelParser::Token(SteelParser::Terminal::BIN_OR,NULL);
+	}
+|
+	(~)
+	%target.cpp {
+		    return SteelParser::Token(SteelParser::Terminal::BIN_NOT,NULL);
+	}
+|
 	(or|\|\|) 
 	%target.cpp{ 
 		 return SteelParser::Token(SteelParser::Terminal::OR,NULL);

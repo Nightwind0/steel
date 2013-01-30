@@ -9,6 +9,7 @@ libsteel_la_SOURCES = SteelParser.cpp \
 			Ast.cpp \
 			SteelType.cpp \
 			File.cpp \
+			Mutex.cpp \
 			steel.trison \
 			steel.reflex
 
@@ -20,6 +21,7 @@ libsteel_la_HEADERS =   Ast.h \
 						SteelParser.h \
 						SteelScanner.h \
 						SteelInterpreter.h \
+						Mutex.h \
 						File.h
 
 SteelParser.h : SteelParser.cpp 
@@ -34,5 +36,6 @@ func_test : SteelFunctor.h func_test.cpp SteelFunctor.cpp
 
 
 steel_SOURCES = steel.cpp
-steel_LDADD = libsteel.la
+steel_LDADD = libsteel.la 
+steel_LDFLAGS = -lpthread
 

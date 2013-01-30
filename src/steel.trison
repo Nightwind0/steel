@@ -180,6 +180,11 @@ SteelParser::Token SteelParser::Scan ()
 %terminal CASE_DELIM
 %terminal LAMBDA
 %terminal MAKE_PAIR
+%terminal BIN_AND
+%terminal BIN_OR
+%terminal BIN_NOT
+
+
 
 %prec.left CORRECT
 %prec.left NON_ELSE_INCORRECT
@@ -189,15 +194,18 @@ SteelParser::Token SteelParser::Scan ()
 %prec.left ELSE
 %prec.left OR
 %prec.left AND
+%prec.left BIN_OR
+%prec.left BIN_AND
 %prec.left EQ_NE
 %prec.left COMPARATOR
 %prec.left ADD_SUB
 %prec.left MULT_DIV_MOD
+%prec.left POW
 %prec.right UNARY
-%prec.right POW
 %prec.left CALL
 %prec.left PAREN
-
+%prec.left INC_DEC
+%prec.left MEMBER
 
 
 
@@ -776,6 +784,12 @@ SteelParser::Token SteelParser::Scan ()
 |
 	exp:a LTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); }
 |
+	exp:a BIN_OR exp:b %prec BIN_OR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::BIN_OR,a,b); }
+|
+	exp:a BIN_AND exp:b %prec BIN_AND %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::BIN_AND,a,b); } 
+|
+	BIN_NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(),exp->GetScript(),AstUnaryOp::BIN_NOT,exp); }
+|
 	exp:a GTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }
 /*
 |
@@ -803,17 +817,17 @@ SteelParser::Token SteelParser::Scan ()
 	NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); }
 
 |
-	exp:lvalue '[' exp:index ']' %prec PAREN %target.cpp { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
+	exp:lvalue '[' exp:index ']' %prec MEMBER %target.cpp { return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); }
 |
-	INCREMENT exp:lvalue %prec UNARY %target.cpp { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);}
+	INCREMENT exp:lvalue %prec INC_DEC %target.cpp { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);}
 |
-	INCREMENT %error  %prec UNARY %target.cpp {
+	INCREMENT %error  %prec INC_DEC %target.cpp {
 										addError(GET_LINE(),"expected lvalue after '++'");
 										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
 												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
 										}
 |
-	exp:lvalue INCREMENT %prec PAREN %target.cpp { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);}
+	exp:lvalue INCREMENT %prec INC_DEC %target.cpp { return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);}
 |
 	DECREMENT exp:lvalue %prec UNARY %target.cpp { return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);}
 |

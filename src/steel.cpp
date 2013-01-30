@@ -3,6 +3,7 @@
 #include <sstream>
 #include "SteelInterpreter.h"
 #include "SteelException.h"
+#include "SteelType.h"
 
 using Steel::SteelInterpreter;
 using Steel::AstScript;
@@ -24,11 +25,10 @@ bool read_script(std::istream& stream,std::string& into)
                        (std::istreambuf_iterator<char>()    ) );
 }
 
+SteelInterpreter interpreter;
 
 int main(int argc, char * argv[])
 {
-    SteelInterpreter interpreter;
-
     std::string script;
 
     bool bPrint=false;
@@ -90,6 +90,7 @@ int main(int argc, char * argv[])
 	return -1;
       }
     }
+
 
     try{
       AstScript * pScript = interpreter.prebuildAst(filename,script,bDebug,bScanDebug);
