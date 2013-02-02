@@ -17,23 +17,21 @@ extern "C"
 
 namespace Steel { 
 
-  Mutex::Mutex(){
+  Mutex::Mutex()
 #ifdef WIN32
+  {
 	InitializeCriticalSection(&critical_section);
-#else 
-	pthread_mutexattr_t attr;
+#else
+  {
 	pthread_mutexattr_init(&attr);
 	#if defined(__FreeBSD__) || defined(__APPLE__)
 	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
 	#else
-	#if PTHREAD_MUTEX_RECURSIVE_NP
-	pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE);
-	#else
-	pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-	#endif
+	/* or PTHREAD_MUTEX_RECURSIVE_NP */
+	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);	
 	#endif
 	pthread_mutex_init(&handle, &attr);
-	pthread_mutexattr_destroy(&attr);
+//	pthread_mutexattr_destroy(&attr);
 #endif
 	m_enabled = true;
   }

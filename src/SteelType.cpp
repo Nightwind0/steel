@@ -248,9 +248,9 @@ SteelType & SteelType::operator=(const SteelType &rhs)
     else if ( rhs.m_storage == SteelType::HANDLE)
         set ( rhs.m_value.h );
     else if ( rhs.m_storage == SteelType::FUNCTOR)
-		set ( rhs.m_functor );
-	else if ( rhs.m_storage == SteelType::HASHMAP)
-		set ( *rhs.m_value.m );
+	set ( rhs.m_functor );
+    else if ( rhs.m_storage == SteelType::HASHMAP)
+	set ( *rhs.m_value.m );
 
     return *this;
 }

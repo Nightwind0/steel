@@ -15,7 +15,8 @@ void usage(){
     "-p,--print: ask the script to print itself out after being built" << std::endl <<
     "-n,--no-exec: don't execute the script, just build it" << std::endl <<
     "-d,--debug: show scanner and parser debug spew" << std::endl << 
-    "--no-scan-debug: use with -d, show only parser debug spew" << std::endl;
+    "--no-scan-debug: use with -d, show only parser debug spew" << std::endl <<
+    "-t: enable thread safety (for testing purposes)" << std::endl;
 }
 
 
@@ -25,17 +26,19 @@ bool read_script(std::istream& stream,std::string& into)
                        (std::istreambuf_iterator<char>()    ) );
 }
 
-SteelInterpreter interpreter;
+
 
 int main(int argc, char * argv[])
 {
     std::string script;
+    SteelInterpreter* interpreter = new SteelInterpreter();
 
     bool bPrint=false;
     bool bRun=true;
     bool bDebug = false;
     bool bScanDebug = false;
     bool bCin = false;
+    bool bEnableThreadSafety=false;
     std::string filename;
 
     for(int i=1;i<argc;i++)
@@ -62,6 +65,8 @@ int main(int argc, char * argv[])
 	    bScanDebug = true;
         }else if(arg == "-" && i == (argc-1)){
 	  bCin = true;
+	}else if(arg == "-t"){
+	  bEnableThreadSafety = true;
 	}else {
 	  if(!filename.size()){
 	    filename = arg;
@@ -91,14 +96,22 @@ int main(int argc, char * argv[])
       }
     }
 
+#if USE_STEEL_MUTEX
+    if(bEnableThreadSafety){
+      interpreter->enableThreadSafety();
+    }else{
+      interpreter->disableThreadSafety();
+    }
+#endif
+
 
     try{
-      AstScript * pScript = interpreter.prebuildAst(filename,script,bDebug,bScanDebug);
+      AstScript * pScript = interpreter->prebuildAst(filename,script,bDebug,bScanDebug);
         if(bPrint)
             pScript->print(std::cout);
 
         if(bRun)
-            interpreter.runAst(pScript);
+            interpreter->runAst(pScript);
     }
     catch(SteelException ex)
     {
@@ -107,6 +120,8 @@ int main(int argc, char * argv[])
         
         std::cerr << ex.getMessage() << std::endl;
     }
+
+    delete interpreter;
 }
 
 

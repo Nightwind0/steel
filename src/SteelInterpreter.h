@@ -82,6 +82,12 @@ public:
 
     // Call with a funciton in a specific namespace
     SteelType call(const std::string &name, const std::string &ns, const SteelType::Container &pList);
+#if USE_STEEL_MUTEX
+    // Turn off thread safety. This MUST be done when only a single thread is accessing the interpeter
+    void disableThreadSafety();
+    // Turn on thread safety. Warning: It is not safe to call this while multiple threads are accessing the interpreter
+    void enableThreadSafety();
+#endif
     // This allows you to pre-parse a script and keep a pointer to it
     // around, which can be run over and over, and the deletion of it is
     // up to the user of SteelInterpreter
@@ -151,7 +157,7 @@ private:
     SteelType * lookup_internal(const std::string &name);
   
     void registerBifs();
-    std::deque<std::string> m_namespace_scope;
+    std::list<std::string> m_namespace_scope;
     std::map<std::string,FunctionSet> m_functions;
     std::set<std::string> m_requires;
 

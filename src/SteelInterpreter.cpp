@@ -112,7 +112,7 @@ ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle 
 
 SteelInterpreter::SteelInterpreter()
 :
-    m_nContextCount(0)
+  m_nContextCount(0),m_file_provider(NULL)
 {
 	m_file_provider = &m_default_file_provider;
     pushScope();
@@ -197,6 +197,25 @@ shared_ptr<SteelFunctor> SteelInterpreter::removeFunction(const std::string &nam
       return shared_ptr<SteelFunctor>();
     }
 }
+
+#if USE_STEEL_MUTEX
+void SteelInterpreter::disableThreadSafety(){
+    m_symbol_mutex.disable();
+    m_function_mutex.disable();
+    m_scope_mutex.disable();
+    m_stack_mutex.disable();
+    m_import_mutex.disable();
+}
+
+void SteelInterpreter::enableThreadSafety(){
+    m_symbol_mutex.enable();
+    m_function_mutex.enable();
+    m_scope_mutex.enable();
+    m_stack_mutex.enable();
+    m_import_mutex.enable();
+}
+
+#endif
 
 AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
                                           const std::string &script,
@@ -319,7 +338,7 @@ void SteelInterpreter::import(const std::string &ns)
 #if USE_STEEL_MUTEX
   AutoLock mutex(m_import_mutex);
 #endif
-    for(std::deque<std::string>::iterator it = m_namespace_scope.begin();
+    for(std::list<std::string>::iterator it = m_namespace_scope.begin();
         it != m_namespace_scope.end(); it++)
         if(*it == ns) return; // Already have it imported
 
@@ -340,7 +359,7 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
 #if USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
-    for(std::deque<std::string>::reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
+    for(std::list<std::string>::const_reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
         it++)
     {
       std::map<std::string,FunctionSet>::iterator ns_it = m_functions.find(*it);
@@ -525,6 +544,7 @@ void SteelInterpreter::declare(const std::string &name)
 #if USE_STEEL_MUTEX
   AutoLock mutex(m_symbol_mutex);
 #endif
+  assert(!m_symbols.empty());
     VariableFile &file = m_symbols.front();
 
     VariableFile::iterator it = file.find(name);
@@ -565,6 +585,7 @@ void SteelInterpreter::declare_array(const std::string &array_name, int size)
 #if USE_STEEL_MUTEX
   AutoLock mutex(m_symbol_mutex);
 #endif
+  assert(!m_symbols.empty());
     VariableFile &file = m_symbols.front();
 
     VariableFile::iterator it = file.find(array_name);
@@ -667,14 +688,18 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &name)
 
 void SteelInterpreter::pushScope()
 {
+#if USE_STEEL_MUTEX
   AutoLock mutex(m_scope_mutex);
+#endif
   m_symbols.push_front ( VariableFile() );
-
 }
 
 void SteelInterpreter::popScope()
 {
+  assert(!m_symbols.empty());
+#if USE_STEEL_MUTEX
   AutoLock mutex(m_scope_mutex);
+#endif
   m_symbols.pop_front();
 }
 
