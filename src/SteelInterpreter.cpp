@@ -12,6 +12,10 @@
 #include <string>
 #include <cstdlib>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #pragma warning(disable: 4355)
 
 namespace Steel { 
@@ -168,7 +172,7 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
     }
     else
     {
-	std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
+		std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
     
         if(it != sset->second.end()){
 	    throw AlreadyDefined(name);
@@ -351,7 +355,7 @@ SteelType SteelInterpreter::call(const std::string &name, const SteelType::Conta
   AutoLock mutex(m_function_mutex);
 #endif
   shared_ptr<SteelFunctor> pFunctor = lookup_functor(name);
-  pFunctor->Call(this,pList);
+  return pFunctor->Call(this,pList);
 }
 
 shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name)
@@ -433,6 +437,7 @@ void SteelInterpreter::setReturn(const SteelType &var)
 #if USE_STEEL_MUTEX
   AutoLock mutex(m_stack_mutex);
 #endif
+  assert(!m_return_stack.empty());
     m_return_stack.pop_front();
     m_return_stack.push_front(var);
 }
@@ -596,7 +601,7 @@ void SteelInterpreter::declare_array(const std::string &array_name, int size)
     }
 
     SteelType var;
-    var.set ( SteelArray( std::max(size,0)  ) );
+    var.set ( SteelArray( max(size,0)  ) );
     
     file[array_name]  = var;
 }
@@ -713,14 +718,17 @@ void SteelInterpreter::registerBifs()
 {
 
     srand(time(0));
-    addFunction("require",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::require));
-    addFunction("print", new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::print));
-    addFunction("println",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::println));
-    addFunction("len",new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len));
-    addFunction("real",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real));
-    addFunction("integer",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer));
-    addFunction("boolean",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean));
-    addFunction("substr",new SteelFunctor3Arg<SteelInterpreter,const std::string&,int,int>(this,&SteelInterpreter::substr));
+    addFunction("require",shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
+		(this,&SteelInterpreter::require)));
+    addFunction("print", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
+		(this,&SteelInterpreter::print)));
+    addFunction("println",shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
+		(this,&SteelInterpreter::println)));
+    addFunction("len", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len)));
+    addFunction("real", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real)));
+    addFunction("integer", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer)));
+    addFunction("boolean", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean)));
+    addFunction("substr", shared_ptr<SteelFunctor>(new SteelFunctor3Arg<SteelInterpreter,const std::string&,int,int>(this,&SteelInterpreter::substr)));
     addFunction("strlen",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::strlen));
     addFunction("is_array",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_array));
     addFunction("is_handle",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_handle));
@@ -1259,8 +1267,10 @@ SteelType SteelInterpreter::close(SteelType::Handle file)
 }
 
 
-void SteelInterpreter::operator== ( const SteelInterpreter& other )
+SteelInterpreter& SteelInterpreter::operator= ( const SteelInterpreter& other )
 {
+	if(&other == this) return *this;
+
     m_symbols = other.m_symbols;
     m_namespace_scope = other.m_namespace_scope;
     m_functions = other.m_functions;
@@ -1269,7 +1279,7 @@ void SteelInterpreter::operator== ( const SteelInterpreter& other )
     /* Intentionally not copying return stack or context count
      * 
      */
-    
+    return *this;
 }
 
 

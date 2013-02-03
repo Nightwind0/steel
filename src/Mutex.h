@@ -19,6 +19,7 @@ namespace Steel  {
     bool unlock();
   private:
     bool m_enabled;
+	int m_lock_count;
 #ifdef WIN32
 	CRITICAL_SECTION critical_section;
 #else

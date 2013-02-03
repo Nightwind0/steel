@@ -1544,7 +1544,7 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
                              GetScript(),
                              "Array index out of bounds.");
     }
-
+	return SteelType();
 }
 
 ostream & AstArrayElement::print(std::ostream &out)

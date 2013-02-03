@@ -1,10 +1,10 @@
 #include "Mutex.h"
-#include <pthread.h>
 #include <iostream>
 #include <cassert>
 #include "SteelException.h"
 
 #ifndef WIN32
+#include <pthread.h>
 extern "C"
 {
 #if defined(__APPLE__) || defined (__FreeBSD__) || defined(__OpenBSD__)
@@ -13,11 +13,12 @@ extern "C"
 	int pthread_mutexattr_setkind_np(pthread_mutexattr_t *attr, int kind);
 #endif
 }
+#else
 #endif
 
 namespace Steel { 
 
-  Mutex::Mutex()
+	Mutex::Mutex():m_lock_count(0)
 #ifdef WIN32
   {
 	InitializeCriticalSection(&critical_section);
@@ -57,22 +58,27 @@ namespace Steel {
 
   bool Mutex::lock(){
     if(m_enabled){
+		++m_lock_count;
 #ifdef WIN32
 	EnterCriticalSection(&critical_section);
+	return true;
 #else
      return 0 == pthread_mutex_lock(&handle);
 #endif
     }
+	return true;
   }
 
   bool Mutex::unlock(){
-    if(m_enabled){
+    if(m_enabled && m_lock_count--){
 #ifdef WIN32
 	LeaveCriticalSection(&critical_section);
+	return true;
 #else
 	return 0 == pthread_mutex_unlock(&handle);
 #endif
     }
+	return true;
   }
 
 }
