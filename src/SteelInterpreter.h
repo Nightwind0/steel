@@ -21,6 +21,8 @@
 #define kszUnspecifiedNamespace "?"
 
 
+#define USE_DYNAMIC_MUTEXES 1
+
 namespace Steel { 
 
 // fwd
@@ -139,13 +141,21 @@ private:
     void pop_context();
     
     std::string name_array_ref(const std::string &array_name);
-#if  USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
+#if USE_DYNAMIC_MUTEXES
+    Mutex * m_symbol_mutex;
+    Mutex * m_function_mutex;
+    Mutex * m_scope_mutex;
+    Mutex * m_stack_mutex;
+    Mutex * m_import_mutex;
+#else 
     mutable Mutex m_symbol_mutex;
     mutable Mutex m_function_mutex;
     mutable Mutex m_scope_mutex;
     mutable Mutex m_stack_mutex;
     mutable Mutex m_import_mutex;
 #endif 
+#endif
     typedef std::map<std::string, SteelType> VariableFile;
     typedef std::map<std::string,shared_ptr<SteelFunctor> > FunctionSet;
     std::list<VariableFile> m_symbols;
@@ -153,12 +163,15 @@ private:
     void remove_user_functions();
     void clear_imports();
     void free_file_handles();
+    std::string get_namespace(const std::string& id);
+    std::string make_id(const std::string& ns, const std::string& name);
   
     SteelType * lookup_internal(const std::string &name);
   
     void registerBifs();
     std::list<std::string> m_namespace_scope;
-    std::map<std::string,FunctionSet> m_functions;
+    //std::map<std::string,FunctionSet> m_functions;
+    FunctionSet m_functions;
     std::set<std::string> m_requires;
 
     std::list<SteelType> m_return_stack;

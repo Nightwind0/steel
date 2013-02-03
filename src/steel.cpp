@@ -26,12 +26,13 @@ bool read_script(std::istream& stream,std::string& into)
                        (std::istreambuf_iterator<char>()    ) );
 }
 
-
-
 int main(int argc, char * argv[])
 {
     std::string script;
-    SteelInterpreter* interpreter = new SteelInterpreter();
+    SteelInterpreter* pInterpreter = new SteelInterpreter();
+    SteelInterpreter interpreter;
+
+    std::cout << "Muted size " << sizeof(Steel::Mutex) << std::endl;
 
     bool bPrint=false;
     bool bRun=true;
@@ -98,20 +99,20 @@ int main(int argc, char * argv[])
 
 #if USE_STEEL_MUTEX
     if(bEnableThreadSafety){
-      interpreter->enableThreadSafety();
+      interpreter.enableThreadSafety();
     }else{
-      interpreter->disableThreadSafety();
+      interpreter.disableThreadSafety();
     }
 #endif
 
 
     try{
-      AstScript * pScript = interpreter->prebuildAst(filename,script,bDebug,bScanDebug);
+      AstScript * pScript = interpreter.prebuildAst(filename,script,bDebug,bScanDebug);
         if(bPrint)
             pScript->print(std::cout);
 
         if(bRun)
-            interpreter->runAst(pScript);
+            interpreter.runAst(pScript);
     }
     catch(SteelException ex)
     {
@@ -121,7 +122,8 @@ int main(int argc, char * argv[])
         std::cerr << ex.getMessage() << std::endl;
     }
 
-    delete interpreter;
+    interpreter.popScope();
+
 }
 
 

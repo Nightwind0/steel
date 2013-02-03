@@ -8,6 +8,9 @@
 #include <pthread.h>
 #endif
 
+#define USE_MUTEXES 1
+
+
 namespace Steel  {
   class Mutex{
   public:
@@ -19,18 +22,20 @@ namespace Steel  {
     bool unlock();
   private:
     bool m_enabled;
-	int m_lock_count;
+    int m_lock_count;
 #ifdef WIN32
-	CRITICAL_SECTION critical_section;
+    CRITICAL_SECTION critical_section;
 #else
-	pthread_mutexattr_t attr;
-	pthread_mutex_t handle;
+    pthread_mutex_t m_handle;
 #endif
   };
 
   class AutoLock { 
   public:
   AutoLock(Mutex &mutex):m_mutex(mutex){
+      m_success = m_mutex.lock();
+    }
+  AutoLock(Mutex* pMutex):m_mutex(*pMutex){
       m_success = m_mutex.lock();
     }
     ~AutoLock(){

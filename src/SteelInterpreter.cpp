@@ -18,6 +18,10 @@
 
 #pragma warning(disable: 4355)
 
+#if !defined(max)
+#define max std::max
+#endif
+
 namespace Steel { 
 
   //const std::string SteelInterpreter::kszGlobalNamespace = "_global";
@@ -116,9 +120,18 @@ ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle 
 
 SteelInterpreter::SteelInterpreter()
 :
-  m_nContextCount(0),m_file_provider(NULL)
+  m_nContextCount(0),m_file_provider(NULL),m_function_mutex(NULL),m_symbol_mutex(NULL),
+  m_stack_mutex(NULL),m_scope_mutex(NULL),m_import_mutex(NULL)
 {
-	m_file_provider = &m_default_file_provider;
+#if USE_DYNAMIC_MUTEXES
+  m_function_mutex = new Mutex();
+  m_symbol_mutex = new Mutex();
+  m_stack_mutex = new Mutex();
+  m_scope_mutex = new Mutex();
+  m_import_mutex = new Mutex();
+#endif
+
+    m_file_provider = &m_default_file_provider;
     pushScope();
     registerBifs();
     srand(time(0));
@@ -158,44 +171,33 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
 				   shared_ptr<SteelFunctor> pFunc)
 {
-#if USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
   //_function_mutex.lock();
 #endif
-    pFunc->setIdentifier(name); // TODO: Include namespace?
-    std::map<std::string,FunctionSet>::iterator sset = m_functions.find ( ns );
-    if(sset == m_functions.end())
+  std::string id = make_id(ns,name);
+    pFunc->setIdentifier(id); 
+    FunctionSet::iterator func = m_functions.find ( id );
+    if(func == m_functions.end())
     {
-      FunctionSet set;
-      set[name] = pFunc;
-      m_functions.insert( std::pair<std::string,FunctionSet>(ns,set) );
+      m_functions.insert( std::pair<std::string,shared_ptr<SteelFunctor> >(id,pFunc) );
     }
     else
     {
-		std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
-    
-        if(it != sset->second.end()){
-	    throw AlreadyDefined(name);
-        }
-	// TODO: Use the it I just found... 
-        sset->second[name] = pFunc;
+      throw AlreadyDefined(id);
     }
 }
 
 shared_ptr<SteelFunctor> SteelInterpreter::removeFunction(const std::string &name, const std::string &ns)
 {
-#if USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
-    std::map<std::string,FunctionSet>::iterator set = m_functions.find ( ns );
-    if(set != m_functions.end()){
-      std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = set->second.find ( name );
-
-      set->second.erase(it);
-
-      if(set->second.empty()) m_functions.erase(set);
-
-      return it->second;
+  std::string id = make_id(ns,name);
+    FunctionSet::iterator func = m_functions.find ( id );
+    if(func != m_functions.end()){
+      m_functions.erase(func);
+      return func->second;
     }else{
       assert(0);
       return shared_ptr<SteelFunctor>();
@@ -204,19 +206,35 @@ shared_ptr<SteelFunctor> SteelInterpreter::removeFunction(const std::string &nam
 
 #if USE_STEEL_MUTEX
 void SteelInterpreter::disableThreadSafety(){
+#if USE_DYNAMIC_MUTEXES
+    m_symbol_mutex->disable();
+    m_function_mutex->disable();
+    m_scope_mutex->disable();
+    m_stack_mutex->disable();
+    m_import_mutex->disable();
+#else
     m_symbol_mutex.disable();
     m_function_mutex.disable();
     m_scope_mutex.disable();
     m_stack_mutex.disable();
     m_import_mutex.disable();
+#endif
 }
 
 void SteelInterpreter::enableThreadSafety(){
+#if USE_DYNAMIC_MUTEXES
+    m_symbol_mutex->enable();
+    m_function_mutex->enable();
+    m_scope_mutex->enable();
+    m_stack_mutex->enable();
+    m_import_mutex->enable();
+#else
     m_symbol_mutex.enable();
     m_function_mutex.enable();
     m_scope_mutex.enable();
     m_stack_mutex.enable();
     m_import_mutex.enable();
+#endif
 }
 
 #endif
@@ -351,7 +369,7 @@ void SteelInterpreter::import(const std::string &ns)
 
 SteelType SteelInterpreter::call(const std::string &name, const SteelType::Container &pList)
 {
-#if USE_STEEL_MUTEX
+#if 1 ||  USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
   shared_ptr<SteelFunctor> pFunctor = lookup_functor(name);
@@ -360,26 +378,20 @@ SteelType SteelInterpreter::call(const std::string &name, const SteelType::Conta
 
 shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name)
 {
-#if USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
     for(std::list<std::string>::const_reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
         it++)
     {
-      std::map<std::string,FunctionSet>::iterator ns_it = m_functions.find(*it);
+      std::string id = make_id(*it,name);
+      FunctionSet::iterator ns_it = m_functions.find(id);
       if(ns_it != m_functions.end()){
-        FunctionSet &set = ns_it->second;
+	shared_ptr<SteelFunctor> pFunctor = ns_it->second;
+        assert ( pFunctor != NULL );
 
-        std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
-
-        if( iter != set.end() )
-        {
-            shared_ptr<SteelFunctor> pFunctor = iter->second;
-            assert ( pFunctor != NULL );
-
-            return pFunctor;
-        }
-      }
+        return pFunctor;
+      }      
     }
 
     throw UnknownIdentifier(name);
@@ -389,7 +401,7 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
 
 SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const SteelType::Container &pList)
 {
-#if USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
   shared_ptr<SteelFunctor> pFunctor = lookup_functor(name,ns);
@@ -398,7 +410,7 @@ SteelType SteelInterpreter::call(const std::string &name, const std::string &ns,
 
 shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name, const std::string &ns)
 {
-#if USE_STEEL_MUTEX
+#if 1 ||  USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
     static std::string unspecifiedNS(kszUnspecifiedNamespace);
@@ -408,28 +420,20 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
     {
         return lookup_functor(name);
     }
+    std::string id = make_id(ns,name);
 
-    std::map<std::string,FunctionSet>::iterator setiter = m_functions.find(ns);
+    FunctionSet::iterator iter = m_functions.find( id );
 
-    if(setiter == m_functions.end())
-    {
-        throw UnknownIdentifier(ns + "::" + name);
-    }
-
-    FunctionSet &set = setiter->second;
-
-    std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
-
-    if( iter != set.end() )
+    if( iter != m_functions.end() )
     {
         shared_ptr<SteelFunctor> pFunctor = iter->second;
         assert ( pFunctor != NULL );
 
         return pFunctor;
     }
-    throw UnknownIdentifier(ns + "::" + name);
+    throw UnknownIdentifier(id);
 
-    return shared_ptr<SteelFunctor>((SteelFunctor*)NULL);
+    return shared_ptr<SteelFunctor>();
 }
 
 void SteelInterpreter::setReturn(const SteelType &var)
@@ -453,15 +457,25 @@ SteelType SteelInterpreter::getReturn() const
 
 void SteelInterpreter::removeFunctions(const std::string &ns)
 {
-#if USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
-  std::map<std::string,FunctionSet>::iterator it = m_functions.find(ns);
-  if(it != m_functions.end()){
-    FunctionSet &set = it->second;
-
-    m_functions.erase(ns);
+  for(FunctionSet::iterator it = m_functions.begin(); it != m_functions.end();/**/){
+    std::string thens = get_namespace(it->first);
+    if(ns == thens){
+      m_functions.erase(it++);
+    }else{
+      ++it;
+    }
   }
+}
+std::string SteelInterpreter::get_namespace(const std::string& id){
+  int scope = id.find("::");
+  assert(scope != std::string::npos);
+  return id.substr(0,scope);
+}
+std::string SteelInterpreter::make_id(const std::string& ns, const std::string& name){
+  return ns + "::" + name;
 }
 
 void SteelInterpreter::push_context()
@@ -522,24 +536,20 @@ void SteelInterpreter::free_file_handles()
 
 void SteelInterpreter::remove_user_functions()
 {
-#if USE_STEEL_MUTEX
+#if 1 || USE_STEEL_MUTEX
   AutoLock mutex(m_function_mutex);
 #endif
-      for(std::map<std::string,FunctionSet>::iterator iter = m_functions.begin();
-        iter != m_functions.end(); iter++)
-        {
-            FunctionSet& sset = iter->second;
-            for(FunctionSet::iterator fiter = sset.begin(); fiter != sset.end(); )
+            for(FunctionSet::iterator fiter = m_functions.begin(); fiter != m_functions.end(); )
             {
                 shared_ptr<SteelFunctor> functor = fiter->second;
-                if(functor->isUserFunction()){
+                if(functor && functor->isUserFunction()){
                     // No need to delete the functor itself, right?                                                                                                     
-                    sset.erase(fiter++);
+                    m_functions.erase(fiter++);
 				}else{
 					++fiter;
 				}
             }
-        }
+        
 }
 
 
@@ -701,10 +711,10 @@ void SteelInterpreter::pushScope()
 
 void SteelInterpreter::popScope()
 {
-  assert(!m_symbols.empty());
 #if USE_STEEL_MUTEX
   AutoLock mutex(m_scope_mutex);
 #endif
+  assert(!m_symbols.empty());
   m_symbols.pop_front();
 }
 
