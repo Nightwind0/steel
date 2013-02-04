@@ -21,7 +21,7 @@
 #define kszUnspecifiedNamespace "?"
 
 
-#define USE_DYNAMIC_MUTEXES 1
+#define USE_DYNAMIC_MUTEXES 0
 
 namespace Steel { 
 
@@ -84,12 +84,10 @@ public:
 
     // Call with a funciton in a specific namespace
     SteelType call(const std::string &name, const std::string &ns, const SteelType::Container &pList);
-#if USE_STEEL_MUTEX
     // Turn off thread safety. This MUST be done when only a single thread is accessing the interpeter
     void disableThreadSafety();
     // Turn on thread safety. Warning: It is not safe to call this while multiple threads are accessing the interpreter
     void enableThreadSafety();
-#endif
     // This allows you to pre-parse a script and keep a pointer to it
     // around, which can be run over and over, and the deletion of it is
     // up to the user of SteelInterpreter
@@ -141,7 +139,6 @@ private:
     void pop_context();
     
     std::string name_array_ref(const std::string &array_name);
-#if 1 || USE_STEEL_MUTEX
 #if USE_DYNAMIC_MUTEXES
     Mutex * m_symbol_mutex;
     Mutex * m_function_mutex;
@@ -155,7 +152,6 @@ private:
     mutable Mutex m_stack_mutex;
     mutable Mutex m_import_mutex;
 #endif 
-#endif
     typedef std::map<std::string, SteelType> VariableFile;
     typedef std::map<std::string,shared_ptr<SteelFunctor> > FunctionSet;
     std::list<VariableFile> m_symbols;
