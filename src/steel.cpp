@@ -29,10 +29,8 @@ bool read_script(std::istream& stream,std::string& into)
 int main(int argc, char * argv[])
 {
     std::string script;
-    SteelInterpreter* pInterpreter = new SteelInterpreter();
     SteelInterpreter interpreter;
 
-    std::cout << "Muted size " << sizeof(Steel::Mutex) << std::endl;
 
     bool bPrint=false;
     bool bRun=true;
@@ -97,13 +95,13 @@ int main(int argc, char * argv[])
       }
     }
 
-#if USE_STEEL_MUTEX
+
     if(bEnableThreadSafety){
       interpreter.enableThreadSafety();
     }else{
       interpreter.disableThreadSafety();
     }
-#endif
+
 
 
     try{
@@ -121,8 +119,6 @@ int main(int argc, char * argv[])
         
         std::cerr << ex.getMessage() << std::endl;
     }
-
-    interpreter.popScope();
 
 }
 

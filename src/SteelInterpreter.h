@@ -17,8 +17,7 @@
 #include "File.h"
 
 
-#define kszGlobalNamespace "_global"
-#define kszUnspecifiedNamespace "?"
+
 
 
 #define USE_DYNAMIC_MUTEXES 0
@@ -125,8 +124,9 @@ public:
                           const std::string &ns,
                           shared_ptr<AstParamDefinitionList> pParams, 
                           shared_ptr<AstStatementList> pStatements);
-    void setReturn(const SteelType &var);
-    SteelType getReturn() const;
+    void pushReturn(const SteelType &var);
+    SteelType popReturn();
+	SteelType getReturn() const;
 
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
@@ -166,8 +166,8 @@ private:
   
     void registerBifs();
     std::list<std::string> m_namespace_scope;
-    //std::map<std::string,FunctionSet> m_functions;
-    FunctionSet m_functions;
+    std::map<std::string,FunctionSet> m_functions;
+    //FunctionSet m_functions;
     std::set<std::string> m_requires;
 
     std::list<SteelType> m_return_stack;
@@ -176,7 +176,9 @@ private:
 	FileProvider m_default_file_provider;
 	IFileProvider * m_file_provider;
     int m_nContextCount;
-
+public:
+    static const std::string kszGlobalNamespace;
+    static const std::string kszUnspecifiedNamespace;
 private:
     // Bifs
     SteelType require (const std::string &filename);

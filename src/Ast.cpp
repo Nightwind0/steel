@@ -574,8 +574,8 @@ AstReturnStatement::~AstReturnStatement()
 AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpreter)
 {
     if( m_pExpression )
-        pInterpreter->setReturn( m_pExpression->evaluate(pInterpreter) );
-    else pInterpreter->setReturn ( SteelType() );
+        pInterpreter->pushReturn( m_pExpression->evaluate(pInterpreter) );
+    else pInterpreter->pushReturn ( SteelType() );
     return RETURN;
 }
 
@@ -2177,6 +2177,7 @@ ostream & AstParamDefinitionList::print (std::ostream &out)
 SteelType AstFuncIdentifier::evaluate(SteelInterpreter *pInterpreter)
 {
     shared_ptr<SteelFunctor> pFunctor = pInterpreter->lookup_functor(getValue(),GetNamespace());
+	assert(pFunctor);
     SteelType functor;
     functor.set(pFunctor);
     return functor;
@@ -2190,7 +2191,7 @@ std::string AstFuncIdentifier::GetNamespace(void) const
     }
     else
     {
-        return kszUnspecifiedNamespace;
+      return SteelInterpreter::kszUnspecifiedNamespace;
     }
 }
 
@@ -2223,8 +2224,8 @@ AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterp
 {
     try{
 	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
-	if(m_pId->GetNamespace() == kszUnspecifiedNamespace){
-	    pInterpreter->registerFunction( m_pId->getValue(), kszGlobalNamespace, m_pParams, m_pStatements);
+      if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
+	pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements);
 	}else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements);
     }
     catch(AlreadyDefined)
