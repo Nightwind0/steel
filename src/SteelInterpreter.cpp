@@ -292,9 +292,11 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
     AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
     assert ( NULL != pScript );
     pushScope();
-    pScript->execute(this);
+	AstStatement::eStopType stopType =  pScript->execute(this);
     popScope();
-    SteelType returnval = getReturn();
+    SteelType returnval;
+	if(stopType == AstStatement::RETURN)
+		returnval = getReturn();
     return returnval;
 }
 
@@ -314,9 +316,11 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
         assign(pVar,it->getValue());
     }
 
-    pScript->execute(this);
+    AstStatement::eStopType stopType = pScript->execute(this);
     popScope();
-    SteelType returnval = getReturn();
+    SteelType returnval;
+	if(stopType == AstStatement::RETURN)
+		returnval = getReturn();
     return returnval;
 }
 
@@ -347,11 +351,13 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
 
     AstScript *pScript = static_cast<AstScript*>( pBase );
 
-    pScript->execute(this);
+    AstStatement::eStopType stop = pScript->execute(this);
     
     delete pScript;
 
-    SteelType returnval = getReturn();
+    SteelType returnval;
+	if(stop == AstStatement::RETURN)
+		returnval = getReturn();
     return returnval;
 }
 
@@ -447,12 +453,11 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
   return shared_ptr<SteelFunctor>();
 }
 
-void SteelInterpreter::pushReturn(const SteelType &var)
+void SteelInterpreter::setReturn(const SteelType &var)
 {
   AutoLock mutex(m_stack_mutex);
-  assert(!m_return_stack.empty());
    // m_return_stack.pop_front();
-    m_return_stack.push_front(var);
+  m_return_stack.front() = var;
 }
 
 SteelType SteelInterpreter::getReturn() const {
@@ -461,14 +466,6 @@ SteelType SteelInterpreter::getReturn() const {
 }
 
 
-SteelType SteelInterpreter::popReturn()
-{
-  AutoLock mutex(m_stack_mutex);
-    assert(!m_return_stack.empty());
-	SteelType front = m_return_stack.front();
-	m_return_stack.pop_front();
-    return front;
-}
 
 void SteelInterpreter::removeFunctions(const std::string &ns)
 {
@@ -504,10 +501,10 @@ void SteelInterpreter::pop_context()
   AutoLock mutex(m_stack_mutex);
     if(--m_nContextCount == 0)
     {
-	remove_user_functions();
-	clear_imports();
-	free_file_handles();
-	m_requires.clear();
+		remove_user_functions();
+		clear_imports();
+		free_file_handles();
+		m_requires.clear();
     }
     m_return_stack.pop_front();
 }

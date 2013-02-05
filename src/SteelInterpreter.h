@@ -124,8 +124,7 @@ public:
                           const std::string &ns,
                           shared_ptr<AstParamDefinitionList> pParams, 
                           shared_ptr<AstStatementList> pStatements);
-    void pushReturn(const SteelType &var);
-    SteelType popReturn();
+    void setReturn(const SteelType &var);
 	SteelType getReturn() const;
 
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);

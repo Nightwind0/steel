@@ -232,7 +232,8 @@ template <class T>
 T GrabHandle(SteelType::Handle handle)
 {
     T t = dynamic_cast<T>(handle);
-    if(t == NULL) throw TypeMismatch();
+    if(t == NULL) 
+		throw TypeMismatch();
     return t;
 }
 /*

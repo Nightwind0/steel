@@ -574,8 +574,8 @@ AstReturnStatement::~AstReturnStatement()
 AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpreter)
 {
     if( m_pExpression )
-        pInterpreter->pushReturn( m_pExpression->evaluate(pInterpreter) );
-    else pInterpreter->pushReturn ( SteelType() );
+        pInterpreter->setReturn( m_pExpression->evaluate(pInterpreter) );
+    else pInterpreter->setReturn ( SteelType() );
     return RETURN;
 }
 

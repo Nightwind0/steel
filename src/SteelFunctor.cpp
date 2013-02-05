@@ -53,6 +53,8 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
        
         if(m_pList->execute(pInterpreter) == AstStatement::RETURN)
             ret = pInterpreter->getReturn();
+		else
+			pInterpreter->setReturn(SteelType()); // If they didn't return anything, we return a blank one for them
     }
 
     pInterpreter->popScope();
