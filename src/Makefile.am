@@ -10,6 +10,7 @@ libsteel_la_SOURCES = SteelParser.cpp \
 			SteelType.cpp \
 			File.cpp \
 			Mutex.cpp \
+			AuxVariables.cpp \
 			steel.trison \
 			steel.reflex
 

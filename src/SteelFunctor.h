@@ -6,6 +6,7 @@
 #include <deque>
 #include "SteelType.h"
 #include "SteelException.h"
+#include "AuxVariables.h"
 
 namespace Steel { 
 
@@ -34,11 +35,11 @@ public:
     virtual ~SteelUserFunction();
     virtual bool isUserFunction() const { return true; }
     virtual SteelType Call(SteelInterpreter * pInterpreter,const SteelType::Container &params);
-    
- 
+    void bindNonLocals(SteelInterpreter*); 
 private:
     shared_ptr<AstParamDefinitionList> m_pParams;
     shared_ptr<AstStatementList> m_pList;
+	AuxVariables m_nonlocals;
 };
 
 template<class ObjType>

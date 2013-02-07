@@ -683,6 +683,16 @@ void SteelInterpreter::registerFunction(const std::string &name,
     addFunction(name,ns,functor);
 }
 
+void SteelInterpreter::registerAuxVariables( AuxVariables* pVariables ) {
+	m_aux_variables.insert(pVariables);
+}
+
+
+void SteelInterpreter::removeAuxVariables( AuxVariables* pVariables ) {
+	m_aux_variables.erase(pVariables);
+}
+
+
 SteelType * SteelInterpreter::lookup_internal(const std::string &name)
 {
   AutoLock mutex(m_symbol_mutex);
@@ -696,6 +706,14 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &name)
             return &(it->second);
         }
     }
+    
+    // Still not found. Try the aux variables
+    for(std::set<AuxVariables*>::iterator it = m_aux_variables.begin();
+		it != m_aux_variables.end(); it++){
+		SteelType* pVar = (*it)->lookupLValue(name);
+		if(pVar != NULL) 
+			return pVar;
+	}
 
     return NULL;
 }

@@ -1,0 +1,19 @@
+
+function foo(){
+	 declare $sam = 8;
+	 return function(declare $a){ return $sam += $a; };
+}
+
+function bar(){
+	 declare @oats = [4,5,9];
+	 return function(declare $index){ return @oats[$index]; };
+}
+
+declare $foo = foo();
+
+println($foo(5));
+println($foo(10));
+
+$foo = bar();
+println($foo(1));
+println($foo(0));

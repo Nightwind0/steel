@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
+#include <memory>
 
 namespace Steel { 
 
@@ -18,6 +19,10 @@ AstBase::AstBase(unsigned int line, const std::string &script)
 
 AstBase::~AstBase()
 {
+}
+
+
+void AstBase::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 }
 
 
@@ -234,6 +239,7 @@ ostream & AstStatement::print(std::ostream &out)
 }
 
 
+
 AstExpressionStatement::AstExpressionStatement(unsigned int line, const std::string &script, AstExpression *pExp)
     :AstStatement(line,script),m_pExp(pExp)
 {
@@ -260,6 +266,11 @@ AstStatement::eStopType AstExpressionStatement::execute(SteelInterpreter *pInter
     return AstStatement::COMPLETED;
 }
 
+void AstExpressionStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pExp->FindIdentifiers(o_ids);
+}
+
+
 AstScript::AstScript(unsigned int line, const std::string &script)
     :AstStatement(line,script),m_pList(NULL)
 {
@@ -275,6 +286,10 @@ ostream & AstScript::print(std::ostream &out)
 
     return out;
 }
+void AstScript::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pList->FindIdentifiers(o_ids);
+}
+
 
 AstStatement::eStopType AstScript::execute(SteelInterpreter *pInterpreter)
 {
@@ -306,6 +321,14 @@ void AstStatementList::setTopLevel()
 {
     m_bTopLevel = true;
 }
+
+void AstStatementList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+    for(std::list<AstStatement*>::iterator i = m_list.begin();
+        i != m_list.end(); i++) 
+		(*i)->FindIdentifiers(o_ids);
+	
+}
+
 
 AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter)
 {
@@ -381,6 +404,12 @@ ostream & AstWhileStatement::print(std::ostream &out)
     return out;
 }
 
+void AstWhileStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pCondition->FindIdentifiers(o_ids);
+	m_pStatement->FindIdentifiers(o_ids);
+}
+
+
 
 AstDoStatement::AstDoStatement(unsigned int line, const std::string &script, AstExpression *pExp, AstStatement *pStmt)
     :AstStatement(line,script),m_pCondition(pExp),m_pStatement(pStmt)
@@ -414,6 +443,12 @@ ostream & AstDoStatement::print(std::ostream &out)
     return out;
 }
 
+void AstDoStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pCondition->FindIdentifiers(o_ids);
+	m_pStatement->FindIdentifiers(o_ids);
+}
+
+
 
 AstIfStatement::AstIfStatement(unsigned int line, const std::string &script,
                                AstExpression *pExp, AstStatement *pStmt,
@@ -436,6 +471,13 @@ AstStatement::eStopType AstIfStatement::execute(SteelInterpreter *pInterpreter)
     else return COMPLETED;
 
 }
+
+void AstIfStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pCondition->FindIdentifiers(o_ids);
+	m_pElse->FindIdentifiers(o_ids);
+	m_pStatement->FindIdentifiers(o_ids);
+}
+
 
 ostream & AstIfStatement::print(std::ostream &out)
 {
@@ -471,6 +513,11 @@ AstStatement::eStopType AstCaseStatement::execute(SteelInterpreter* pInterpreter
 {
     return m_pStatement->execute(pInterpreter);
 }
+
+void AstCaseStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pStatement->FindIdentifiers(o_ids);
+}
+
 
 AstCaseStatementList::AstCaseStatementList(unsigned int line, const std::string& script)
     :AstBase(line,script),m_pDefault(NULL)
@@ -531,6 +578,15 @@ AstStatement::eStopType AstCaseStatementList::executeCaseMatching(AstExpression*
     return AstStatement::COMPLETED;
 }
 
+void AstCaseStatementList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+  for(std::list<Case>::iterator iter = m_cases.begin();
+	iter != m_cases.end(); iter++){
+	  (*iter).statement->FindIdentifiers(o_ids);
+  }	
+  m_pDefault->FindIdentifiers(o_ids);
+}
+
+
 AstSwitchStatement::AstSwitchStatement(unsigned int line, const std::string& script,
 				       AstExpression* value, AstCaseStatementList* cases)
     :AstStatement(line,script),m_pValue(value),m_pCases(cases)
@@ -560,6 +616,12 @@ AstStatement::eStopType AstSwitchStatement::execute(SteelInterpreter* pInterpret
     return stopType;
 }
 
+void AstSwitchStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pCases->FindIdentifiers(o_ids);
+	m_pValue->FindIdentifiers(o_ids);
+}
+
+
 
 AstReturnStatement::AstReturnStatement(unsigned int line, const std::string &script, AstExpression *pExp)
     :AstStatement(line,script),m_pExpression(pExp)
@@ -578,6 +640,11 @@ AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpret
     else pInterpreter->setReturn ( SteelType() );
     return RETURN;
 }
+
+void AstReturnStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pExpression->FindIdentifiers(o_ids);
+}
+
 
 AstImport::AstImport(unsigned int line, 
                      const std::string &script,
@@ -659,6 +726,14 @@ AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter
     return COMPLETED;
 }
 
+void AstLoopStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pStart->FindIdentifiers(o_ids);
+	m_pCondition->FindIdentifiers(o_ids);
+	m_pIteration->FindIdentifiers(o_ids);
+	m_pStatement->FindIdentifiers(o_ids);
+}
+
+
 ostream & AstLoopStatement::print(std::ostream &out)
 {
     out << "for (" << *m_pStart << ';' << *m_pCondition << ';' << *m_pIteration << ')' << *m_pStatement;
@@ -687,6 +762,14 @@ AstForEachStatement::~AstForEachStatement()
     if(m_pStatement) delete m_pStatement;
 }
 
+void AstForEachStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+  //if(m_pDeclaration) m_pDeclaration->FindIdentifiers(o_ids);
+	if(m_pArrayExpression) m_pArrayExpression->FindIdentifiers(o_ids);
+	if(m_pLValue) m_pLValue->FindIdentifiers(o_ids);
+	if(m_pStatement) m_pStatement->FindIdentifiers(o_ids);
+}
+
+
 
 ostream& AstForEachStatement::print(std::ostream &out)
 {
@@ -709,7 +792,7 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
 	      throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid iterator on foreach. Must be scalar.");
 	  }
 	  vardecl->execute(pInterpreter);
-	  AstVarIdentifier *pId = vardecl->getIdentifier();
+	  AstVarIdentifier *pId = dynamic_cast<AstVarIdentifier*>(vardecl->getIdentifier());
 
 	  val = pId->lvalue(pInterpreter);
 
@@ -772,6 +855,11 @@ AstIncDec::~AstIncDec()
 {
     delete m_pLValue;
 }
+
+void AstIncDec::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	return m_pLValue->FindIdentifiers(o_ids);
+}
+
 
 
 AstIncrement::AstIncrement(unsigned int line,
@@ -1080,6 +1168,12 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
     return SteelType();
 }
 
+void AstBinOp::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_left->FindIdentifiers(o_ids);
+	m_right->FindIdentifiers(o_ids);
+}
+
+
 ostream & AstBinOp::print(std::ostream &out)
 {
     out << *m_left <<  ToString(m_op) << *m_right;
@@ -1173,6 +1267,11 @@ ostream & AstUnaryOp::print(std::ostream &out)
     return out;
 }
 
+void AstUnaryOp::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_operand->FindIdentifiers(o_ids);
+}
+
+
 
 AstPop::AstPop(unsigned int line,
                const std::string &script,
@@ -1206,6 +1305,11 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
         return pL->pop();
     
 }
+
+void AstPop::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pLValue->FindIdentifiers(o_ids);
+}
+
 
 
 AstPush::AstPush(unsigned int line,
@@ -1245,6 +1349,11 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
     return *pL;
 }
 
+void AstPush::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pLValue->FindIdentifiers(o_ids);
+}
+
+
 AstRemove::AstRemove(unsigned int line,
                const std::string &script,
                  AstExpression *pLValue,
@@ -1273,6 +1382,10 @@ SteelType AstRemove::evaluate(SteelInterpreter *pInterpreter)
     }
     
     return pL->removeElement(m_pExp->evaluate(pInterpreter));
+}
+
+void AstRemove::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pLValue->FindIdentifiers(o_ids);
 }
 
 
@@ -1346,6 +1459,12 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
     return ret;
 }
 
+void AstCallExpression::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	if(m_pParams) m_pParams->FindIdentifiers(o_ids);
+	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
+}
+
+
 ostream & AstCallExpression::print(std::ostream &out)
 {
     if(m_pParams)
@@ -1387,6 +1506,12 @@ SteelType AstArrayLiteral::evaluate(SteelInterpreter* pInterpreter)
   }
 
   return array;  
+}
+
+void AstArrayLiteral::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+ for(std::list<AstExpression*>::iterator it = m_list.begin(); it!= m_list.end(); it++){
+	 (*it)->FindIdentifiers(o_ids);
+  }	
 }
 
 
@@ -1547,6 +1672,12 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
 	return SteelType();
 }
 
+
+void AstArrayElement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pExp->FindIdentifiers(o_ids);
+	m_pLValue->FindIdentifiers(o_ids);
+}
+
 ostream & AstArrayElement::print(std::ostream &out)
 {
     out << *m_pLValue << '[' << *m_pExp << ']' ;
@@ -1631,6 +1762,11 @@ SteelType AstHashMapIdentifier::evaluate(SteelInterpreter *pInterpreter)
     return var;
 }
 
+void AstIdentifier::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	o_ids.push_back(this);
+}
+
+
 AstPair::AstPair(unsigned int line, const std::string& script, AstExpression* pKey, AstExpression* pValue)
   :AstBase(line,script),m_key(pKey),m_value(pValue){
 }
@@ -1645,6 +1781,12 @@ std::string AstPair::GetKey(SteelInterpreter* pInterpreter){
 SteelType AstPair::GetValue(SteelInterpreter* pInterpreter){
   return m_value->evaluate(pInterpreter);
 }
+
+void AstPair::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_key->FindIdentifiers(o_ids);
+	m_value->FindIdentifiers(o_ids);
+}
+
 
 AstPairList::AstPairList(unsigned int line, const std::string& script):AstExpression(line,script)
 {
@@ -1673,6 +1815,13 @@ SteelType* AstPairList::lvalue(SteelInterpreter *pInterpreter)
 {
   return NULL;
 }
+
+void AstPairList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+ for(std::list<AstPair*>::iterator it = m_list.begin(); it != m_list.end(); it++){
+    (*it)->FindIdentifiers(o_ids);
+  }	
+}
+
 
 AstVarAssignmentExpression::AstVarAssignmentExpression(unsigned int line,
                                                        const std::string &script,
@@ -1727,6 +1876,12 @@ SteelType AstVarAssignmentExpression::evaluate(SteelInterpreter *pInterpreter)
     return exp;
 }
 
+void AstVarAssignmentExpression::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	m_pLValue->FindIdentifiers(o_ids);
+	m_pExpression->FindIdentifiers(o_ids);
+}
+
+
 ostream & AstVarAssignmentExpression::print(std::ostream &out)
 {
     out << *m_pLValue << '=' << *m_pExpression;
@@ -1761,6 +1916,15 @@ SteelType::Container AstParamList::getParamList(SteelInterpreter *pInterpreter) 
 
     return params;
 }
+
+void AstParamList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+ for(std::list<AstExpression*>::const_iterator i = m_params.begin();
+        i != m_params.end(); i++)
+    {
+		(*i)->FindIdentifiers(o_ids);
+	}
+}
+
 
 void AstParamList::add(AstExpression *pExp)
 {
@@ -1908,6 +2072,12 @@ AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterprete
     return COMPLETED;
 }
 
+void AstVarDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	//m_pId->FindIdentifiers(o_ids); // wait... no, this is local and we want nonlocal
+	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
+}
+
+
 ostream & AstVarDeclaration::print(std::ostream &out)
 {
     if(m_bConst)
@@ -1940,6 +2110,13 @@ void AstArrayDeclaration::assign(AstExpression *pExp)
     // Todo: Actually evaluate this here and toss it
     m_pExp = pExp;
 }
+
+void AstArrayDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	// Don't include THIS identifier because we want non-locals only
+	if(m_pExp)
+		m_pExp->FindIdentifiers(o_ids);
+}
+
 
 
 AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpreter)
@@ -2060,6 +2237,11 @@ AstStatement::eStopType AstHashMapDeclaration::execute(SteelInterpreter *pInterp
     return COMPLETED;
 }
 
+void AstHashMapDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
+}
+
+
 ostream & AstHashMapDeclaration::print(std::ostream &out)
 {
     out << "var " << *m_pId ;
@@ -2082,6 +2264,10 @@ AstAnonymousFunctionDefinition::~AstAnonymousFunctionDefinition()
 SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterpreter)
 {
     shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
+	
+    shared_ptr<SteelUserFunction> userFunc = std::tr1::dynamic_pointer_cast<SteelUserFunction>(pFunctor);
+    if(userFunc) // should be!
+	userFunc->bindNonLocals(pInterpreter);
     pFunctor->setIdentifier("Anonymous");
     SteelType functor;
     functor.set(pFunctor);
@@ -2157,6 +2343,19 @@ void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter,
 }
 
 
+bool AstParamDefinitionList::containsName( const std::string& id ) const {
+	for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
+		i != m_params.end(); i++){
+		AstIdentifier * ident = (*i)->getIdentifier();
+		if(ident->getValue() == id)
+			return true;
+	}
+	
+	return false;
+}
+
+
+
 ostream & AstParamDefinitionList::print (std::ostream &out)
 {
     for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
@@ -2225,8 +2424,9 @@ AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterp
     try{
 	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
       if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
-	pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements);
-	}else   pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements);
+		pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements);
+	}else   
+		pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements);
     }
     catch(AlreadyDefined)
     {
@@ -2238,6 +2438,11 @@ AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterp
 
     return COMPLETED;
 }
+
+void AstFunctionDefinition::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+	// Um... we don't look here, do we?
+}
+
 
 ostream & AstFunctionDefinition::print (std::ostream &out)
 {

@@ -15,7 +15,7 @@
 #include "SteelFunctor.h"
 #include "Mutex.h"
 #include "File.h"
-
+#include "AuxVariables.h"
 
 
 
@@ -131,7 +131,9 @@ public:
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
 	
     void setFileProvider(IFileProvider* provider);
-
+	
+	void registerAuxVariables(AuxVariables* pVariables);
+	void removeAuxVariables(AuxVariables* pVariables);
 private:
 
     void push_context();
@@ -172,6 +174,7 @@ private:
     std::list<SteelType> m_return_stack;
     
     std::set<FileHandle*> m_file_handles;
+	std::set<AuxVariables*> m_aux_variables;
 	FileProvider m_default_file_provider;
 	IFileProvider * m_file_provider;
     int m_nContextCount;
