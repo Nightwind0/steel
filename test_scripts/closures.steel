@@ -9,6 +9,15 @@ function bar(){
 	 return function(declare $index){ return @oats[$index]; };
 }
 
+function baz(){
+
+	 declare $smurf = 5.8;
+	 return function(declare $s){
+	 	declare $hoo = 4; 
+	 	return $smurf + $hoo + $s; 
+	 };
+}
+
 declare $foo = foo();
 
 println($foo(5));
@@ -17,3 +26,5 @@ println($foo(10));
 $foo = bar();
 println($foo(1));
 println($foo(0));
+
+println(baz()(2));
