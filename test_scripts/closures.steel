@@ -18,13 +18,46 @@ function baz(){
 	 };
 }
 
+function hoodle(){
+	declare $nerf = 10;
+	declare $hee = function(){ $nerf++; };
+	$hee();
+	$hee();
+	println($nerf);
+	return $hee;
+}
+
 declare $foo = foo();
 
 println($foo(5));
 println($foo(10));
-
+println($foo(0));
 $foo = bar();
 println($foo(1));
 println($foo(0));
 
 println(baz()(2));
+
+declare $hee = hoodle();
+$hee();
+hoodle(); // notice this doesn't print 13.
+
+// Trying to duplicate the wikipedia entry on closures
+function counter(){
+	 declare $x;
+	 declare $increment = function(declare $y){ 
+	 	 $x += $y; 
+		 println($x);
+		 }; 
+	return $increment;
+}
+
+
+println("Starting wiki thing");
+declare $counter_inc1 = counter();
+declare $counter_inc2 = counter();
+
+$counter_inc1(1);   
+$counter_inc1(7);
+$counter_inc2(1);
+$counter_inc1(1);

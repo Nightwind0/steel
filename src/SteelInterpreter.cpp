@@ -11,7 +11,7 @@
 #include <cstring>
 #include <string>
 #include <cstdlib>
-
+#include <algorithm>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -684,13 +684,27 @@ void SteelInterpreter::registerFunction(const std::string &name,
 }
 
 void SteelInterpreter::registerAuxVariables( AuxVariables* pVariables ) {
-	m_aux_variables.insert(pVariables);
+	m_aux_variables.push_front(pVariables);
 }
 
 
 void SteelInterpreter::removeAuxVariables( AuxVariables* pVariables ) {
-	m_aux_variables.erase(pVariables);
+  std::list<AuxVariables*>::iterator it = std::find(m_aux_variables.begin(),m_aux_variables.end(),pVariables);
+	if(it != m_aux_variables.end())
+		m_aux_variables.erase(it);
 }
+
+void SteelInterpreter::linkAuxVariables( AuxVariables* pVariables ) {
+	m_linked_aux_variables.push_front(pVariables);
+}
+
+
+void SteelInterpreter::unlinkAuxVariables( AuxVariables* pVariables ) {
+  std::list<AuxVariables*>::iterator it = std::find(m_linked_aux_variables.begin(),m_linked_aux_variables.end(),pVariables);
+	if(it != m_linked_aux_variables.end())
+		m_linked_aux_variables.erase(it);
+}
+
 
 
 SteelType * SteelInterpreter::lookup_internal(const std::string &name)
@@ -708,7 +722,7 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &name)
     }
     
     // Still not found. Try the aux variables
-    for(std::set<AuxVariables*>::iterator it = m_aux_variables.begin();
+    for(std::list<AuxVariables*>::iterator it = m_aux_variables.begin();
 		it != m_aux_variables.end(); it++){
 		SteelType* pVar = (*it)->lookupLValue(name);
 		if(pVar != NULL) 
@@ -729,6 +743,10 @@ void SteelInterpreter::popScope()
 {
   AutoLock mutex(m_scope_mutex);
   assert(!m_symbols.empty());
+  for(std::list<AuxVariables*>::iterator aux_it = m_linked_aux_variables.begin();
+	  aux_it != m_linked_aux_variables.end(); aux_it++){
+    (*aux_it)->transferOwnership(m_symbols.front());
+  }
   m_symbols.pop_front();
 }
 

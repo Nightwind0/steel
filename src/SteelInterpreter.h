@@ -132,8 +132,17 @@ public:
 	
     void setFileProvider(IFileProvider* provider);
 	
+	
+	// Registered aux variable files will be queried by the interpreter when 
+	// an identifier is not found in the interpreter's own variable files
+	// they are queried in order of last inserted first
 	void registerAuxVariables(AuxVariables* pVariables);
 	void removeAuxVariables(AuxVariables* pVariables);
+	
+	// Linked aux variable files will get ownership of any variables they contain
+	// when the interpreter relinquishes ownership
+	void linkAuxVariables(AuxVariables* pVariables);
+	void unlinkAuxVariables(AuxVariables* pVariables);
 private:
 
     void push_context();
@@ -174,7 +183,8 @@ private:
     std::list<SteelType> m_return_stack;
     
     std::set<FileHandle*> m_file_handles;
-	std::set<AuxVariables*> m_aux_variables;
+	std::list<AuxVariables*> m_aux_variables;
+	std::list<AuxVariables*> m_linked_aux_variables;
 	FileProvider m_default_file_provider;
 	IFileProvider * m_file_provider;
     int m_nContextCount;

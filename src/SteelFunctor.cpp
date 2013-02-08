@@ -38,9 +38,11 @@ SteelUserFunction::SteelUserFunction(shared_ptr<AstParamDefinitionList> pParams,
 
 SteelUserFunction::~SteelUserFunction()
 {
+	// we don't delete these because the statements this function is made up of already deletes them
 /*  delete m_pParams;
   delete m_pList;
   */
+	m_bound_interpreter->unlinkAuxVariables(&m_nonlocals);
 }
 
 SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelType::Container &supplied_params)
@@ -89,12 +91,14 @@ void SteelUserFunction::bindNonLocals(SteelInterpreter* pInterpreter) {
 		if(m_pParams->containsName(name))
 			continue; 
 		try{
-		  SteelType val = pInterpreter->lookup(name);
+		  SteelType *val = pInterpreter->lookup_lvalue(name);
 		  m_nonlocals.add(name,val);
 		}catch(UnknownIdentifier e){
 		}
 	}
 	
+	pInterpreter->linkAuxVariables(&m_nonlocals);
+	m_bound_interpreter = pInterpreter;
 	//TODO:  by the way, don't forget to set them const if they were declared const
 }
 

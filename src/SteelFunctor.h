@@ -40,6 +40,7 @@ private:
     shared_ptr<AstParamDefinitionList> m_pParams;
     shared_ptr<AstStatementList> m_pList;
 	AuxVariables m_nonlocals;
+	SteelInterpreter * m_bound_interpreter;
 };
 
 template<class ObjType>
