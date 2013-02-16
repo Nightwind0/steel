@@ -42,7 +42,8 @@ SteelUserFunction::~SteelUserFunction()
 /*  delete m_pParams;
   delete m_pList;
   */
-	m_bound_interpreter->unlinkAuxVariables(&m_nonlocals);
+	if(m_bound_interpreter)
+		m_bound_interpreter->unlinkAuxVariables(&m_nonlocals);
 }
 
 SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelType::Container &supplied_params)

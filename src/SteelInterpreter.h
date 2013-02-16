@@ -132,15 +132,18 @@ public:
 	
     void setFileProvider(IFileProvider* provider);
 	
-	
 	// Registered aux variable files will be queried by the interpreter when 
 	// an identifier is not found in the interpreter's own variable files
-	// they are queried in order of last inserted first
+	// they are queried in order of last inserted first.
+	// The idea is that closures register their non-local bindings before the function call
+	// and then remove them after.
 	void registerAuxVariables(AuxVariables* pVariables);
 	void removeAuxVariables(AuxVariables* pVariables);
 	
 	// Linked aux variable files will get ownership of any variables they contain
 	// when the interpreter relinquishes ownership
+	// call this from a function that is a closure when it's non-locals are bound
+	// and  unlink when the closure is destroyed.
 	void linkAuxVariables(AuxVariables* pVariables);
 	void unlinkAuxVariables(AuxVariables* pVariables);
 private:

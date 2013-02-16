@@ -23,6 +23,7 @@ libsteel_la_HEADERS =   Ast.h \
 						SteelScanner.h \
 						SteelInterpreter.h \
 						Mutex.h \
+						AuxVariables.h \
 						File.h
 
 SteelParser.h : SteelParser.cpp 
