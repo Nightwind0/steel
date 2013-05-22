@@ -32,7 +32,7 @@ SteelFunctor::~SteelFunctor()
 
 
 SteelUserFunction::SteelUserFunction(shared_ptr<AstParamDefinitionList> pParams, shared_ptr<AstStatementList> pList)
-    :m_pParams(pParams),m_pList(pList)
+    :m_pParams(pParams),m_pList(pList),m_bound_interpreter(NULL)
 {
 }
 
