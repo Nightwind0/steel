@@ -39,5 +39,5 @@ func_test : SteelFunctor.h func_test.cpp SteelFunctor.cpp
 
 steel_SOURCES = steel.cpp
 steel_LDADD = libsteel.la 
-steel_LDFLAGS = -lpthread
+steel_LDFLAGS = -lpthread -pthread
 

@@ -791,13 +791,11 @@ SteelParser::Token SteelParser::Scan ()
 	BIN_NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(),exp->GetScript(),AstUnaryOp::BIN_NOT,exp); }
 |
 	exp:a GTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }
-/*
 |
 	'(' %error ')' %target.cpp {
 	    addError(GET_LINE(),"expectex expression between '(' and ')'");
 	    return new AstExpression(GET_LINE(),GET_SCRIPT());
 	    }
-*/
 
 |
 	'(' exp:exp ')' %prec PAREN %target.cpp { return exp; }
@@ -877,11 +875,12 @@ SteelParser::Token SteelParser::Scan ()
 	       	   		%target.cpp {
 					    return new AstAnonymousFunctionDefinition (GET_LINE(),GET_SCRIPT(), params,stmts);
 				}
-|
+/*|
 	'(' %error  %target.cpp {
 		addError(GET_LINE(),"unmatched ')'");
 		return new AstExpression(GET_LINE(),GET_SCRIPT());
 	}
+*/
 |
 	'[' array_literal:array ']' %target.cpp {
 	    return array;
@@ -935,23 +934,16 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal call %type.cpp "AstCallExpression*"
 :
-
-	exp:exp '(' ')' %prec CALL
-		        %target.cpp {
-			        return new AstCallExpression(exp->GetLine(),exp->GetScript(),exp);
-			}
-|
 	exp:exp '(' param_list:params ')' %prec CALL
 		        %target.cpp {
 				return new AstCallExpression(exp->GetLine(),exp->GetScript(),exp,params);
 			}
-/*|
-	 %error '('
+|
+	 exp '(' %error
 		    	%target.cpp {
 				    addError(GET_LINE(),"Invalid call. Unmatched '('?");
 				    return new AstExpression(GET_LINE(),GET_SCRIPT());
 			}
-*/
 ;
 
 %nonterminal vardecl %type.cpp "AstDeclaration*"
@@ -985,6 +977,8 @@ SteelParser::Token SteelParser::Scan ()
 		}
 |
 	param_list:list ',' exp:exp %target.cpp{ list->add(exp); return list;}
+|
+	%target.cpp { return new AstParamList(GET_LINE(), GET_SCRIPT()); }
 |
 	%error 
 	       %target.cpp {
