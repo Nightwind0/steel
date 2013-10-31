@@ -154,13 +154,11 @@ SteelParser::Token SteelParser::Scan ()
 %terminal WITHIN
 %terminal INCLUDE
 %terminal VAR
-%terminal INT %type.cpp "AstInteger*"
-%terminal FLOAT %type.cpp "AstFloat*"
 %terminal STRING %type.cpp "AstString*"
 %terminal BINOP_MULT_DIV_MOD %type.cpp "AstBinOp*"
 %terminal BINOP_ADD_SUB %type.cpp "AstBinOp*"
 %terminal BINOP_ASSIGNMENT %type.cpp "AstBinOp*"
-%terminal BOOLEAN
+%terminal LITERAL %type.cpp "AstExpression*"
 %terminal INCREMENT
 %terminal DECREMENT
 %terminal POP
@@ -675,13 +673,13 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal case_list %type.cpp "AstCaseStatementList*"
 :
-	case_list:list CASE INT:i CASE_DELIM statement_list:stmt %target.cpp { list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	case_list:list CASE LITERAL:l CASE_DELIM statement_list:stmt %target.cpp { list->add(l,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
 	case_list:list CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
 |
 	case_list:list CASE VAR_IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
 |
-	CASE INT:i CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(i,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	CASE LITERAL:l CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(l,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
 	CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
@@ -705,13 +703,9 @@ SteelParser::Token SteelParser::Scan ()
 :
 	call:call %target.cpp{ return call; }
 |
-	INT:i %target.cpp{ return i;}
-|
-	FLOAT:f %target.cpp{ return f; }
-|
 	STRING:s %target.cpp{ return s; }
 |
-	BOOLEAN:b %target.cpp{ return b; }
+	LITERAL:l %target.cpp { return l; }
 |
 	var_identifier:id %target.cpp{ return id; }
 |
@@ -866,11 +860,6 @@ SteelParser::Token SteelParser::Scan ()
 	       }
 ;
 
-
-%nonterminal int_literal %type.cpp "AstInteger*"
-:
-	INT:i %target.cpp { return i; }
-;
 
 %nonterminal var_identifier %type.cpp "AstVarIdentifier *"
 :
