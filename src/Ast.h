@@ -606,7 +606,8 @@ namespace Steel {
 				 const std::string &script,
 		   Op op, AstExpression *right, AstExpression *left);
 		virtual ~AstBinOp();
-		
+		void setLeft(AstExpression* left) { m_left = left; }
+		void setRight(AstExpression* right) { m_right = right; }
 		virtual ostream & print(std::ostream &out);
 		virtual SteelType evaluate(SteelInterpreter *pInterpreter);
 		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);

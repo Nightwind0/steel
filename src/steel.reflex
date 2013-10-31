@@ -313,12 +313,27 @@ int SteelScanner::ToIntFromHex(const std::string &text)
 		return SteelParser::Token(SteelParser::Terminal::HASHMAP_IDENTIFIER, new AstHashMapIdentifier(m_line,m_script_name,accepted_string));
 	}
 |
+	(\*)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::BINOP_MULT_DIV_MOD, new AstBinOp(m_line,m_script_name,AstBinOp::MULT,NULL,NULL));
+	}
+|
+	(/)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::BINOP_MULT_DIV_MOD, new AstBinOp(m_line,m_script_name,AstBinOp::DIV,NULL,NULL));
+	}
+|
+	(\%)
+	%target.cpp {
+		return SteelParser::Token(SteelParser::Terminal::BINOP_MULT_DIV_MOD, new AstBinOp(m_line,m_script_name,AstBinOp::MOD,NULL,NULL));
+	}
+|
 	(;|\{|\})
 	%target.cpp {
 		return SteelParser::Token((SteelParser::Terminal::Name)accepted_string[0],NULL);
 	}
 |
-	(@|\$|\(|\)|,|%|\+|\-|\^|\*|\=|\[|\]|/|#)
+	(@|\$|\(|\)|,|\+|\-|\^|\=|\[|\]|#)
 	%target.cpp{
 		return SteelParser::Token((SteelParser::Terminal::Name)accepted_string[0],NULL);
 	}

@@ -134,7 +134,7 @@ SteelParser::Token SteelParser::Scan ()
 
 %terminal ':'
 %terminal ';' '(' ')' '=' '{' '}' '[' ']' ','
-%terminal '-' '+' '*' '/' '^' '%'
+%terminal '-' '+' '^'
 %terminal PLUS_EQUALS
 %terminal MINUS_EQUALS
 %terminal TIMES_EQUALS
@@ -162,6 +162,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal INT %type.cpp "AstInteger*"
 %terminal FLOAT %type.cpp "AstFloat*"
 %terminal STRING %type.cpp "AstString*"
+%terminal BINOP_MULT_DIV_MOD %type.cpp "AstBinOp*"
 %terminal BOOLEAN
 %terminal INCREMENT
 %terminal DECREMENT
@@ -748,11 +749,11 @@ SteelParser::Token SteelParser::Scan ()
 |*/
 	exp:a '-' exp:b %prec ADD_SUB %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); }
 |
-	exp:a '*' exp:b %prec MULT_DIV_MOD %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,b); }
-|
-	exp:a '/' exp:b %prec MULT_DIV_MOD %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::DIV,a,b); }
-|
-	exp:a '%' exp:b %prec MULT_DIV_MOD %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MOD,a,b); }
+	exp:a BINOP_MULT_DIV_MOD:op exp:b %prec MULT_DIV_MOD %target.cpp { 
+	      op->setLeft(a); 
+	      op->setRight(b);
+	      return op;
+	}
 |
 	exp:a D exp:b %prec POW %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); }
 |
@@ -889,11 +890,12 @@ SteelParser::Token SteelParser::Scan ()
 	'[' pair_list:list ']' %target.cpp {
 		       return list; 
 	}
-|
+/*|
 	%error %target.cpp {
 	       addError(GET_LINE(),"bad expression");
 	       return new AstExpression(GET_LINE(),GET_SCRIPT());
 	       }
+*/
 ;
 
 
