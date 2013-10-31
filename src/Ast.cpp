@@ -1058,6 +1058,13 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
         case MOD:
             return m_left->evaluate(pInterpreter)
                 % m_right->evaluate(pInterpreter);
+	case ASSIGN:{
+	  SteelType *lv = m_left->lvalue(pInterpreter);
+	  if(!lv)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),GetScript(), "Invalid lvalue in assignment.");
+	  return *lv = m_right->evaluate(pInterpreter);
+	}
 	case ADD_ASSIGN:{
 	  SteelType *lv =  m_left->lvalue(pInterpreter);
 	  if(!lv)

@@ -133,15 +133,10 @@ SteelParser::Token SteelParser::Scan ()
 
 
 %terminal ':'
-%terminal ';' '(' ')' '=' '{' '}' '[' ']' ','
-%terminal '-' '+' '^'
-%terminal PLUS_EQUALS
-%terminal MINUS_EQUALS
-%terminal TIMES_EQUALS
-%terminal DIVIDE_EQUALS
-%terminal MODULO_EQUALS
+%terminal ';' '(' ')' '{' '}' '[' ']' ','
+%terminal '-' '+' '^' '='
 %terminal D
-%terminal GT LT EQ NE GTE LTE
+%terminal BINOP_COMPARE %type.cpp "AstBinOp*"
 %terminal AND OR NOT
 %terminal WHILE
 %terminal BREAK
@@ -163,6 +158,8 @@ SteelParser::Token SteelParser::Scan ()
 %terminal FLOAT %type.cpp "AstFloat*"
 %terminal STRING %type.cpp "AstString*"
 %terminal BINOP_MULT_DIV_MOD %type.cpp "AstBinOp*"
+%terminal BINOP_ADD_SUB %type.cpp "AstBinOp*"
+%terminal BINOP_ASSIGNMENT %type.cpp "AstBinOp*"
 %terminal BOOLEAN
 %terminal INCREMENT
 %terminal DECREMENT
@@ -434,7 +431,7 @@ SteelParser::Token SteelParser::Scan ()
 	}
 |
 	exp:exp ';'  %target.cpp { return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); }
-	/*
+	
 |
 	'('  %error ')' %target.cpp {
 	    addError(GET_LINE(),"expected expression between '(' and ')'");
@@ -446,7 +443,7 @@ SteelParser::Token SteelParser::Scan ()
 	    addError(GET_LINE(),"unmatched ')'");
 	    return new AstStatement(GET_LINE(),GET_SCRIPT());
 	    }
-*/
+
 |
 	func_definition:func %target.cpp { return func; }
 	/*
@@ -724,30 +721,17 @@ SteelParser::Token SteelParser::Scan ()
 |
 	func_identifier:id %target.cpp { return id; }
 |
-	exp:a '+' exp:b %prec ADD_SUB %target.cpp{ return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b); }
-|/*
-	exp:a '+'  %prec ADD_SUB %target.cpp{
-				addError(a->GetLine(),"expected expression before '+'.");
-				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
-			  }
+	exp:a BINOP_ADD_SUB:op exp:b %prec ADD_SUB %target.cpp{ 
+	      op->setLeft(a); 
+	      op->setRight(b);
+	      return op;
+}
 |
-	exp:a '-' %prec ADD_SUB %target.cpp{
-				addError(a->GetLine(),"expected expression before '-'.");
-				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
-			  }
-|
-	exp:a '*'  %prec MULT_DIV_MOD %target.cpp{
-				addError(a->GetLine(),"expected expression after '*'.");
-				return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::MULT,a,new AstExpression(GET_LINE(),GET_SCRIPT()));
-			  }
-|
-	'*' exp:b  %prec MULT_DIV_MOD %target.cpp{
-				addError(b->GetLine(),"expected expression before '*'.");
-				return new AstBinOp(b->GetLine(),b->GetScript(),AstBinOp::MULT,new AstExpression(GET_LINE(),GET_SCRIPT()),b);
-			  }
-
-|*/
-	exp:a '-' exp:b %prec ADD_SUB %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b); }
+	exp:a BINOP_ADD_SUB:op exp:b %prec ADD_SUB %target.cpp { 
+	op->setLeft(a);
+	op->setRight(b);
+	return op;
+	 }
 |
 	exp:a BINOP_MULT_DIV_MOD:op exp:b %prec MULT_DIV_MOD %target.cpp { 
 	      op->setLeft(a); 
@@ -757,17 +741,15 @@ SteelParser::Token SteelParser::Scan ()
 |
 	exp:a D exp:b %prec POW %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); }
 |
-	exp:lvalue '=' exp:exp   %prec ASSIGNMENT %target.cpp { return new AstVarAssignmentExpression(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); }
+	exp:a '=' exp:b %prec ASSIGNMENT %target.cpp {
+	      return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ASSIGN,a,b);
+	}
 |
-	exp:lvalue PLUS_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::ADD_ASSIGN,lvalue,exp);}
-|
-	exp:lvalue MINUS_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::SUB_ASSIGN,lvalue,exp);}
-|
-	exp:lvalue TIMES_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::MULT_ASSIGN,lvalue,exp);}
-|
-	exp:lvalue DIVIDE_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::DIV_ASSIGN,lvalue,exp);}
-|
-	exp:lvalue MODULO_EQUALS exp:exp %prec ASSIGNMENT %target.cpp { return new AstBinOp(lvalue->GetLine(),lvalue->GetScript(), AstBinOp::MOD_ASSIGN,lvalue,exp);}
+	exp:a BINOP_ASSIGNMENT:op exp:b   %prec ASSIGNMENT %target.cpp { 
+		   op->setLeft(a);
+		   op->setRight(b);
+		   return op;
+	}
 |
 	exp:a '^' exp:b  %prec POW %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); }
 |
@@ -775,15 +757,11 @@ SteelParser::Token SteelParser::Scan ()
 |
 	exp:a AND exp:b %prec AND %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); }
 |
-	exp:a EQ exp:b %prec EQ_NE %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::EQ,a,b); }
-|
-	exp:a NE exp:b %prec EQ_NE %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::NE,a,b); }
-|
-	exp:a LT exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LT,a,b); }
-|
-	exp:a GT exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GT,a,b); }
-|
-	exp:a LTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::LTE,a,b); }
+	exp:a BINOP_COMPARE:op exp:b %prec EQ_NE %target.cpp {
+	op->setLeft(a);
+	op->setRight(b);
+	return op; 
+	 }
 |
 	exp:a BIN_OR exp:b %prec BIN_OR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::BIN_OR,a,b); }
 |
@@ -791,16 +769,13 @@ SteelParser::Token SteelParser::Scan ()
 |
 	BIN_NOT exp:exp %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(),exp->GetScript(),AstUnaryOp::BIN_NOT,exp); }
 |
-	exp:a GTE exp:b %prec COMPARATOR %target.cpp { return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::GTE,a,b); }
-|
 	'(' %error ')' %target.cpp {
-	    addError(GET_LINE(),"expectex expression between '(' and ')'");
+	    addError(GET_LINE(),"expected expression between '(' and ')'");
 	    return new AstExpression(GET_LINE(),GET_SCRIPT());
 	    }
 
 |
 	'(' exp:exp ')' %prec PAREN %target.cpp { return exp; }
-
 |
 	'-' exp:exp  %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); }
 |
@@ -876,12 +851,6 @@ SteelParser::Token SteelParser::Scan ()
 	       	   		%target.cpp {
 					    return new AstAnonymousFunctionDefinition (GET_LINE(),GET_SCRIPT(), params,stmts);
 				}
-/*|
-	'(' %error  %target.cpp {
-		addError(GET_LINE(),"unmatched ')'");
-		return new AstExpression(GET_LINE(),GET_SCRIPT());
-	}
-*/
 |
 	'[' array_literal:array ']' %target.cpp {
 	    return array;
@@ -890,12 +859,11 @@ SteelParser::Token SteelParser::Scan ()
 	'[' pair_list:list ']' %target.cpp {
 		       return list; 
 	}
-/*|
+|
 	%error %target.cpp {
 	       addError(GET_LINE(),"bad expression");
 	       return new AstExpression(GET_LINE(),GET_SCRIPT());
 	       }
-*/
 ;
 
 

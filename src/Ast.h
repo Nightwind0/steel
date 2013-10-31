@@ -596,6 +596,7 @@ namespace Steel {
 			MULT_ASSIGN,
 			DIV_ASSIGN,
 			MOD_ASSIGN,
+			ASSIGN,
 			BIN_AND,
 			BIN_OR
 		};
@@ -604,7 +605,7 @@ namespace Steel {
 		
 		AstBinOp(unsigned int line,
 				 const std::string &script,
-		   Op op, AstExpression *right, AstExpression *left);
+		   Op op, AstExpression *right=NULL, AstExpression *left=NULL);
 		virtual ~AstBinOp();
 		void setLeft(AstExpression* left) { m_left = left; }
 		void setRight(AstExpression* right) { m_right = right; }
