@@ -194,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\AuxVariables.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\File.cpp"
 				>
 			</File>

@@ -56,6 +56,7 @@ bool AuxVariables::transferOwnership( const std::map< std::string, SteelType >& 
 		  }
 		}
 	}
+	return true;
 }
 
 
