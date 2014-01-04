@@ -1,3 +1,4 @@
+AM_CPPFLAGS = -std=c++0x
 lib_LTLIBRARIES = libsteel.la
 bin_PROGRAMS = steel
 
@@ -40,4 +41,4 @@ func_test : SteelFunctor.h func_test.cpp SteelFunctor.cpp
 steel_SOURCES = steel.cpp
 steel_LDADD = libsteel.la 
 steel_LDFLAGS = -lpthread -pthread
-
+steel_CPPFLAGS = -std=c++0x

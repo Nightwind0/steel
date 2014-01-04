@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <iostream>
 
-namespace Steel { 
+using namespace Steel;
 
 SteelType::SteelType()
 {
@@ -28,6 +28,13 @@ SteelType::SteelType(const SteelType &rhs)
     *this = rhs;
     m_bConst = false;
 }
+
+SteelType::SteelType(SteelType&& rhs):m_functor(std::move(rhs.m_functor)),m_value(rhs.m_value),m_storage(rhs.m_storage),m_bConst(rhs.m_bConst)
+{
+  rhs.m_value.i = 0;
+  rhs.m_storage = SteelType::INT;
+}
+
 
 SteelType::~SteelType()
 {
@@ -220,6 +227,16 @@ void SteelType::set(const Map &ref)
 {
 	m_value.m = new SteelType::Map(ref);
 	m_storage = SteelType::HASHMAP;
+}
+
+SteelType & SteelType::operator=(SteelType&& rhs){
+  m_functor = std::move(rhs.m_functor);
+  m_value = rhs.m_value;
+  m_storage = rhs.m_storage;
+ //m_bConst = rhs.m_bConst;
+  rhs.m_value.i = 0;
+  rhs.m_storage = SteelType::INT;
+  return *this;
 }
 
 SteelType & SteelType::operator=(const SteelType &rhs)
@@ -704,7 +721,7 @@ SteelType  SteelType::operator%(const SteelType &rhs)
     return val;
 }
 
-bool  operator==(const SteelType &lhs, const SteelType &rhs)
+bool  Steel::operator==(const SteelType &lhs, const SteelType &rhs)
 {
     bool val = false;
     SteelType::storage s = std::max(lhs.m_storage,rhs.m_storage);
@@ -755,7 +772,7 @@ bool  operator==(const SteelType &lhs, const SteelType &rhs)
     return val;
 }
 
-bool  operator!=(const SteelType &lhs, const SteelType &rhs)
+bool  Steel::operator!=(const SteelType &lhs, const SteelType &rhs)
 {
     return ! (lhs == rhs );
 }
@@ -1155,4 +1172,4 @@ void SteelType::debugPrint()
 }
 #endif
 
-}
+
