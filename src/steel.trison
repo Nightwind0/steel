@@ -145,10 +145,7 @@ SteelParser::Token SteelParser::Scan ()
 %terminal IF
 %terminal ELSE
 %terminal FUNCTION
-%terminal BAREWORD %type.cpp "AstBareword*"
-%terminal VAR_IDENTIFIER %type.cpp "AstVarIdentifier*"
-%terminal ARRAY_IDENTIFIER
-%terminal HASHMAP_IDENTIFIER
+%terminal IDENTIFIER %type.cpp "AstIdentifier*"
 %terminal FOR
 %terminal FOREACH
 %terminal WITHIN
@@ -221,22 +218,32 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal func_definition %type.cpp "AstFunctionDefinition*"
 :
-	FUNCTION func_identifier:id '(' param_definition:params ')' '{' statement_list:stmts '}'
+	FUNCTION IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
 				%target.cpp{
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
-									static_cast<AstFuncIdentifier*>(id),
+									id,
 									params,
 									stmts);
 				}
 |
-	FUNCTION func_identifier:id '(' %error ')' '{' statement_list:stmts '}'
+        FUNCTION IDENTIFIER:ns SCOPE IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts '}'
+                 %target.cpp {
+                                  AstFuncIdentifier * func_id =  new AstFuncIdentifier(ns->GetLine(),ns->GetScript(),ns->getValue(),id->getValue());   
+					return new AstFunctionDefinition(ns->GetLine(),
+									ns->GetScript(),
+									func_id,
+									params,
+									stmts);
+                 }
+|
+	FUNCTION IDENTIFIER:id '(' %error ')' '{' statement_list:stmts '}'
 				%target.cpp{
-					AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
-					addError(id->GetLine(),"parser error in parameter list for function '" + pId->getValue() + '\'');
+					//AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
+					addError(id->GetLine(),"parser error in parameter list for function '" + id->getValue() + '\'');
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
-									pId,
+									id,
 									NULL,
 									stmts);
 				}
@@ -246,21 +253,17 @@ SteelParser::Token SteelParser::Scan ()
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
 									GET_SCRIPT(),
-									new AstFuncIdentifier(GET_LINE(),
-										GET_SCRIPT(),
-										"__%%error%%__"),
+                                                                        new AstIdentifier(GET_LINE(),GET_SCRIPT(), ""),
 									params,
 									new AstStatementList(GET_LINE(),GET_SCRIPT()));
 				}
 |
-	FUNCTION func_identifier:id '(' param_definition:params ')' '{' statement_list:stmts %error
+	FUNCTION IDENTIFIER:id '(' param_definition:params ')' '{' statement_list:stmts %error
 		 		    %target.cpp {
 				    	addError(GET_LINE(),"parse error in function definition. expected '}'");
 					return new AstFunctionDefinition(GET_LINE(),
 									GET_SCRIPT(),
-									new AstFuncIdentifier(GET_LINE(),
-										GET_SCRIPT(),
-										"__%%error%%__"),
+                                                                        id,
 									params,
 									stmts);
 				    }
@@ -269,14 +272,6 @@ SteelParser::Token SteelParser::Scan ()
 
 
 
-%nonterminal param_id %type.cpp "AstIdentifier*"
-:
-	VAR_IDENTIFIER:id %target.cpp{ return id; }
-|
-	ARRAY_IDENTIFIER:id %target.cpp{ return id; }
-|
-	HASHMAP_IDENTIFIER:id %target.cpp { return id; }
-;
 
 %nonterminal param_definition %type.cpp "AstParamDefinitionList*"
 :
@@ -323,6 +318,11 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal array_literal %type.cpp "AstArrayLiteral*"
 :
+        %target.cpp {
+                    AstArrayLiteral * array = new AstArrayLiteral(GET_LINE(),GET_SCRIPT());
+                    return array;
+                    }
+|
 	exp:exp
 		%target.cpp {
 			    AstArrayLiteral * array = new AstArrayLiteral(exp->GetLine(),exp->GetScript());
@@ -608,7 +608,7 @@ SteelParser::Token SteelParser::Scan ()
 				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), decl, exp, stmt);
 			     }
 |
-	FOREACH var_identifier:id WITHIN exp:exp statement:stmt
+	FOREACH IDENTIFIER:id WITHIN exp:exp statement:stmt
 			    %target.cpp{
 				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), id, exp, stmt);
 			    }
@@ -676,13 +676,13 @@ SteelParser::Token SteelParser::Scan ()
 |
 	case_list:list CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
 |
-	case_list:list CASE VAR_IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
+	case_list:list CASE IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
 |
 	CASE LITERAL:l CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(l,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
 	CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	CASE VAR_IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	CASE IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
 	DEFAULT CASE_DELIM statement_list:stmt %target.cpp {AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->setDefault(new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
@@ -706,13 +706,9 @@ SteelParser::Token SteelParser::Scan ()
 |
 	LITERAL:l %target.cpp { return l; }
 |
-	var_identifier:id %target.cpp{ return id; }
+	IDENTIFIER:id %target.cpp{ return id; }
 |
-	array_identifier:id %target.cpp{ return id; }
-|
-	hashmap_identifier:id %target.cpp { return id; }
-|
-	func_identifier:id %target.cpp { return id; }
+        IDENTIFIER:ns SCOPE IDENTIFIER:func %target.cpp { return new AstFuncIdentifier(ns->GetLine(),ns->GetScript(),ns->getValue(),func->getValue()); }
 |
 	exp:a '+' exp:b %prec ADD_SUB %target.cpp{ 
 	      AstBinOp* op = new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b);
@@ -858,35 +854,6 @@ SteelParser::Token SteelParser::Scan ()
 ;
 
 
-%nonterminal var_identifier %type.cpp "AstVarIdentifier *"
-:
-	VAR_IDENTIFIER:id %target.cpp { return id; }
-;
-
-%nonterminal func_identifier %type.cpp "AstFuncIdentifier*"
-:
-	BAREWORD:id %target.cpp{
-				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),id->GetWord());
-				return pId;
-				}
-|
-	BAREWORD:ns SCOPE BAREWORD:func %prec UNARY
-				%target.cpp{
-				AstFuncIdentifier * pId = new AstFuncIdentifier(GET_LINE(),GET_SCRIPT(),func->GetWord(),ns->GetWord());
-				return pId;
-				}
-;
-
-%nonterminal array_identifier %type.cpp "AstArrayIdentifier*"
-:
-	ARRAY_IDENTIFIER:id %target.cpp { return id; }
-;
-
-%nonterminal hashmap_identifier %type.cpp "AstHashMapIdentifier*"
-:
-	HASHMAP_IDENTIFIER:id %target.cpp { return id; }
-;
-
 
 %nonterminal call %type.cpp "AstCallExpression*"
 :
@@ -904,25 +871,13 @@ SteelParser::Token SteelParser::Scan ()
 
 %nonterminal vardecl %type.cpp "AstDeclaration*"
 :
-	VAR var_identifier:id %target.cpp { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id);}
+	VAR IDENTIFIER:id %target.cpp { return new AstDeclaration(id->GetLine(),id->GetScript(),id);}
 |
-	VAR var_identifier:id '=' exp:exp %target.cpp { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,exp); }
+	VAR IDENTIFIER:id '=' exp:exp %target.cpp { return new AstDeclaration(id->GetLine(),id->GetScript(),id,exp); }
 |
-	CONSTANT var_identifier:id '=' exp:exp %target.cpp { return new AstVarDeclaration(id->GetLine(),id->GetScript(),id,true,exp); }
+	CONSTANT IDENTIFIER:id '=' exp:exp %target.cpp { return new AstDeclaration(id->GetLine(),id->GetScript(),id,true,exp); }
 |
-	VAR array_identifier:id '[' exp:i ']' %target.cpp { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); }
-|
-	VAR array_identifier:id %target.cpp { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id); }
-|
-	VAR hashmap_identifier:id %target.cpp { return new AstHashMapDeclaration(id->GetLine(),id->GetScript(),id); }
-|
-	VAR hashmap_identifier:id '=' exp:exp %target.cpp { return new AstHashMapDeclaration(id->GetLine(),id->GetScript(),id,exp); }
-|
-	VAR array_identifier:id '=' exp:exp      %target.cpp {
-							AstArrayDeclaration *pDecl =  new AstArrayDeclaration(id->GetLine(),id->GetScript(),id);
-							pDecl->assign(exp);
-							return pDecl;
-						 }
+	VAR IDENTIFIER:id '[' exp:i ']' %target.cpp { return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); }
 ;
 
 %nonterminal param_list %type.cpp "AstParamList*"

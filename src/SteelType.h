@@ -10,7 +10,7 @@
 
 namespace Steel { 
 class SteelFunctor;
-using std::tr1::shared_ptr;
+
 
 class SteelType
 {
@@ -28,7 +28,7 @@ public:
     };
 
     typedef IHandle * Handle;
-    typedef shared_ptr<SteelFunctor> Functor;
+    typedef std::shared_ptr<SteelFunctor> Functor;
     typedef std::deque<SteelType> Container;
     typedef std::unordered_map<std::string,SteelType> Map;
 

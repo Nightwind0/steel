@@ -31,14 +31,14 @@ private:
 class SteelUserFunction : public SteelFunctor
 {
 public:
-    SteelUserFunction(shared_ptr<AstParamDefinitionList>, shared_ptr<AstStatementList>);
+  SteelUserFunction(std::shared_ptr<AstParamDefinitionList>, std::shared_ptr<AstStatementList>);
     virtual ~SteelUserFunction();
     virtual bool isUserFunction() const { return true; }
     virtual SteelType Call(SteelInterpreter * pInterpreter,const SteelType::Container &params);
     void bindNonLocals(SteelInterpreter*); 
 private:
-    shared_ptr<AstParamDefinitionList> m_pParams;
-    shared_ptr<AstStatementList> m_pList;
+    std::shared_ptr<AstParamDefinitionList> m_pParams;
+    std::shared_ptr<AstStatementList> m_pList;
 	AuxVariables m_nonlocals;
 	SteelInterpreter * m_bound_interpreter;
 };

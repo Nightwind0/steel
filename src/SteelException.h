@@ -16,6 +16,7 @@ public:
         UNKNOWN_IDENTIFIER,
         INVALID_LVALUE,
         TYPE_MISMATCH,
+        VALUE_NOT_FUNCTION,
         PARAM_MISMATCH,
         VARIABLE_DEFINED,
         FUNCTION_DEFINED,
@@ -62,6 +63,11 @@ private:
 class ParamMismatch
 {
 };
+
+class ValueNotFunction
+{
+};
+
 
 class TypeMismatch
 {

@@ -2,7 +2,7 @@
 #define _AUX_VARIABLES_HH
 
 #include "SteelType.h"
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace Steel { 
@@ -14,9 +14,9 @@ namespace Steel {
 		SteelType lookup(const std::string& id);
 		SteelType* lookupLValue(const std::string& id);
 		void add(const std::string& id, SteelType* value);
-		bool transferOwnership(const std::map<std::string,SteelType>& file); 
+		bool transferOwnership(const std::unordered_map<std::string,SteelType>& file); 
 	private:
-		std::map<std::string,SteelType*> m_variables;		
+		std::unordered_map<std::string,SteelType*> m_variables;		
 		std::vector<SteelType*> m_owned;
 	};
 };

@@ -205,7 +205,7 @@ SteelType AstBoolean::evaluate(SteelInterpreter *pInterpreter)
 AstIdentifier::AstIdentifier(unsigned int line,
                              const std::string &script,
                              const std::string &value)
-    : AstExpression(line,script),m_value(value)
+  : AstExpression(line,script),m_value(value),m_pLValue(nullptr)
 {
     
 }
@@ -216,11 +216,6 @@ ostream & AstIdentifier::print(std::ostream &out)
     return out;
 }
 
-SteelType AstIdentifier::evaluate(SteelInterpreter *pInterpreter)
-{
-    // Shouldn't ever be called.
-    return SteelType();
-}
 
 
 AstStatement::AstStatement(unsigned int line, const std::string &script)
@@ -515,7 +510,7 @@ AstStatement::eStopType AstCaseStatement::execute(SteelInterpreter* pInterpreter
 }
 
 void AstCaseStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pStatement->FindIdentifiers(o_ids);
+  m_pStatement->FindIdentifiers(o_ids);
 }
 
 
@@ -749,7 +744,7 @@ AstForEachStatement::AstForEachStatement(unsigned int line, const std::string& s
 }
 
 AstForEachStatement::AstForEachStatement(unsigned int line, const std::string& script,
-					 AstVarIdentifier* lvalue, AstExpression* array_exp, AstStatement* stmt)
+					 AstIdentifier* lvalue, AstExpression* array_exp, AstStatement* stmt)
     :AstStatement(line,script),m_pDeclaration(NULL),m_pLValue(lvalue),m_pArrayExpression(array_exp),m_pStatement(stmt)
 {
 }
@@ -786,13 +781,10 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
 	SteelType * val = NULL;
 	if(m_pDeclaration)
 	{
-	  AstVarDeclaration * vardecl = dynamic_cast<AstVarDeclaration*>(m_pDeclaration);
-	  if(vardecl == NULL)
-	  {
-	      throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid iterator on foreach. Must be scalar.");
-	  }
+	  AstDeclaration * vardecl = m_pDeclaration;
+
 	  vardecl->execute(pInterpreter);
-	  AstVarIdentifier *pId = dynamic_cast<AstVarIdentifier*>(vardecl->getIdentifier());
+	  AstIdentifier *pId = vardecl->getIdentifier();
 
 	  val = pId->lvalue(pInterpreter);
 
@@ -838,7 +830,7 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
 
     pInterpreter->popScope();
 
-	return COMPLETED;
+    return COMPLETED;
 }
 
 
@@ -1305,11 +1297,14 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
                              GetScript(),
                              "Invalid lvalue after pop.");
     }
-
-    if(m_bPopBack)
+    try {
+      if(m_bPopBack)
         return pL->pop_back();
     else
-        return pL->pop();
+      return pL->pop();
+    }catch(TypeMismatch){
+      throw SteelException(SteelException::TYPE_MISMATCH, GetLine(), GetScript(), "Pop operand was not an array.");
+    }
     
 }
 
@@ -1346,11 +1341,14 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
                              GetScript(),
                              "Invalid lvalue after push.");
     }
-
-    if(!m_bPushFront){
-      pL->pushb(m_pExp->evaluate(pInterpreter));
-    }else{
-      pL->push(m_pExp->evaluate(pInterpreter));
+    try {
+      if(!m_bPushFront){
+        pL->pushb(m_pExp->evaluate(pInterpreter));
+      }else{
+        pL->push(m_pExp->evaluate(pInterpreter));
+      }
+    }catch(TypeMismatch){
+      throw SteelException(SteelException::TYPE_MISMATCH, GetLine(), GetScript(), "Push operand was not an array");
     }
 
     return *pL;
@@ -1413,7 +1411,7 @@ AstCallExpression::~AstCallExpression()
 SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
 {
     SteelType ret;
-    shared_ptr<SteelFunctor> pFunctor;
+    std::shared_ptr<SteelFunctor> pFunctor;
     try{
 
 	m_functor = m_pExp->evaluate(pInterpreter);
@@ -1422,6 +1420,11 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
         throw SteelException(SteelException::TYPE_MISMATCH,
                              GetLine(), GetScript(),
                              "Function call expression was not a valid function");
+    }
+    catch(ValueNotFunction v){
+        throw SteelException(SteelException::VALUE_NOT_FUNCTION,
+                             GetLine(), GetScript(),
+                             "Call expression is not a function.");
     }
     catch(UnknownIdentifier id)
     {
@@ -1641,10 +1644,10 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
         
             try
             {
-				if(val.isArray())
-					return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
-				else if(val.isHashMap())
-					return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
+              if(val.isArray())
+                return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
+              else if(val.isHashMap())
+                return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
             }
             catch(TypeMismatch)
             {
@@ -1691,83 +1694,6 @@ ostream & AstArrayElement::print(std::ostream &out)
     return out;
 }
 
-SteelType * AstArrayIdentifier::lvalue(SteelInterpreter *pInterpreter)
-{
-    try
-    {
-        return pInterpreter->lookup_lvalue(getValue());
-    }
-    catch(UnknownIdentifier id)
-    {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown array identifier:'" + getValue() + '\'');
-
-    }
-
-    return NULL;
-}
-
-
-SteelType AstArrayIdentifier::evaluate(SteelInterpreter *pInterpreter)
-{
-    
-    // Find our reference variable in the file. 
-    SteelType var;
-
-    try {
-        var = pInterpreter->lookup(getValue()); 
-    }
-    catch(UnknownIdentifier id)
-    {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown array identifier:'" + getValue() + '\'');
-    }
-
-    return var;
-}
-
-SteelType * AstHashMapIdentifier::lvalue(SteelInterpreter *pInterpreter)
-{
-    try
-    {
-        return pInterpreter->lookup_lvalue(getValue());
-    }
-    catch(UnknownIdentifier id)
-    {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown hash map identifier:'" + getValue() + '\'');
-
-    }
-
-    return NULL;
-}
-
-
-SteelType AstHashMapIdentifier::evaluate(SteelInterpreter *pInterpreter)
-{
-    
-    // Find our reference variable in the file. 
-    SteelType var;
-
-    try {
-        var = pInterpreter->lookup(getValue()); 
-    }
-    catch(UnknownIdentifier id)
-    {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown hash map identifier:'" + getValue() + '\'');
-    }
-
-    return var;
-}
 
 void AstIdentifier::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 	o_ids.push_back(this);
@@ -1954,12 +1880,15 @@ ostream & AstParamList::print(std::ostream &out)
 
     return out;
 }
-
-SteelType * AstVarIdentifier::lvalue(SteelInterpreter *pInterpreter)
+#if 1 
+SteelType * AstIdentifier::lvalue(SteelInterpreter *pInterpreter)
 {
+  //if(m_pLValue) return m_pLValue; // Note: Seems like it should be okay to cache but its not, due to closures (AuxVariables)
+
     try
     {
-        return pInterpreter->lookup_lvalue ( getValue() );
+        m_pLValue = pInterpreter->lookup_lvalue ( getValue() );
+        return m_pLValue; 
     }
     catch(ConstViolation)
     {
@@ -1979,7 +1908,9 @@ SteelType * AstVarIdentifier::lvalue(SteelInterpreter *pInterpreter)
     return NULL;
 };
 
-SteelType AstVarIdentifier::evaluate(SteelInterpreter *pInterpreter)
+
+
+SteelType AstIdentifier::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
@@ -1993,33 +1924,33 @@ SteelType AstVarIdentifier::evaluate(SteelInterpreter *pInterpreter)
                              "Unknown identifier:'" + getValue() + '\'');
     }
 }
+#endif
 
-
-AstVarDeclaration::AstVarDeclaration(unsigned int line,
+AstDeclaration::AstDeclaration(unsigned int line,
                                      const std::string &script,
-                                     AstVarIdentifier *pId,
+                                     AstIdentifier *pId,
                                      AstExpression *pExp)
-    :AstDeclaration(line,script),m_pId(pId),m_bConst(false),m_pExp(pExp)
+    :AstStatement(line,script),m_pId(pId),m_bConst(false),m_pExp(pExp)
 {
 }
 
-AstVarDeclaration::AstVarDeclaration(unsigned int line,
+AstDeclaration::AstDeclaration(unsigned int line,
                                      const std::string &script,
-                                     AstVarIdentifier *pId,
+                                     AstIdentifier *pId,
                                      bool bConst,
                                      AstExpression *pExp)
-    :AstDeclaration(line,script),m_pId(pId),m_bConst(bConst),m_pExp(pExp)
+    :AstStatement(line,script),m_pId(pId),m_bConst(bConst),m_pExp(pExp)
 {
 }
 
 
-AstVarDeclaration::~AstVarDeclaration()
+AstDeclaration::~AstDeclaration()
 {
     delete m_pId;
     delete m_pExp;
 }
 
-AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterpreter)
+AstStatement::eStopType AstDeclaration::execute(SteelInterpreter *pInterpreter)
 {
     try{
         if(m_bConst)
@@ -2048,7 +1979,14 @@ AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterprete
 	    }else if(m_pExp) {
 	      pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
 	    }else{
-	      pInterpreter->assign( pVar, SteelType() );
+              const std::string id = m_pId->getValue();
+              SteelType val;
+              if(id[0] == '@'){
+                val.set(SteelType::Container());
+              }else if(id[0] == '#'){
+                val.set(SteelType::Map());
+              }
+              pInterpreter->assign( pVar, val );
 	    }
      
         }
@@ -2078,13 +2016,13 @@ AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterprete
     return COMPLETED;
 }
 
-void AstVarDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+void AstDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 	//m_pId->FindIdentifiers(o_ids); // wait... no, this is local and we want nonlocal
 	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
 }
 
 
-ostream & AstVarDeclaration::print(std::ostream &out)
+ostream & AstDeclaration::print(std::ostream &out)
 {
     if(m_bConst)
         out << "const " << *m_pId;
@@ -2098,9 +2036,9 @@ ostream & AstVarDeclaration::print(std::ostream &out)
 
 AstArrayDeclaration::AstArrayDeclaration(unsigned int line,
                                          const std::string &script,
-                                         AstArrayIdentifier *pId,
+                                         AstIdentifier *pId,
                                          AstExpression *pInt)
-    :AstDeclaration(line,script),m_pId(pId),m_pIndex(pInt),m_pExp(NULL)
+  :AstDeclaration(line,script,pId,pInt),m_pId(pId),m_pIndex(pInt),m_pExp(NULL)
 {
 }
 
@@ -2181,91 +2119,6 @@ ostream & AstArrayDeclaration::print(std::ostream &out)
 
 
 
-AstHashMapDeclaration::AstHashMapDeclaration(unsigned int line,
-                                         const std::string &script,
-                                         AstHashMapIdentifier *pId,
-                                         AstExpression *pExp)
-    :AstDeclaration(line,script),m_pId(pId),m_pExp(pExp)
-{
-}
-
-AstHashMapDeclaration::~AstHashMapDeclaration()
-{
-    delete m_pId;
-    delete m_pExp;
-}
-
-void AstHashMapDeclaration::assign(AstExpression *pExp)
-{
-    // Todo: Actually evaluate this here and toss it
-    m_pExp = pExp;
-}
-
-
-AstStatement::eStopType AstHashMapDeclaration::execute(SteelInterpreter *pInterpreter)
-{
-    try
-    {
-       pInterpreter->declare (m_pId->getValue());
-    }
-    catch(AlreadyDefined)
-    {
-        throw SteelException(SteelException::VARIABLE_DEFINED,
-                             GetLine(),
-                             GetScript(),
-                             "HashMap: '" + m_pId->getValue() + "' was previously defined.");
-    }
-
-    try{
-        SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
-        // If this is null here, we're in a BAD way. Programming error.
-        assert ( NULL != pVar);
-	pVar->set(SteelType::Map());
-
-
-	if(!pInterpreter->paramStackEmpty()){
-	  pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
-	}else if(m_pExp){
-	  pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
-	}else{
-	  SteelType hash;
-	  hash.set(SteelType::Map());
-	  pInterpreter->assign( pVar, hash );
-	}
-    }
-    catch(TypeMismatch)
-    {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),
-                             GetScript(),
-                             "Attempt to assign scalar to hash map in declaration of :'" + m_pId->getValue() + '\'');
-    }
-    catch(UnknownIdentifier id)
-    {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier in assignment:" + id.identifier + '\'');
-    }
-
-    return COMPLETED;
-}
-
-void AstHashMapDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
-}
-
-
-ostream & AstHashMapDeclaration::print(std::ostream &out)
-{
-    out << "var " << *m_pId ;
-    if(m_pExp) out << '=' << *m_pExp;
-    out << ';' << std::endl;
-    return out;
-}
-
-
-
 AstAnonymousFunctionDefinition::AstAnonymousFunctionDefinition(unsigned int line, const std::string &script, AstParamDefinitionList* params, AstStatementList * statements)
   :AstExpression(line,script),m_pParamList(params),m_pStatements(statements)
 {
@@ -2277,9 +2130,9 @@ AstAnonymousFunctionDefinition::~AstAnonymousFunctionDefinition()
   
 SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterpreter)
 {
-    shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
+  std::shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
 	
-    shared_ptr<SteelUserFunction> userFunc = std::tr1::dynamic_pointer_cast<SteelUserFunction>(pFunctor);
+  std::shared_ptr<SteelUserFunction> userFunc = std::dynamic_pointer_cast<SteelUserFunction>(pFunctor);
     if(userFunc) // should be!
 	userFunc->bindNonLocals(pInterpreter);
     pFunctor->setIdentifier("Anonymous");
@@ -2375,11 +2228,7 @@ ostream & AstParamDefinitionList::print (std::ostream &out)
 
 SteelType AstFuncIdentifier::evaluate(SteelInterpreter *pInterpreter)
 {
-    shared_ptr<SteelFunctor> pFunctor = pInterpreter->lookup_functor(getValue(),GetNamespace());
-	assert(pFunctor);
-    SteelType functor;
-    functor.set(pFunctor);
-    return functor;
+  return pInterpreter->lookup_function(GetNamespace(),getValue());
 }
 
 std::string AstFuncIdentifier::GetNamespace(void) const
@@ -2398,7 +2247,7 @@ std::string AstFuncIdentifier::GetNamespace(void) const
 
 AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
                                              const std::string &script,
-                                             AstFuncIdentifier *pId,
+                                             AstIdentifier *pId,
                                              AstParamDefinitionList *pParams,
                                              AstStatementList * pStmts)
     :AstStatement(line,script),m_pId(pId),m_pParams(pParams),m_pStatements(pStmts)
@@ -2421,12 +2270,14 @@ AstFunctionDefinition::~AstFunctionDefinition()
 
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)
 {
+  std::string ns = SteelInterpreter::kszGlobalNamespace;
+  AstFuncIdentifier * fid = dynamic_cast<AstFuncIdentifier*>(m_pId);
+  if(fid){
+    ns = fid->GetNamespace();
+  }
     try{
 	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
-      if(m_pId->GetNamespace() == SteelInterpreter::kszUnspecifiedNamespace){
-		pInterpreter->registerFunction( m_pId->getValue(), SteelInterpreter::kszGlobalNamespace, m_pParams, m_pStatements);
-	}else   
-		pInterpreter->registerFunction( m_pId->getValue(), m_pId->GetNamespace(), m_pParams , m_pStatements);
+      pInterpreter->registerFunction( m_pId->getValue(), ns , m_pParams , m_pStatements);
     }
     catch(AlreadyDefined)
     {

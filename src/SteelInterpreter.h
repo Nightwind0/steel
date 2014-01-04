@@ -52,7 +52,7 @@ private:
 
 typedef std::vector<ParameterListItem> ParameterList;
 
-using std::tr1::shared_ptr;
+//using std::shared_ptr;
 
 class SteelInterpreter
 {
@@ -64,20 +64,14 @@ public:
     typedef std::deque<SteelType> ParamStack;
 
     // Add function to the global namespace
-    void addFunction(const std::string &name, std::tr1::shared_ptr<SteelFunctor> pFunc);
+    void addFunction(const std::string &name, std::shared_ptr<SteelFunctor> pFunc);
     // Function will be deleted, do not pass stack variables
     void addFunction(const std::string &name, SteelFunctor* pFunc);
 
     // Add a function with a namespace
-    void addFunction(const std::string &name, const std::string &ns, shared_ptr<SteelFunctor> pFunc);
+    void addFunction(const std::string &name, const std::string &ns, std::shared_ptr<SteelFunctor> pFunc);
     // Function will be deleted, do not pass stack variables
     void addFunction(const std::string &name, const std::string &ns, SteelFunctor* pFunc);
-
-    // Removes a function and returns the pointer to it
-    // (mostly so that you can deallocate it)
-    // (but don't forget to check if it's an user function.. you don't
-    // want to delete those.)
-    shared_ptr<SteelFunctor> removeFunction(const std::string &name, const std::string &ns=kszGlobalNamespace);
 
     // Removes all functions with corresponding namespace
     void removeFunctions(const std::string &ns);
@@ -110,15 +104,18 @@ public:
     SteelType run(const std::string &name,const std::string &script);
 
     SteelType lookup(const std::string &name);
+    SteelType lookup_function(const std::string &ns, const std::string &name);
     // Array element lookup
     SteelType lookup(SteelType *pVar, int index);
-	SteelType lookup(SteelType *pVar, const std::string& key);
+    SteelType lookup(SteelType *pVar, const std::string& key);
     SteelType *lookup_lvalue(const std::string &name);
+    SteelType *enclose_value(const std::string &name); // For use by closures
     // Add namespace
     void import(const std::string &ns);
     void declare(const std::string &name);
     void declare_array(const std::string &array, int size);
     void declare_const(const std::string &name, const SteelType &datum);
+    void declare_function(const std::string& ns, const std::string &name, std::shared_ptr<SteelFunctor> &datum);
     template<class T>
     void declare_const(const std::string &name, const T &datum);
     void assign(SteelType *pVar,const SteelType &value);
@@ -127,8 +124,8 @@ public:
     void popScope();
     void registerFunction(const std::string &name,
                           const std::string &ns,
-                          shared_ptr<AstParamDefinitionList> pParams, 
-                          shared_ptr<AstStatementList> pStatements);
+                          std::shared_ptr<AstParamDefinitionList> pParams, 
+                          std::shared_ptr<AstStatementList> pStatements);
     bool paramStackEmpty() const;
     SteelType popParamStack();
     void pushParamStack(const SteelType& value);
@@ -137,25 +134,25 @@ public:
     void pushReturnStack(const SteelType& value);
 
 
-    shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
-    shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
+    //shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
+    //shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
 	
     void setFileProvider(IFileProvider* provider);
 	
-	// Registered aux variable files will be queried by the interpreter when 
-	// an identifier is not found in the interpreter's own variable files
-	// they are queried in order of last inserted first.
-	// The idea is that closures register their non-local bindings before the function call
-	// and then remove them after.
-	void registerAuxVariables(AuxVariables* pVariables);
-	void removeAuxVariables(AuxVariables* pVariables);
+    // Registered aux variable files will be queried by the interpreter when 
+    // an identifier is not found in the interpreter's own variable files
+    // they are queried in order of last inserted first.
+    // The idea is that closures register their non-local bindings before the function call
+    // and then remove them after.
+    void registerAuxVariables(AuxVariables* pVariables);
+    void removeAuxVariables(AuxVariables* pVariables);
 	
-	// Linked aux variable files will get ownership of any variables they contain
-	// when the interpreter relinquishes ownership
-	// call this from a function that is a closure when it's non-locals are bound
-	// and  unlink when the closure is destroyed.
-	void linkAuxVariables(AuxVariables* pVariables);
-	void unlinkAuxVariables(AuxVariables* pVariables);
+    // Linked aux variable files will get ownership of any variables they contain
+    // when the interpreter relinquishes ownership
+    // call this from a function that is a closure when it's non-locals are bound
+    // and  unlink when the closure is destroyed.
+    void linkAuxVariables(AuxVariables* pVariables);
+    void unlinkAuxVariables(AuxVariables* pVariables);
 private:
 
     void push_context();
@@ -175,32 +172,30 @@ private:
     mutable Mutex m_stack_mutex;
     mutable Mutex m_import_mutex;
 #endif 
-    typedef std::map<std::string, SteelType> VariableFile;
-    typedef std::map<std::string,shared_ptr<SteelFunctor> > FunctionSet;
-    std::list<VariableFile> m_symbols;
+    typedef std::unordered_map<std::string, SteelType> VariableFile;
+    std::deque<VariableFile> m_symbols;
 
-    void remove_user_functions();
     void clear_imports();
     void free_file_handles();
     std::string get_namespace(const std::string& id);
     std::string make_id(const std::string& ns, const std::string& name);
   
     SteelType * lookup_internal(const std::string &name);
+    SteelType * _lookup_internal(const std::string &name);
   
     void registerBifs();
-    std::list<std::string> m_namespace_scope;
-    std::map<std::string,FunctionSet> m_functions;
-    //FunctionSet m_functions;
+    std::vector<std::string> m_namespace_scope;  
+    
     std::set<std::string> m_requires;
 
     ParamStack m_param_stack; // Currently only one stack
     ReturnStack m_return_stack; 
     
     std::set<FileHandle*> m_file_handles;
-	std::list<AuxVariables*> m_aux_variables;
-	std::list<AuxVariables*> m_linked_aux_variables;
-	FileProvider m_default_file_provider;
-	IFileProvider * m_file_provider;
+    std::list<AuxVariables*> m_aux_variables;
+    std::list<AuxVariables*> m_linked_aux_variables;
+    FileProvider m_default_file_provider;
+    IFileProvider * m_file_provider;
     int m_nContextCount;
 public:
     static const std::string kszGlobalNamespace;
@@ -222,7 +217,7 @@ private:
     SteelType is_valid(const SteelType&);
     SteelType is_function(const SteelType&);
     SteelType array   (const SteelArray&);
-
+    SteelType hash();
 
 
     // Math built-ins

@@ -271,7 +271,6 @@ namespace Steel {
 		
 	};
 	
-	class AstVarIdentifier;
 	
 	class AstLoopStatement : public AstStatement
 	{
@@ -293,14 +292,14 @@ namespace Steel {
 	};
 	
 	class AstDeclaration;
-	class AstVarIdentifier;
+	
 	class AstForEachStatement : public AstStatement
 	{
 	public:
 		AstForEachStatement(unsigned int line, const std::string& script,
 							AstDeclaration* decl, AstExpression * array_exp, AstStatement * stmt);
 		AstForEachStatement(unsigned int line, const std::string& script,
-							AstVarIdentifier* lvalue, AstExpression* array_exp, AstStatement *stmt);
+							AstIdentifier* lvalue, AstExpression* array_exp, AstStatement *stmt);
 		virtual ~AstForEachStatement();
 		
 		virtual ostream& print(std::ostream &out);
@@ -308,7 +307,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
 		AstDeclaration* m_pDeclaration;
-		AstVarIdentifier* m_pLValue;
+		AstIdentifier* m_pLValue;
 		AstExpression* m_pArrayExpression;
 		AstStatement* m_pStatement;
 	};
@@ -399,40 +398,26 @@ namespace Steel {
 		virtual ostream & print(std::ostream &out);
 		virtual SteelType evaluate(SteelInterpreter *pInterpreter);
 		std::string getValue() { return m_value; }
-		virtual SteelType * lvalue(SteelInterpreter *pInterpreter){ return NULL; }
+		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  				
 	private:
-		std::string m_value;
-	};
-	
-	class AstVarIdentifier : public AstIdentifier
-	{
-	public:
-		AstVarIdentifier(unsigned int line,
-						 const std::string &script,
-				   const std::string &value)
-		:AstIdentifier(line,script,value),m_pLValue(NULL){}
-		virtual ~AstVarIdentifier(){}
-		
-		virtual SteelType evaluate(SteelInterpreter *pInterpreter);
-		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
-	private:
 		SteelType *m_pLValue;
+		std::string m_value;
 	};
 	
 	class AstFuncIdentifier : public AstIdentifier
 	{
 	public:
 		AstFuncIdentifier(unsigned int line,
-						  const std::string &script,
-					const std::string &value)
+                                  const std::string &script,
+                                  const std::string &value)
 		:AstIdentifier(line,script,value)
 		{
 		}
 		AstFuncIdentifier(unsigned int line,
-						  const std::string &script,
-					const std::string &value,
-					const std::string &ns)
+                                  const std::string &script,
+                                  const std::string &ns,
+                                  const std::string &value)
 		:AstIdentifier(line,script,value),m_ns(ns)
 		{
 		}
@@ -444,36 +429,6 @@ namespace Steel {
 		std::string GetNamespace(void) const;
 	private:
 		std::string m_ns;
-	};
-	
-	
-	class AstArrayIdentifier : public AstIdentifier
-	{
-	public:
-		AstArrayIdentifier(unsigned int line,
-						   const std::string &script,
-					 const std::string &value)
-		:AstIdentifier(line,script,value){}
-		virtual ~AstArrayIdentifier(){}
-		
-		virtual SteelType evaluate(SteelInterpreter *pInterpreter);
-		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
-	private:
-	};
-	
-	
-	class AstHashMapIdentifier : public AstIdentifier
-	{
-	public:
-		AstHashMapIdentifier(unsigned int line,
-							 const std::string &script,
-					   const std::string &value)
-		:AstIdentifier(line,script,value){}
-		virtual ~AstHashMapIdentifier(){}
-		
-		virtual SteelType evaluate(SteelInterpreter *pInterpreter);
-		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
-	private:
 	};
 	
 	
@@ -843,48 +798,35 @@ namespace Steel {
 	{
 	public:
 		AstDeclaration(unsigned int line,
-					   const std::string &script)
-		  :AstStatement(line,script){}
-		virtual ~AstDeclaration(){}
+                                  const std::string &script,
+                                  AstIdentifier *pId,
+                                  AstExpression *pExp = NULL);
+		AstDeclaration(unsigned int line,
+                                  const std::string &script,
+                                  AstIdentifier *pId,
+                                  bool bConst,
+                                  AstExpression *pExp);
 		
-		virtual bool hasInitializer() const { return false; }    
-		virtual AstIdentifier* getIdentifier() const =0;
-	protected:
-	};
-	
-	class AstVarDeclaration : public AstDeclaration
-	{
-	public:
-		AstVarDeclaration(unsigned int line,
-						  const std::string &script,
-					AstVarIdentifier *pId,
-					AstExpression *pExp = NULL);
-		AstVarDeclaration(unsigned int line,
-						  const std::string &script,
-					AstVarIdentifier *pId,
-					bool bConst,
-					AstExpression *pExp);
-		
-		virtual ~AstVarDeclaration();
+		virtual ~AstDeclaration();
 		virtual ostream & print(std::ostream &out);
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual bool hasInitializer() const { return m_pExp != NULL; }
 		virtual bool isConst() const { return m_bConst; }
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);
 		virtual AstIdentifier * getIdentifier() const { return m_pId; }// not normally usd
-		private:
-			AstVarIdentifier *m_pId ;
-			AstExpression * m_pExp;
-			bool m_bConst;
-		};
+        private:
+                AstIdentifier *m_pId ;
+                AstExpression *m_pExp;
+                bool m_bConst;
+        };
 		
 	class AstArrayDeclaration: public AstDeclaration
 	{
 	public:
 		AstArrayDeclaration(unsigned int line,
-							const std::string &script,
-					AstArrayIdentifier *pId,
-					AstExpression *pInt = NULL);
+                                    const std::string &script,
+                                    AstIdentifier *pId,
+                                    AstExpression *pInt = NULL);
 		
 		void assign(AstExpression *pExp);
 		
@@ -895,31 +837,8 @@ namespace Steel {
 		virtual AstIdentifier* getIdentifier() const { return m_pId; }
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstArrayIdentifier *m_pId;
+		AstIdentifier *m_pId;
 		AstExpression *m_pIndex;
-		AstExpression *m_pExp;
-	};
-	
-	
-	class AstHashMapDeclaration: public AstDeclaration
-	{
-	public:
-		AstHashMapDeclaration(unsigned int line,
-								const std::string &script,
-						AstHashMapIdentifier *pId,
-						AstExpression* pExp=NULL
-		);
-		
-		void assign(AstExpression *pExp);
-		
-		virtual ~AstHashMapDeclaration();
-		virtual ostream & print(std::ostream &out);
-		virtual bool hasInitializer() const { return m_pExp != NULL; }
-		virtual eStopType execute(SteelInterpreter *pInterpreter);
-		virtual AstIdentifier* getIdentifier() const { return m_pId; }
-		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  					
-	private:
-		AstHashMapIdentifier *m_pId;
 		AstExpression *m_pExp;
 	};
 	
@@ -936,8 +855,8 @@ namespace Steel {
 		virtual ~AstAnonymousFunctionDefinition();
 		virtual SteelType evaluate(SteelInterpreter* pInterpreter);
 	private:
-		shared_ptr<AstParamDefinitionList> m_pParamList;
-		shared_ptr<AstStatementList> m_pStatements;
+                std::shared_ptr<AstParamDefinitionList> m_pParamList;
+                std::shared_ptr<AstStatementList> m_pStatements;
 	};
 	
 	
@@ -945,7 +864,7 @@ namespace Steel {
 	{
 	public:
 		AstParamDefinitionList(unsigned int line,
-								const std::string &script);
+                                       const std::string &script);
 		virtual ~AstParamDefinitionList();
 		
 		void add(AstDeclaration *pId);
@@ -966,10 +885,11 @@ namespace Steel {
 	{
 	public:
 		AstFunctionDefinition(unsigned int line,
-								const std::string &script,
-						AstFuncIdentifier *pId,
-						AstParamDefinitionList *pParams,
-						AstStatementList* pStmts);
+                                      const std::string &script,
+                                      AstIdentifier *pId,
+                                      AstParamDefinitionList *pParams,
+                                      AstStatementList* pStmts);
+
 		virtual ~AstFunctionDefinition();
 		
 		eStopType execute(SteelInterpreter * pInterpreter);
@@ -977,9 +897,9 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 			
 	private:
-		AstFuncIdentifier * m_pId;
-		shared_ptr<AstParamDefinitionList> m_pParams;
-		shared_ptr<AstStatementList> m_pStatements;
+		AstIdentifier * m_pId;
+                std::shared_ptr<AstParamDefinitionList> m_pParams;
+                std::shared_ptr<AstStatementList> m_pStatements;
 	};
 		
 }

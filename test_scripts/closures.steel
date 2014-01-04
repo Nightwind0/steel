@@ -45,7 +45,7 @@ hoodle(); // notice this doesn't print 13.
 // Trying to duplicate the wikipedia entry on closures
 function counter(){
 	 declare $x;
-	 declare $increment = function(declare $y){ 
+	 declare $increment = function(declare $y){
 	 	 $x += $y; 
 		 println($x);
 		 }; 

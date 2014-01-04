@@ -31,7 +31,7 @@ SteelFunctor::~SteelFunctor()
 
 
 
-SteelUserFunction::SteelUserFunction(shared_ptr<AstParamDefinitionList> pParams, shared_ptr<AstStatementList> pList)
+  SteelUserFunction::SteelUserFunction(std::shared_ptr<AstParamDefinitionList> pParams, std::shared_ptr<AstStatementList> pList)
     :m_pParams(pParams),m_pList(pList),m_bound_interpreter(NULL)
 {
 }
@@ -96,7 +96,7 @@ void SteelUserFunction::bindNonLocals(SteelInterpreter* pInterpreter) {
 		if(m_pParams->containsName(name))
 			continue; 
 		try{
-		  SteelType *val = pInterpreter->lookup_lvalue(name);
+		  SteelType *val = pInterpreter->enclose_value(name);
 		  m_nonlocals.add(name,val);
 		}catch(UnknownIdentifier e){
 		}

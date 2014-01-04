@@ -22,11 +22,11 @@
 #define max std::max
 #endif
 
+using namespace Steel;
+
+const std::string SteelInterpreter::kszGlobalNamespace = "_global";
+const std::string SteelInterpreter::kszUnspecifiedNamespace = "?";
 namespace Steel { 
-
- const std::string SteelInterpreter::kszGlobalNamespace = "_global";
- const std::string SteelInterpreter::kszUnspecifiedNamespace = "?";
-
 class FileHandle : public SteelType::IHandle
 {
 public:
@@ -67,17 +67,18 @@ private:
     std::ostream* m_fstream;
 };
 
+}
 template <class T>
 class AutoCall
 {
 public:
-  AutoCall(T* pointer, void(T::*FuncPointer)(void)):m_func(FuncPointer),m_object(pointer){
+    AutoCall(T* pointer, void(T::*FuncPointer)(void)):m_func(FuncPointer),m_object(pointer){
     }
     ~AutoCall(){
-      (m_object->*m_func)();
+        (m_object->*m_func)();
     }
 private:
-  void(T::*m_func)(void);
+    void(T::*m_func)(void);
     T* m_object;
 };
 
@@ -119,19 +120,19 @@ ParameterListItem::ParameterListItem(const std::string &name, SteelType::Handle 
 
 
 SteelInterpreter::SteelInterpreter()
-:
-  m_nContextCount(0),m_file_provider(NULL)
+    :
+    m_nContextCount(0),m_file_provider(NULL)
 #if USE_DYNAMIC_MUTEXES
-  ,m_function_mutex(NULL),m_symbol_mutex(NULL),
-  m_stack_mutex(NULL),m_scope_mutex(NULL),m_import_mutex(NULL)
+    ,m_function_mutex(NULL),m_symbol_mutex(NULL),
+    m_stack_mutex(NULL),m_scope_mutex(NULL),m_import_mutex(NULL)
 #endif
 {
 #if USE_DYNAMIC_MUTEXES
-  m_function_mutex = new Mutex();
-  m_symbol_mutex = new Mutex();
-  m_stack_mutex = new Mutex();
-  m_scope_mutex = new Mutex();
-  m_import_mutex = new Mutex();
+    m_function_mutex = new Mutex();
+    m_symbol_mutex = new Mutex();
+    m_stack_mutex = new Mutex();
+    m_scope_mutex = new Mutex();
+    m_import_mutex = new Mutex();
 #endif
     m_file_provider = &m_default_file_provider;
     pushScope();
@@ -146,26 +147,26 @@ SteelInterpreter::~SteelInterpreter()
 
 
 void SteelInterpreter::addFunction(const std::string &name,
-                                   shared_ptr<SteelFunctor> pFunc)
+                                   std::shared_ptr<SteelFunctor> pFunc)
 {
     // global namespace
-  std::string ns = kszGlobalNamespace;
-  addFunction(name,ns,pFunc);    
+    std::string ns = kszGlobalNamespace;
+    addFunction(name,ns,pFunc);    
 }
 
 void SteelInterpreter::addFunction(const std::string &name,
                                    SteelFunctor* pFunc)
 {
     // global namespace
-    shared_ptr<SteelFunctor> functor(pFunc);
+    std::shared_ptr<SteelFunctor> functor(pFunc);
     std::string ns = kszGlobalNamespace;
     addFunction(name,ns,functor);    
 }
 
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
-				   SteelFunctor* pFunc)
+                                   SteelFunctor* pFunc)
 {
-    shared_ptr<SteelFunctor> functor(pFunc);
+    std::shared_ptr<SteelFunctor> functor(pFunc);
     addFunction(name,ns,functor);
 }
 
@@ -173,47 +174,14 @@ void SteelInterpreter::addFunction(const std::string &name, const std::string &n
 
 
 void SteelInterpreter::addFunction(const std::string &name, const std::string &ns, 
-				   shared_ptr<SteelFunctor> pFunc)
+                                   std::shared_ptr<SteelFunctor> pFunc)
 {
-  AutoLock mutex(m_function_mutex);
-  //_function_mutex.lock();
+    AutoLock mutex(m_function_mutex);
+  
     pFunc->setIdentifier(name); // TODO: Include namespace?
-    std::map<std::string,FunctionSet>::iterator sset = m_functions.find ( ns );
-    if(sset == m_functions.end())
-    {
-      FunctionSet set;
-      set[name] = pFunc;
-      m_functions.insert( std::pair<std::string,FunctionSet>(ns,set) );
-    }
-    else
-    {
-		std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = sset->second.find ( name );
-    
-        if(it != sset->second.end()){
-	    throw AlreadyDefined(name);
-        }
-	// TODO: Use the it I just found... 
-        sset->second[name] = pFunc;
-    }
+    declare_function(ns,name,pFunc);  
 }
 
-shared_ptr<SteelFunctor> SteelInterpreter::removeFunction(const std::string &name, const std::string &ns)
-{
-  AutoLock mutex(m_function_mutex);
-    std::map<std::string,FunctionSet>::iterator set = m_functions.find ( ns );
-    if(set != m_functions.end()){
-      std::map<std::string,shared_ptr<SteelFunctor> >::iterator it = set->second.find ( name );
-
-      set->second.erase(it);
-
-      if(set->second.empty()) m_functions.erase(set);
-
-      return it->second;
-    }else{
-      assert(0);
-      return shared_ptr<SteelFunctor>();
-    }
-}
 
 
 void SteelInterpreter::disableThreadSafety(){
@@ -251,7 +219,7 @@ void SteelInterpreter::enableThreadSafety(){
 AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
                                           const std::string &script,
                                           bool debugparser,
-					  bool debugscanner)
+                                          bool debugscanner)
 {
     SteelParser parser;
     parser.setBuffer(script.c_str(),script_name);
@@ -296,38 +264,38 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
     popScope();
     SteelType returnval;
     if(stopType == AstStatement::RETURN){
-      returnval = popReturnStack();
+        returnval = popReturnStack();
     }
     return returnval;
 }
 
 bool SteelInterpreter::paramStackEmpty() const{
-  return m_param_stack.empty(); // TODO: On all stack operations look up stack for thread, to properly do threading
+    return m_param_stack.empty(); // TODO: On all stack operations look up stack for thread, to properly do threading
 }
 SteelType SteelInterpreter::popParamStack(){
-  AutoLock lock(m_stack_mutex);
-  SteelType ret = m_param_stack.front(); // TODO: On all stack operations look up stack for thread, to properly do threading
-  m_param_stack.pop_front();
-  return ret;
+    AutoLock lock(m_stack_mutex);
+    SteelType ret = m_param_stack.front(); // TODO: On all stack operations look up stack for thread, to properly do threading
+    m_param_stack.pop_front();
+    return ret;
 }
 void SteelInterpreter::pushParamStack(const SteelType& value){
-  AutoLock lock(m_stack_mutex);
-  m_param_stack.push_back(value); // TODO: On all stack operations look up stack for thread, to properly do threading
+    AutoLock lock(m_stack_mutex);
+    m_param_stack.push_back(value); // TODO: On all stack operations look up stack for thread, to properly do threading
 }
 bool SteelInterpreter::returnStackEmpty() const{
-  return m_return_stack.empty();
+    return m_return_stack.empty();
 }
 SteelType SteelInterpreter::popReturnStack(){
-  AutoLock lock(m_stack_mutex);
-  // TODO: On all stack operations look up stack for thread, to properly do threading
-  SteelType ret = m_return_stack.top();
-  m_return_stack.pop();
-  return ret;
+    AutoLock lock(m_stack_mutex);
+    // TODO: On all stack operations look up stack for thread, to properly do threading
+    SteelType ret = m_return_stack.top();
+    m_return_stack.pop();
+    return ret;
 }
 void SteelInterpreter::pushReturnStack(const SteelType& value){
-  // TODO: On all stack operations look up stack for thread, to properly do threading
-  AutoLock lock(m_stack_mutex);
-  m_return_stack.push(value);
+    // TODO: On all stack operations look up stack for thread, to properly do threading
+    AutoLock lock(m_stack_mutex);
+    m_return_stack.push(value);
 }
 
 // This method allows you to set up some variables at a global scope
@@ -350,7 +318,7 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
     popScope();
     SteelType returnval;
     if(stopType == AstStatement::RETURN){
-      returnval = popReturnStack();
+        returnval = popReturnStack();
     }
     return returnval;
 }
@@ -388,22 +356,22 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
 
     SteelType returnval;
     if(stop == AstStatement::RETURN){
-      returnval = popReturnStack();
+        returnval = popReturnStack();
     }
     return returnval;
 }
 
 void SteelInterpreter::clear_imports()
 {
-  AutoLock mutex(m_import_mutex);
+    AutoLock mutex(m_import_mutex);
     m_namespace_scope.clear();
     import(kszGlobalNamespace);
 }
 
 void SteelInterpreter::import(const std::string &ns)
 {
-  AutoLock mutex(m_import_mutex);
-    for(std::list<std::string>::iterator it = m_namespace_scope.begin();
+    AutoLock mutex(m_import_mutex);
+    for(std::vector<std::string>::iterator it = m_namespace_scope.begin();
         it != m_namespace_scope.end(); it++)
         if(*it == ns) return; // Already have it imported
 
@@ -412,117 +380,83 @@ void SteelInterpreter::import(const std::string &ns)
 
 SteelType SteelInterpreter::call(const std::string &name, const SteelType::Container &pList)
 {
-  AutoLock mutex(m_function_mutex);
-  shared_ptr<SteelFunctor> pFunctor = lookup_functor(name);
-  return pFunctor->Call(this,pList);
+    AutoLock mutex(m_function_mutex);
+    SteelType *pFunctor = lookup_internal(name);
+    return pFunctor->getFunctor()->Call(this,pList);
 }
-
+#if 0 
 shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name)
 {
-  AutoLock mutex(m_function_mutex);
-  for(std::list<std::string>::const_reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
-      it++)
+    AutoLock mutex(m_function_mutex);
+    for(std::list<std::string>::const_reverse_iterator it = m_namespace_scope.rbegin(); it != m_namespace_scope.rend();
+        it++)
     {
-      std::map<std::string,FunctionSet>::iterator ns_it = m_functions.find(*it);
-      if(ns_it != m_functions.end()){
-        FunctionSet &set = ns_it->second;
+        std::map<std::string,FunctionSet>::iterator ns_it = m_functions.find(*it);
+        if(ns_it != m_functions.end()){
+            FunctionSet &set = ns_it->second;
 
-	std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
+            std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
 
-        if( iter != set.end() )
-	  {
-            shared_ptr<SteelFunctor> pFunctor = iter->second;
-            assert ( pFunctor != NULL );
+            if( iter != set.end() )
+            {
+                shared_ptr<SteelFunctor> pFunctor = iter->second;
+                assert ( pFunctor != NULL );
 
-            return pFunctor;
-	  }
-      }
+                return pFunctor;
+            }
+        }
     }
 
-  throw UnknownIdentifier(name);
+    throw UnknownIdentifier(name);
 
-  return shared_ptr<SteelFunctor>();
+    return shared_ptr<SteelFunctor>();
 }
-
+#endif
 SteelType SteelInterpreter::call(const std::string &name, const std::string &ns, const SteelType::Container &pList)
 {
-  AutoLock mutex(m_function_mutex);
-  shared_ptr<SteelFunctor> pFunctor = lookup_functor(name,ns);
-  return pFunctor->Call(this,pList);
+    AutoLock mutex(m_function_mutex);
+    SteelType *pFunctor = lookup_internal(make_id(ns,name));
+    return pFunctor->getFunctor()->Call(this,pList); // calling getFunctor can throw ValueNotFunction
 }
-
-shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &name, const std::string &ns)
-{
-  AutoLock mutex(m_function_mutex);
-  static std::string unspecifiedNS(kszUnspecifiedNamespace);
-  // If this call has no namespace, we have to search for it using this
-  // version...
-  if(ns == unspecifiedNS)
-    {
-      return lookup_functor(name);
-    }
-
-  std::map<std::string,FunctionSet>::iterator setiter = m_functions.find(ns);
-
-  if(setiter == m_functions.end())
-    {
-      throw UnknownIdentifier(ns + "::" + name);
-    }
-
-  FunctionSet &set = setiter->second;
-
-  std::map<std::string,shared_ptr<SteelFunctor> >::iterator iter = set.find( name );
-
-  if( iter != set.end() )
-    {
-      shared_ptr<SteelFunctor> pFunctor = iter->second;
-      assert ( pFunctor != NULL );
-
-      return pFunctor;
-    }
-  throw UnknownIdentifier(ns + "::" + name);
-
-  return shared_ptr<SteelFunctor>();
-}
-
+#if 0 
 void SteelInterpreter::removeFunctions(const std::string &ns)
 {
-  AutoLock mutex(m_function_mutex);
-  std::map<std::string,FunctionSet>::iterator it = m_functions.find(ns);
-  if(it != m_functions.end()){
-    FunctionSet &set = it->second;
+    AutoLock mutex(m_function_mutex);
+    std::map<std::string,FunctionSet>::iterator it = m_functions.find(ns);
+    if(it != m_functions.end()){
+        FunctionSet &set = it->second;
 
-    m_functions.erase(ns);
-  }
+        m_functions.erase(ns);
+    }
 }
+#endif
 std::string SteelInterpreter::get_namespace(const std::string& id){
-  int scope = id.find("::");
-  assert(scope != std::string::npos);
-  return id.substr(0,scope);
+    int scope = id.find("::");
+    assert(scope != std::string::npos);
+    return id.substr(0,scope);
 }
 std::string SteelInterpreter::make_id(const std::string& ns, const std::string& name){
-  return ns + "::" + name;
+    return ns + "::" + name;
 }
 
 void SteelInterpreter::push_context()
 {
-  AutoLock mutex(m_stack_mutex);
+    AutoLock mutex(m_stack_mutex);
     if(m_nContextCount++ == 0)
     {
-	   import(kszGlobalNamespace);
+        import(kszGlobalNamespace);
     }
     //m_return_stack.push(SteelType());
 }
 
 void SteelInterpreter::pop_context()
 {
-  AutoLock mutex(m_stack_mutex);
+    AutoLock mutex(m_stack_mutex);
     if(--m_nContextCount == 0)
     {
-		remove_user_functions();
-		clear_imports();
-		free_file_handles();
-		m_requires.clear();
+        clear_imports();
+        free_file_handles();
+        m_requires.clear();
     }
     //m_return_stack.pop_front();
 }
@@ -531,57 +465,38 @@ void SteelInterpreter::free_file_handles()
 {
     for(std::set<FileHandle*>::iterator iter=m_file_handles.begin();iter!=m_file_handles.end();iter++)
     {
-	FileInHandle* inhandle = dynamic_cast<FileInHandle*>(*iter);
-	FileOutHandle* outhandle = dynamic_cast<FileOutHandle*>(*iter);
+        FileInHandle* inhandle = dynamic_cast<FileInHandle*>(*iter);
+        FileOutHandle* outhandle = dynamic_cast<FileOutHandle*>(*iter);
 	
-	if(inhandle){ 
-	    std::ifstream * stream = dynamic_cast<std::ifstream*>(inhandle->GetStream());
-	    if(stream){ 
-		stream->close();
-		delete stream;
-	    }
-	    delete inhandle;
-	}
-	if(outhandle){
-	    std::ofstream * stream = dynamic_cast<std::ofstream*>(outhandle->GetStream());
-	    if(stream){
-		stream->flush();
-		stream->close();
-		delete stream;
-	    }
-	    delete outhandle;
-	}
+        if(inhandle){ 
+            std::ifstream * stream = dynamic_cast<std::ifstream*>(inhandle->GetStream());
+            if(stream){ 
+                stream->close();
+                delete stream;
+            }
+            delete inhandle;
+        }
+        if(outhandle){
+            std::ofstream * stream = dynamic_cast<std::ofstream*>(outhandle->GetStream());
+            if(stream){
+                stream->flush();
+                stream->close();
+                delete stream;
+            }
+            delete outhandle;
+        }
     }
     m_file_handles.clear();
 }
 
 
-void SteelInterpreter::remove_user_functions()
-{
-  AutoLock mutex(m_function_mutex);
-      for(std::map<std::string,FunctionSet>::iterator iter = m_functions.begin();
-        iter != m_functions.end(); iter++)
-        {
-            FunctionSet& sset = iter->second;
-            for(FunctionSet::iterator fiter = sset.begin(); fiter != sset.end(); )
-            {
-                shared_ptr<SteelFunctor> functor = fiter->second;
-                if(functor->isUserFunction()){
-                    // No need to delete the functor itself, right?                                                                                                     
-                    sset.erase(fiter++);
-				}else{
-					++fiter;
-				}
-            }
-        }        
-}
 
 
 
 void SteelInterpreter::declare(const std::string &name)
 {
-  AutoLock mutex(m_symbol_mutex);
-  assert(!m_symbols.empty());
+    AutoLock mutex(m_symbol_mutex);
+    assert(!m_symbols.empty());
     VariableFile &file = m_symbols.front();
 
     VariableFile::iterator it = file.find(name);
@@ -592,6 +507,11 @@ void SteelInterpreter::declare(const std::string &name)
     }
 
     file[name] = SteelType();
+}
+void SteelInterpreter::declare_function(const std::string& ns, const std::string &name, std::shared_ptr<SteelFunctor> &datum){
+    SteelType func;
+    func.set(datum);
+    declare_const(make_id(ns,name),func);
 }
 
 void SteelInterpreter::declare_const(const std::string &name, const SteelType &datum)
@@ -619,8 +539,8 @@ void SteelInterpreter::declare_const(const std::string &name, const T &value)
 // array reference to the array
 void SteelInterpreter::declare_array(const std::string &array_name, int size)
 {
-  AutoLock mutex(m_symbol_mutex);
-  assert(!m_symbols.empty());
+    AutoLock mutex(m_symbol_mutex);
+    assert(!m_symbols.empty());
     VariableFile &file = m_symbols.front();
 
     VariableFile::iterator it = file.find(array_name);
@@ -636,6 +556,13 @@ void SteelInterpreter::declare_array(const std::string &array_name, int size)
     file[array_name]  = var;
 }
 
+SteelType *SteelInterpreter::enclose_value(const std::string &name)
+{
+    SteelType *p = lookup_internal(name);
+
+    if(p == NULL) throw UnknownIdentifier(name);
+    return p;
+}
 
 SteelType *SteelInterpreter::lookup_lvalue(const std::string &name)
 {
@@ -643,7 +570,8 @@ SteelType *SteelInterpreter::lookup_lvalue(const std::string &name)
 
     if(p == NULL) throw UnknownIdentifier(name);
 
-    if(p->isConst()) throw ConstViolation();
+    if(p->isConst()) 
+        throw ConstViolation();
 
     return p;
 }
@@ -668,6 +596,9 @@ SteelType SteelInterpreter::lookup(SteelType *pVar, int index)
     return pVar->getElement(index);
 }
 
+SteelType SteelInterpreter::lookup_function(const std::string &ns, const std::string &name){
+    return lookup(make_id(ns,name));
+}
 SteelType SteelInterpreter::lookup(SteelType *pVar, const std::string& key)
 {
     // if strict, throw Unknown Identifier
@@ -694,44 +625,40 @@ void SteelInterpreter::assign(SteelType *pVar, const SteelType &value)
 
 void SteelInterpreter::registerFunction(const std::string &name, 
                                         const std::string &ns,
-                                        shared_ptr<AstParamDefinitionList> pParams, 
-                                        shared_ptr<AstStatementList> pStatements)
+                                        std::shared_ptr<AstParamDefinitionList> pParams, 
+                                        std::shared_ptr<AstStatementList> pStatements)
 {
-    shared_ptr<SteelFunctor> functor(new SteelUserFunction(pParams,pStatements));
+    std::shared_ptr<SteelFunctor> functor(new SteelUserFunction(pParams,pStatements));
     addFunction(name,ns,functor);
 }
 
 void SteelInterpreter::registerAuxVariables( AuxVariables* pVariables ) {
-	m_aux_variables.push_front(pVariables);
+    m_aux_variables.push_front(pVariables);
 }
 
 
 void SteelInterpreter::removeAuxVariables( AuxVariables* pVariables ) {
-  std::list<AuxVariables*>::iterator it = std::find(m_aux_variables.begin(),m_aux_variables.end(),pVariables);
-	if(it != m_aux_variables.end())
-		m_aux_variables.erase(it);
+    std::list<AuxVariables*>::iterator it = std::find(m_aux_variables.begin(),m_aux_variables.end(),pVariables);
+    if(it != m_aux_variables.end())
+        m_aux_variables.erase(it);
 }
 
 void SteelInterpreter::linkAuxVariables( AuxVariables* pVariables ) {
-	m_linked_aux_variables.push_front(pVariables);
+    m_linked_aux_variables.push_front(pVariables);
 }
 
 
 void SteelInterpreter::unlinkAuxVariables( AuxVariables* pVariables ) {
-  std::list<AuxVariables*>::iterator it = std::find(m_linked_aux_variables.begin(),m_linked_aux_variables.end(),pVariables);
-	if(it != m_linked_aux_variables.end())
-		m_linked_aux_variables.erase(it);
+    std::list<AuxVariables*>::iterator it = std::find(m_linked_aux_variables.begin(),m_linked_aux_variables.end(),pVariables);
+    if(it != m_linked_aux_variables.end())
+        m_linked_aux_variables.erase(it);
 }
 
-
-
-SteelType * SteelInterpreter::lookup_internal(const std::string &name)
-{
-  AutoLock mutex(m_symbol_mutex);
-    for(std::list<VariableFile>::iterator i = m_symbols.begin();
+SteelType * SteelInterpreter::_lookup_internal(const std::string &i_name){
+    for(std::deque<VariableFile>::iterator i = m_symbols.begin();
         i != m_symbols.end(); i++)
     {
-        VariableFile::iterator it = (*i).find(name);
+        VariableFile::iterator it = (*i).find(i_name);
         if( it != (*i).end()  )
         {
             // Found a match.
@@ -741,11 +668,25 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &name)
     
     // Still not found. Try the aux variables
     for(std::list<AuxVariables*>::iterator it = m_aux_variables.begin();
-		it != m_aux_variables.end(); it++){
-		SteelType* pVar = (*it)->lookupLValue(name);
-		if(pVar != NULL) 
-			return pVar;
-	}
+        it != m_aux_variables.end(); it++){
+        SteelType* pVar = (*it)->lookupLValue(i_name);
+        if(pVar != NULL) 
+            return pVar;
+    }
+    return NULL;
+}
+
+SteelType * SteelInterpreter::lookup_internal(const std::string &i_name)
+{
+    AutoLock mutex(m_symbol_mutex);
+    SteelType * val = _lookup_internal(i_name); // Try with no namespace
+    if(val) return val;
+
+    for(auto ns_it = m_namespace_scope.begin(); ns_it != m_namespace_scope.end(); ns_it++){
+        const std::string name = make_id(*ns_it,i_name);
+        val = _lookup_internal(name);
+        if(val) return val;
+    }
 
     return NULL;
 }
@@ -753,24 +694,24 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &name)
 
 void SteelInterpreter::pushScope()
 {
-  AutoLock mutex(m_scope_mutex);
-  m_symbols.push_front ( VariableFile() );
+    AutoLock mutex(m_scope_mutex);
+    m_symbols.push_front ( VariableFile() );
 }
 
 void SteelInterpreter::popScope()
 {
-  AutoLock mutex(m_scope_mutex);
-  assert(!m_symbols.empty());
-  for(std::list<AuxVariables*>::iterator aux_it = m_linked_aux_variables.begin();
-	  aux_it != m_linked_aux_variables.end(); aux_it++){
-    (*aux_it)->transferOwnership(m_symbols.front());
-  }
-  m_symbols.pop_front();
+    AutoLock mutex(m_scope_mutex);
+    assert(!m_symbols.empty());
+    for(std::list<AuxVariables*>::iterator aux_it = m_linked_aux_variables.begin();
+        aux_it != m_linked_aux_variables.end(); aux_it++){
+        (*aux_it)->transferOwnership(m_symbols.front());
+    }
+    m_symbols.pop_front();
 }
 
 void SteelInterpreter::setFileProvider( IFileProvider* provider )
 {
-	m_file_provider = provider;
+    m_file_provider = provider;
 }
 
 
@@ -778,23 +719,24 @@ void SteelInterpreter::registerBifs()
 {
 
     srand(time(0));
-    addFunction("require",shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
-		(this,&SteelInterpreter::require)));
-    addFunction("print", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
-		(this,&SteelInterpreter::print)));
-    addFunction("println",shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
-		(this,&SteelInterpreter::println)));
-    addFunction("len", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len)));
-    addFunction("real", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real)));
-    addFunction("integer", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer)));
-    addFunction("boolean", shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean)));
-    addFunction("substr", shared_ptr<SteelFunctor>(new SteelFunctor3Arg<SteelInterpreter,const std::string&,int,int>(this,&SteelInterpreter::substr)));
+    addFunction("require",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
+                                                   (this,&SteelInterpreter::require)));
+    addFunction("print",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
+                                                  (this,&SteelInterpreter::print)));
+    addFunction("println",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
+                                                   (this,&SteelInterpreter::println)));
+    addFunction("len",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len)));
+    addFunction("real",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real)));
+    addFunction("integer",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer)));
+    addFunction("boolean",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean)));
+    addFunction("substr",std::shared_ptr<SteelFunctor>(new SteelFunctor3Arg<SteelInterpreter,const std::string&,int,int>(this,&SteelInterpreter::substr)));
     addFunction("strlen",new SteelFunctor1Arg<SteelInterpreter,const std::string&>(this,&SteelInterpreter::strlen));
     addFunction("is_array",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_array));
     addFunction("is_handle",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_handle));
     addFunction("is_function",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_function));    
     addFunction("is_valid",new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::is_valid));
     addFunction("array",new SteelFunctorArray<SteelInterpreter>(this,&SteelInterpreter::array));
+    addFunction("hash",new SteelFunctorNoArgs<SteelInterpreter>(this,&SteelInterpreter::hash));
 
 
 
@@ -854,51 +796,51 @@ SteelType SteelInterpreter::require(const std::string &filename)
 {
     if(m_requires.find(filename) == m_requires.end())
     {
-		IFile * file = m_file_provider->create();
-		if(!file->open(filename.c_str()))
-		{
-			throw FileNotFound();
-		}
+        IFile * file = m_file_provider->create();
+        if(!file->open(filename.c_str()))
+        {
+            throw FileNotFound();
+        }
 	
-		std::ostringstream strstream;
-		while(!file->eof())
-		{
-			char buffer[1024];
-			memset(buffer,0,1024);
-			int r = file->read(buffer,1024);
-			strstream.write(buffer,r);
-		}
-		file->close();
-		delete file;
+        std::ostringstream strstream;
+        while(!file->eof())
+        {
+            char buffer[1024];
+            memset(buffer,0,1024);
+            int r = file->read(buffer,1024);
+            strstream.write(buffer,r);
+        }
+        file->close();
+        delete file;
 	
-		m_requires.insert(filename);
+        m_requires.insert(filename);
 		
-		SteelParser parser;
-		parser.setFileProvider(m_file_provider);
-		parser.setBuffer(strstream.str().c_str(),filename);
-		AstBase * pBase;
-		if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
-		{
-			if(parser.hadError())
-			{
-			throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
-			} 
-			else
-			{
-			throw SteelException(SteelException::PARSING,0,filename, "Unknown parsing error.");
-			}                
-		}
-		else if (parser.hadError())
-		{
-			throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
-		}
+        SteelParser parser;
+        parser.setFileProvider(m_file_provider);
+        parser.setBuffer(strstream.str().c_str(),filename);
+        AstBase * pBase;
+        if(parser.Parse(&pBase) != SteelParser::PRC_SUCCESS)
+        {
+            if(parser.hadError())
+            {
+                throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
+            } 
+            else
+            {
+                throw SteelException(SteelException::PARSING,0,filename, "Unknown parsing error.");
+            }                
+        }
+        else if (parser.hadError())
+        {
+            throw SteelException(SteelException::PARSING,0,filename, parser.getErrors());
+        }
 
-		AstScript *pScript = static_cast<AstScript*>( pBase );
+        AstScript *pScript = static_cast<AstScript*>( pBase );
 
-		pScript->execute(this);
+        pScript->execute(this);
 
-		delete pScript; // Right? We ran the code, so we're okay there... and any lingering functions we want will survive this.
-	}
+        delete pScript; // Right? We ran the code, so we're okay there... and any lingering functions we want will survive this.
+    }
     return SteelType();
 }
 
@@ -977,10 +919,18 @@ SteelType SteelInterpreter::strlen(const std::string &str)
 
 SteelType SteelInterpreter::array(const SteelArray& value)
 {
-  SteelType array;
-  array.set(value);
+    SteelType array;
+    array.set(value);
 
-  return array;
+    return array;
+}
+
+SteelType SteelInterpreter::hash()
+{
+    SteelType hash;
+    hash.set(SteelType::Map());
+
+    return hash;
 }
 
 SteelType SteelInterpreter::is_array(const SteelType &array)
@@ -1090,16 +1040,16 @@ SteelType SteelInterpreter::acos (double f)
 
 SteelType SteelInterpreter::deg2rad(double deg)
 {
-  SteelType var;
-  var.set(deg * (M_PI/180.0));
-  return var;
+    SteelType var;
+    var.set(deg * (M_PI/180.0));
+    return var;
 }
 
 SteelType SteelInterpreter::rad2deg(double rad)
 {
-  SteelType var;
-  var.set(rad * (180.0 / M_PI));
-  return var;
+    SteelType var;
+    var.set(rad * (180.0 / M_PI));
+    return var;
 }
 
 SteelType SteelInterpreter::asin (double f)
@@ -1192,22 +1142,22 @@ SteelType SteelInterpreter::pow (double f, double g)
 
 SteelType SteelInterpreter::srand ( int s )
 {
-  ::srand(s);
-  return SteelType();
+    ::srand(s);
+    return SteelType();
 }
 
 SteelType SteelInterpreter::rand ( )
 {
-  SteelType var;
-  var.set(::rand());
-  return var;
+    SteelType var;
+    var.set(::rand());
+    return var;
 }
 
 SteelType SteelInterpreter::randf ( )
 {
-  SteelType var;
-  var.set( (double)::rand() / ((double)RAND_MAX + 1) );
-  return var;
+    SteelType var;
+    var.set( (double)::rand() / ((double)RAND_MAX + 1) );
+    return var;
 }
 
 
@@ -1267,29 +1217,29 @@ SteelType SteelInterpreter::open(const std::string& filename, const std::string&
     bool write = false;
     bool append = false;
     for(int i=0;i<mode.length();i++){
-	if(mode[i] == 'w') write = true;
-	else if(mode[i] == '+') append = true;
+        if(mode[i] == 'w') write = true;
+        else if(mode[i] == '+') append = true;
     }
     
     if(write){
-	FileOutHandle * _handle = new FileOutHandle();
+        FileOutHandle * _handle = new FileOutHandle();
 
-	std::ios_base::openmode mode = std::ostream::out;
+        std::ios_base::openmode mode = std::ostream::out;
 	
-	if(append)
-	    mode |= std::ostream::app;
+        if(append)
+            mode |= std::ostream::app;
 	
-	std::ostream * stream = new std::ofstream(filename.c_str(),mode);
-	_handle->SetStream(stream);
-	handle = _handle;
+        std::ostream * stream = new std::ofstream(filename.c_str(),mode);
+        _handle->SetStream(stream);
+        handle = _handle;
     }else{
-	FileInHandle * _handle = new FileInHandle();
+        FileInHandle * _handle = new FileInHandle();
 
-	std::ios::openmode mode = std::istream::in;
+        std::ios::openmode mode = std::istream::in;
 	
-	std::istream * stream = new std::ifstream(filename.c_str(),mode);
-	_handle->SetStream(stream);
-	handle = _handle;
+        std::istream * stream = new std::ifstream(filename.c_str(),mode);
+        _handle->SetStream(stream);
+        handle = _handle;
     }
     m_file_handles.insert(handle);
     var.set(handle);
@@ -1303,24 +1253,24 @@ SteelType SteelInterpreter::close(SteelType::Handle file)
     
     if(inhandle)
     {
-	std::ifstream * stream = dynamic_cast<std::ifstream*>(inhandle->GetStream());
+        std::ifstream * stream = dynamic_cast<std::ifstream*>(inhandle->GetStream());
 	
-	if(stream){
-	    stream->close();
-	}
-	// otherwise its probably some other kind of istream, and doesnt need closing
+        if(stream){
+            stream->close();
+        }
+        // otherwise its probably some other kind of istream, and doesnt need closing
     }
     else if(outhandle)
     {
-	std::ofstream * stream = dynamic_cast<std::ofstream*>(outhandle->GetStream());
+        std::ofstream * stream = dynamic_cast<std::ofstream*>(outhandle->GetStream());
 	
-	if(stream){
-	    stream->close();
-	}
+        if(stream){
+            stream->close();
+        }
     }
     else
     {
-	throw TypeMismatch();
+        throw TypeMismatch();
     }
     
     return SteelType();
@@ -1329,11 +1279,10 @@ SteelType SteelInterpreter::close(SteelType::Handle file)
 
 SteelInterpreter& SteelInterpreter::operator= ( const SteelInterpreter& other )
 {
-	if(&other == this) return *this;
+    if(&other == this) return *this;
 
     m_symbols = other.m_symbols;
     m_namespace_scope = other.m_namespace_scope;
-    m_functions = other.m_functions;
     m_requires = other.m_requires;
     
     /* Intentionally not copying return stack or context count
@@ -1343,7 +1292,7 @@ SteelInterpreter& SteelInterpreter::operator= ( const SteelInterpreter& other )
 }
 
 
-}
+
 
 
 

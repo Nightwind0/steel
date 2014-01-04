@@ -18,7 +18,7 @@ function merge_sort(declare @m, declare $comparator)
 
 function merge(declare @left,declare @right, declare $comparator)
 {
-	declare @result;
+	declare @result = [];
 	while(len(@left) > 0 or len(@right) > 0)
 	{
 		if(len(@left) > 0 and len(@right) > 0)
@@ -42,7 +42,7 @@ function merge(declare @left,declare @right, declare $comparator)
 
 function generate_array(declare $num_elements)
 {
-	declare @array;
+	declare @array = [];
 	declare $i=0;
 	for(;$i<$num_elements;$i++)
 	{

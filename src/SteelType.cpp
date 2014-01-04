@@ -224,16 +224,16 @@ void SteelType::set(const Map &ref)
 }
 
 SteelType & SteelType::operator=(SteelType&& rhs){
-    m_functor = std::move(rhs.m_functor);
-    m_array = std::move(rhs.m_array);
-    m_map = std::move(rhs.m_map);
-    m_value = rhs.m_value;
-    m_storage = rhs.m_storage;
-    m_bCopyArray = rhs.m_bCopyArray; // Right? Move this value?
-    m_bCopyHash = rhs.m_bCopyHash; // Is it correct to move this? I think so
-    rhs.m_value.i = 0;
-    rhs.m_storage = SteelType::INT;
-    return *this;
+  m_functor = std::move(rhs.m_functor);
+  m_array = std::move(rhs.m_array);
+  m_map = std::move(rhs.m_map);
+  m_value = rhs.m_value;
+  m_storage = rhs.m_storage;
+  m_bCopyArray = rhs.m_bCopyArray; // Right? Move this value?
+  m_bCopyHash = rhs.m_bCopyHash; // Is it correct to move this? I think so
+  rhs.m_value.i = 0;
+  rhs.m_storage = SteelType::INT;
+  return *this;
 }
 
 SteelType & SteelType::operator=(const SteelType &rhs)
@@ -275,7 +275,7 @@ SteelType & SteelType::operator=(const SteelType &rhs)
 SteelType::Functor SteelType::getFunctor() const 
 { 
     if(!isFunctor())
-        throw TypeMismatch();
+        throw ValueNotFunction();
     return m_functor; 
 }
 
@@ -1128,7 +1128,7 @@ SteelType *SteelType::getLValue(int index) const
 {
     // Not a valid lvalue if its const
     // TODO: Throw ConstViolation. But then you have to catch it
-    if(m_bConst) return NULL;
+  if(m_bConst) throw ConstViolation();
     if(m_bCopyArray){
         const_cast<SteelType*>(this)->set(*m_array); // Getting an Lvalue is a write. Copy-on-write
         const_cast<SteelType*>(this)->m_bCopyArray = false;

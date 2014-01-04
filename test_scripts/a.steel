@@ -1,5 +1,5 @@
 var @array;
 
-@array = @array : 4;
+@array = @array + 4;
 
 println ( @array[0] );

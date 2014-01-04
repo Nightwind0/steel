@@ -1,0 +1,10 @@
+using "math";
+
+println(pow(2,8));
+
+function custom::pow(declare $a, declare $b){
+         return math::pow($a,$b);
+}
+
+println(custom::pow(2,8));
+

@@ -1,6 +1,6 @@
 declare @myarray[1];
 declare #myhash;
-
+declare barehash = hash();
 @myarray[0] = 5;
 #myhash["Doom"] = 5;
 println(@myarray[0]);
