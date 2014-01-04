@@ -6,6 +6,8 @@
 #include <list>
 #include <set>
 #include <vector>
+#include <stack>
+#include <deque>
 #include <fstream>
 #include <memory>
 #ifndef _WINDOWS
@@ -57,6 +59,9 @@ class SteelInterpreter
 public:
     SteelInterpreter();
     virtual ~SteelInterpreter();
+
+    typedef std::stack<SteelType> ReturnStack;
+    typedef std::deque<SteelType> ParamStack;
 
     // Add function to the global namespace
     void addFunction(const std::string &name, std::tr1::shared_ptr<SteelFunctor> pFunc);
@@ -124,8 +129,13 @@ public:
                           const std::string &ns,
                           shared_ptr<AstParamDefinitionList> pParams, 
                           shared_ptr<AstStatementList> pStatements);
-    void setReturn(const SteelType &var);
-	SteelType getReturn() const;
+    bool paramStackEmpty() const;
+    SteelType popParamStack();
+    void pushParamStack(const SteelType& value);
+    bool returnStackEmpty() const;
+    SteelType popReturnStack();
+    void pushReturnStack(const SteelType& value);
+
 
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
     shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
@@ -183,7 +193,8 @@ private:
     //FunctionSet m_functions;
     std::set<std::string> m_requires;
 
-    std::list<SteelType> m_return_stack;
+    ParamStack m_param_stack; // Currently only one stack
+    ReturnStack m_return_stack; 
     
     std::set<FileHandle*> m_file_handles;
 	std::list<AuxVariables*> m_aux_variables;

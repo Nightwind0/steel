@@ -25,7 +25,7 @@ println ( ++$c );
 println ( --$c );
 
 var @array[1];
-
+@array[0] = 4;
 
 var $index = 0;
 

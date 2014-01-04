@@ -1,0 +1,5 @@
+function foo(declare $bar){
+return $bar ^ 2;
+}
+
+println ( foo(2) );

@@ -52,6 +52,10 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
     
     pInterpreter->pushScope();
 
+    for(SteelType::Container::const_iterator it = supplied_params.begin(); it != supplied_params.end(); it++){
+      pInterpreter->pushParamStack(*it);
+    }
+
     if( m_pParams != NULL)
     {
         if( supplied_params.size() > m_pParams->size() ) throw ParamMismatch();
@@ -63,18 +67,18 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
     }
 
     if(m_pParams)
-        m_pParams->executeDeclarations(pInterpreter, supplied_params);
+        m_pParams->executeDeclarations(pInterpreter);
 
     if(m_pList)
     {
-		AutoRemover remover(pInterpreter,&m_nonlocals);
-		pInterpreter->registerAuxVariables(&m_nonlocals);
-        if(m_pList->execute(pInterpreter) == AstStatement::RETURN)
-            ret = pInterpreter->getReturn();
-		else
-			pInterpreter->setReturn(SteelType()); // If they didn't return anything, we return a blank one for them
+      AutoRemover remover(pInterpreter,&m_nonlocals);
+      pInterpreter->registerAuxVariables(&m_nonlocals);
+      if(m_pList->execute(pInterpreter) == AstStatement::RETURN){
+	ret = pInterpreter->popReturnStack();
+      }//else
+      //pInterpreter->getReturnStack().push(SteelType());
     }
-
+    
     pInterpreter->popScope();
     return ret;
 }

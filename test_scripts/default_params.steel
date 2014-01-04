@@ -1,0 +1,10 @@
+function foo(declare $a,declare $b=4){
+	 println($b);
+}
+
+
+foo(10);
+
+foo(20,80);
+
+foo(9);

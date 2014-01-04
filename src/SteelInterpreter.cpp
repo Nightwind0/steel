@@ -292,12 +292,42 @@ SteelType SteelInterpreter::runAst(AstScript *pScript)
     AutoCall<SteelInterpreter> popper(this,&SteelInterpreter::pop_context);
     assert ( NULL != pScript );
     pushScope();
-	AstStatement::eStopType stopType =  pScript->execute(this);
+    AstStatement::eStopType stopType =  pScript->execute(this);
     popScope();
     SteelType returnval;
-	if(stopType == AstStatement::RETURN)
-		returnval = getReturn();
+    if(stopType == AstStatement::RETURN){
+      returnval = popReturnStack();
+    }
     return returnval;
+}
+
+bool SteelInterpreter::paramStackEmpty() const{
+  return m_param_stack.empty(); // TODO: On all stack operations look up stack for thread, to properly do threading
+}
+SteelType SteelInterpreter::popParamStack(){
+  AutoLock lock(m_stack_mutex);
+  SteelType ret = m_param_stack.front(); // TODO: On all stack operations look up stack for thread, to properly do threading
+  m_param_stack.pop_front();
+  return ret;
+}
+void SteelInterpreter::pushParamStack(const SteelType& value){
+  AutoLock lock(m_stack_mutex);
+  m_param_stack.push_back(value); // TODO: On all stack operations look up stack for thread, to properly do threading
+}
+bool SteelInterpreter::returnStackEmpty() const{
+  return m_return_stack.empty();
+}
+SteelType SteelInterpreter::popReturnStack(){
+  AutoLock lock(m_stack_mutex);
+  // TODO: On all stack operations look up stack for thread, to properly do threading
+  SteelType ret = m_return_stack.top();
+  m_return_stack.pop();
+  return ret;
+}
+void SteelInterpreter::pushReturnStack(const SteelType& value){
+  // TODO: On all stack operations look up stack for thread, to properly do threading
+  AutoLock lock(m_stack_mutex);
+  m_return_stack.push(value);
 }
 
 // This method allows you to set up some variables at a global scope
@@ -319,8 +349,9 @@ SteelType SteelInterpreter::runAst(AstScript *pScript, const ParameterList &para
     AstStatement::eStopType stopType = pScript->execute(this);
     popScope();
     SteelType returnval;
-	if(stopType == AstStatement::RETURN)
-		returnval = getReturn();
+    if(stopType == AstStatement::RETURN){
+      returnval = popReturnStack();
+    }
     return returnval;
 }
 
@@ -356,8 +387,9 @@ SteelType SteelInterpreter::run(const std::string &name,const std::string &scrip
     delete pScript;
 
     SteelType returnval;
-	if(stop == AstStatement::RETURN)
-		returnval = getReturn();
+    if(stop == AstStatement::RETURN){
+      returnval = popReturnStack();
+    }
     return returnval;
 }
 
@@ -453,20 +485,6 @@ shared_ptr<SteelFunctor> SteelInterpreter::lookup_functor(const std::string &nam
   return shared_ptr<SteelFunctor>();
 }
 
-void SteelInterpreter::setReturn(const SteelType &var)
-{
-  AutoLock mutex(m_stack_mutex);
-   // m_return_stack.pop_front();
-  m_return_stack.front() = var;
-}
-
-SteelType SteelInterpreter::getReturn() const {
-	AutoLock mutex(m_stack_mutex);
-	return m_return_stack.front();
-}
-
-
-
 void SteelInterpreter::removeFunctions(const std::string &ns)
 {
   AutoLock mutex(m_function_mutex);
@@ -493,7 +511,7 @@ void SteelInterpreter::push_context()
     {
 	   import(kszGlobalNamespace);
     }
-    m_return_stack.push_front(SteelType());
+    //m_return_stack.push(SteelType());
 }
 
 void SteelInterpreter::pop_context()
@@ -506,7 +524,7 @@ void SteelInterpreter::pop_context()
 		free_file_handles();
 		m_requires.clear();
     }
-    m_return_stack.pop_front();
+    //m_return_stack.pop_front();
 }
 
 void SteelInterpreter::free_file_handles()

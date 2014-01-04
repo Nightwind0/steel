@@ -1,0 +1,11 @@
+
+require("array_print.steel");
+
+
+declare @array = array(1,2,3,4);
+
+push @array , 4;
+pushb @array, 6; // same as += 6;
+printarray((push @array, 7));
+println(pop @array);
+

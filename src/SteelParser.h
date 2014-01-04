@@ -172,29 +172,28 @@ public:
             VAR = 278,
             STRING = 279,
             BINOP_MULT_DIV_MOD = 280,
-            BINOP_ADD_SUB = 281,
-            BINOP_ASSIGNMENT = 282,
-            LITERAL = 283,
-            INCREMENT = 284,
-            DECREMENT = 285,
-            POP = 286,
-            POPB = 287,
-            PUSH = 288,
-            PUSHB = 289,
-            REMOVE = 290,
-            CONSTANT = 291,
-            DO = 292,
-            IMPORT = 293,
-            SCOPE = 294,
-            SWITCH = 295,
-            CASE = 296,
-            DEFAULT = 297,
-            CASE_DELIM = 298,
-            LAMBDA = 299,
-            MAKE_PAIR = 300,
-            BIN_AND = 301,
-            BIN_OR = 302,
-            BIN_NOT = 303
+            BINOP_ASSIGNMENT = 281,
+            LITERAL = 282,
+            INCREMENT = 283,
+            DECREMENT = 284,
+            POP = 285,
+            POPB = 286,
+            PUSH = 287,
+            PUSHB = 288,
+            REMOVE = 289,
+            CONSTANT = 290,
+            DO = 291,
+            IMPORT = 292,
+            SCOPE = 293,
+            SWITCH = 294,
+            CASE = 295,
+            DEFAULT = 296,
+            CASE_DELIM = 297,
+            LAMBDA = 298,
+            MAKE_PAIR = 299,
+            BIN_AND = 300,
+            BIN_OR = 301,
+            BIN_NOT = 302
         }; // end of enum SteelParser::Terminal::Name
     }; // end of struct SteelParser::Terminal
 
@@ -212,25 +211,25 @@ public:
           */
         enum Name
         {
-            array_identifier = 312,
-            array_literal = 293,
-            call = 316,
-            case_list = 304,
-            exp = 306,
-            func_definition = 282,
-            func_identifier = 310,
-            hashmap_identifier = 314,
-            optionalexp = 302,
-            pair = 298,
-            pair_list = 296,
-            param_definition = 289,
-            param_id = 284,
-            param_list = 321,
+            array_identifier = 319,
+            array_literal = 300,
+            call = 323,
+            case_list = 311,
+            exp = 313,
+            func_definition = 289,
+            func_identifier = 317,
+            hashmap_identifier = 321,
+            optionalexp = 309,
+            pair = 305,
+            pair_list = 303,
+            param_definition = 296,
+            param_id = 291,
+            param_list = 328,
             root = 0,
-            statement = 300,
-            statement_list = 291,
-            var_identifier = 308,
-            vardecl = 319,
+            statement = 307,
+            statement_list = 298,
+            var_identifier = 315,
+            vardecl = 326,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).
@@ -369,7 +368,7 @@ private:
 	IFileProvider* m_file_provider;
 	std::string mErrors;
 
-#line 373 "SteelParser.h"
+#line 372 "SteelParser.h"
 
 
 private:
@@ -383,25 +382,25 @@ private:
         enum Name
         {
             none_ = 0,
-            root = 304,
-            func_definition = 305,
-            param_id = 306,
-            param_definition = 307,
-            statement_list = 308,
-            array_literal = 309,
-            pair_list = 310,
-            pair = 311,
-            statement = 312,
-            optionalexp = 313,
-            case_list = 314,
-            exp = 315,
-            var_identifier = 316,
-            func_identifier = 317,
-            array_identifier = 318,
-            hashmap_identifier = 319,
-            call = 320,
-            vardecl = 321,
-            param_list = 322
+            root = 303,
+            func_definition = 304,
+            param_id = 305,
+            param_definition = 306,
+            statement_list = 307,
+            array_literal = 308,
+            pair_list = 309,
+            pair = 310,
+            statement = 311,
+            optionalexp = 312,
+            case_list = 313,
+            exp = 314,
+            var_identifier = 315,
+            func_identifier = 316,
+            array_identifier = 317,
+            hashmap_identifier = 318,
+            call = 319,
+            vardecl = 320,
+            param_list = 321
         }; // end of enum SteelParser::Nonterminal_::Name
     }; // end of struct SteelParser::Nonterminal_
     struct Transition_;
@@ -493,4 +492,4 @@ std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token
 } // namespace Steel
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 497 "SteelParser.h"
+#line 496 "SteelParser.h"

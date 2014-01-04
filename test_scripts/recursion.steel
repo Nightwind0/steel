@@ -10,4 +10,4 @@ function factorial(var $count)
 }
 
 
-println ( factorial ( 5 ) );
+println ( factorial ( 15 ) );

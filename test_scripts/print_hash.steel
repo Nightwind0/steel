@@ -1,0 +1,3 @@
+declare #h;
+declare @w;
+println("{@w} {#h}");

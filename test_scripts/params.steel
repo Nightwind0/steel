@@ -1,0 +1,16 @@
+function foo(){
+	 declare $a;
+	 println($a);
+}
+
+function bar(declare $a, declare $b=1, declare $c=2){
+	 println("$a = {$a} $b = {$b} $c = {$c}");
+}
+
+foo();
+
+bar(0);
+bar(5,6);
+bar(5,6,7);
+bar(0);
+bar(5,6);

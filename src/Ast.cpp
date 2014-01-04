@@ -121,7 +121,7 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 			pScript->execute(pInterpreter);
 			delete pScript;
 		    }
-		    value += (std::string)pInterpreter->getReturn();
+		    value += (std::string)pInterpreter->popReturnStack();
 		}else{
 		    value += "%err%";
 		}
@@ -636,8 +636,8 @@ AstReturnStatement::~AstReturnStatement()
 AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpreter)
 {
     if( m_pExpression )
-        pInterpreter->setReturn( m_pExpression->evaluate(pInterpreter) );
-    else pInterpreter->setReturn ( SteelType() );
+      pInterpreter->pushReturnStack(m_pExpression->evaluate(pInterpreter) );
+    else pInterpreter->pushReturnStack(SteelType());
     return RETURN;
 }
 
@@ -1994,12 +1994,6 @@ SteelType AstVarIdentifier::evaluate(SteelInterpreter *pInterpreter)
     }
 }
 
-void AstDeclaration::setValue(const SteelType &value)
-{
-    m_bHasValue = true;
-    m_value = value;
-}
-
 
 AstVarDeclaration::AstVarDeclaration(unsigned int line,
                                      const std::string &script,
@@ -2043,15 +2037,20 @@ AstStatement::eStopType AstVarDeclaration::execute(SteelInterpreter *pInterprete
             pInterpreter->declare(m_pId->getValue());
         
             SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
+	    
             // If this is null, its crazy, because we JUST declared its ass.
             assert ( NULL != pVar);
             
-            if(m_pExp) 
-                pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
-            
-            // If there is a value, it overrides whatever the expression was.
-            // This is for parameters
-            if(m_bHasValue) pInterpreter->assign( pVar, m_value);
+	
+	    if(!pInterpreter->paramStackEmpty()){
+	      // If there is a value, it overrides whatever the expression was.
+	      pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
+	    }else if(m_pExp) {
+	      pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+	    }else{
+	      pInterpreter->assign( pVar, SteelType() );
+	    }
+     
         }
     }
     catch(TypeMismatch)
@@ -2146,10 +2145,12 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
         SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
         // If this is null here, we're in a BAD way. Programming error.
         assert ( NULL != pVar);
-        if(m_pExp)
-            pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
-
-        if(m_bHasValue) pInterpreter->assign( pVar, m_value);
+	
+	if(!pInterpreter->paramStackEmpty()){
+	  pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
+	}else if(m_pExp){
+	  pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+	}
     }
     catch(TypeMismatch)
     {
@@ -2191,7 +2192,7 @@ AstHashMapDeclaration::AstHashMapDeclaration(unsigned int line,
 AstHashMapDeclaration::~AstHashMapDeclaration()
 {
     delete m_pId;
-	delete m_pExp;
+    delete m_pExp;
 }
 
 void AstHashMapDeclaration::assign(AstExpression *pExp)
@@ -2220,11 +2221,17 @@ AstStatement::eStopType AstHashMapDeclaration::execute(SteelInterpreter *pInterp
         // If this is null here, we're in a BAD way. Programming error.
         assert ( NULL != pVar);
 	pVar->set(SteelType::Map());
-#if 1 // Enable this when I have the syntax in place to create hashes similar to how array(blah,blah,blah) works
-        if(m_pExp)
-            pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
 
-#endif
+
+	if(!pInterpreter->paramStackEmpty()){
+	  pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
+	}else if(m_pExp){
+	  pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+	}else{
+	  SteelType hash;
+	  hash.set(SteelType::Map());
+	  pInterpreter->assign( pVar, hash );
+	}
     }
     catch(TypeMismatch)
     {
@@ -2314,12 +2321,6 @@ void AstParamDefinitionList::add(AstDeclaration *pDef)
     m_params.push_back( pDef );
 }
 
-void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter)
-{
-    for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
-        i != m_params.end(); i++)
-        (*i)->execute(pInterpreter);
-}
 
 int AstParamDefinitionList::size() const
 {
@@ -2332,20 +2333,12 @@ int AstParamDefinitionList::defaultCount() const
 }
 
 
-void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter, 
-                                                 const SteelType::Container &params)
+void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter)
 {
-    assert ( params.size() == m_params.size() );
-
-
-    int parameter = 0;
-    for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
-        i != m_params.end(); i++)
+  for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
+      i != m_params.end(); i++)
     {
-        if(parameter < params.size())
-            (*i)->setValue(params[parameter++]); 
-
-        (*i)->execute(pInterpreter);
+       (*i)->execute(pInterpreter);
     }
 }
 

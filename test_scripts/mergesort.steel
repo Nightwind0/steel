@@ -60,7 +60,7 @@ function less(declare $a, declare $b)
 
 require("array_print.steel");
 
-declare @array = generate_array(1000);
+declare @array = generate_array(10000);
 
 printarray(@array);
 @array = merge_sort(@array, less);

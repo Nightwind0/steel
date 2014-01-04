@@ -156,7 +156,6 @@ SteelParser::Token SteelParser::Scan ()
 %terminal VAR
 %terminal STRING %type.cpp "AstString*"
 %terminal BINOP_MULT_DIV_MOD %type.cpp "AstBinOp*"
-%terminal BINOP_ADD_SUB %type.cpp "AstBinOp*"
 %terminal BINOP_ASSIGNMENT %type.cpp "AstBinOp*"
 %terminal LITERAL %type.cpp "AstExpression*"
 %terminal INCREMENT
@@ -715,17 +714,15 @@ SteelParser::Token SteelParser::Scan ()
 |
 	func_identifier:id %target.cpp { return id; }
 |
-	exp:a BINOP_ADD_SUB:op exp:b %prec ADD_SUB %target.cpp{ 
-	      op->setLeft(a); 
-	      op->setRight(b);
+	exp:a '+' exp:b %prec ADD_SUB %target.cpp{ 
+	      AstBinOp* op = new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b);
 	      return op;
-}
+	      }
 |
-	exp:a BINOP_ADD_SUB:op exp:b %prec ADD_SUB %target.cpp { 
-	op->setLeft(a);
-	op->setRight(b);
-	return op;
-	 }
+	exp:a '-' exp:b %prec ADD_SUB %target.cpp{ 
+	      AstBinOp* op = new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b);
+	      return op;
+	      }
 |
 	exp:a BINOP_MULT_DIV_MOD:op exp:b %prec MULT_DIV_MOD %target.cpp { 
 	      op->setLeft(a); 

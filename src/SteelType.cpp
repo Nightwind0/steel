@@ -14,12 +14,9 @@ using namespace Steel;
 SteelType::SteelType()
 {
     m_value.i = 0;
-    m_value.s = NULL;
-    m_value.a = NULL;
-    m_value.h = NULL;
-	m_value.m = NULL;
     m_storage = SteelType::INT;
     m_bConst = false;
+    m_bCopyArray = m_bCopyHash = false;
 }
 
 SteelType::SteelType(const SteelType &rhs)
@@ -29,10 +26,10 @@ SteelType::SteelType(const SteelType &rhs)
     m_bConst = false;
 }
 
-SteelType::SteelType(SteelType&& rhs):m_functor(std::move(rhs.m_functor)),m_value(rhs.m_value),m_storage(rhs.m_storage),m_bConst(rhs.m_bConst)
+SteelType::SteelType(SteelType&& rhs):m_functor(std::move(rhs.m_functor)),m_array(std::move(rhs.m_array)),m_map(std::move(rhs.m_map)),m_value(rhs.m_value),m_storage(rhs.m_storage),m_bConst(rhs.m_bConst),m_bCopyArray(rhs.m_bCopyArray),m_bCopyHash(rhs.m_bCopyHash)
 {
-  rhs.m_value.i = 0;
-  rhs.m_storage = SteelType::INT;
+    rhs.m_value.i = 0;
+    rhs.m_storage = SteelType::INT;
 }
 
 
@@ -40,12 +37,7 @@ SteelType::~SteelType()
 {
     if(m_storage == SteelType::STRING)
         delete m_value.s;
-    else if (m_storage == SteelType::ARRAY)
-        delete m_value.a;
-	else if (m_storage == SteelType::HASHMAP)
-		delete m_value.m;
-
-    m_storage = SteelType::INT;
+     m_storage = SteelType::INT;
 }
 
 
@@ -66,7 +58,7 @@ SteelType::operator int () const
         return strInt();
     case SteelType::FUNCTOR:
     case SteelType::HANDLE:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw TypeMismatch();
     }
     assert ( 0 );
@@ -82,9 +74,9 @@ SteelType::operator Handle() const
 
 SteelType::operator Functor() const
 {
-  if(m_storage != SteelType::FUNCTOR)
-    throw TypeMismatch();
-  else return m_functor;
+    if(m_storage != SteelType::FUNCTOR)
+        throw TypeMismatch();
+    else return m_functor;
 }
 
 SteelType::operator double () const
@@ -104,7 +96,7 @@ SteelType::operator double () const
         return strDouble();
     case SteelType::FUNCTOR:
     case SteelType::HANDLE:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw TypeMismatch();
     }
     assert( 0 );
@@ -119,25 +111,25 @@ SteelType::operator std::string () const
         if(m_value.b) return "TRUE";
         else return "FALSE";
     case SteelType::FUNCTOR:{
-		std::ostringstream os;
-		os << "#F(" << std::hex << m_functor.get() << ')';
-		return os.str();
-	}
+        std::ostringstream os;
+        os << "#F(" << std::hex << m_functor.get() << ')';
+        return os.str();
+    }
     case SteelType::ARRAY:	{
-		std::ostringstream os;
-		os << "#A(" << std::hex << m_value.a << ')';
-		return os.str();
-	}
+        std::ostringstream os;
+        os << "#A(" << std::hex << m_array.get() << ')';
+        return os.str();
+    }
     case SteelType::HANDLE:{
         std::ostringstream os;
-		os << "#H(" << std::hex << m_value.h << ')';
-		return os.str();
-	}
-	case SteelType::HASHMAP:{
-		std::ostringstream os;
-		os << "#M(" << std::hex << m_value.m << ')';
-		return os.str();
-	}
+        os << "#H(" << std::hex << m_map.get() << ')';
+        return os.str();
+    }
+    case SteelType::HASHMAP:{
+        std::ostringstream os;
+        os << "#M(" << std::hex << m_array.get() << ')';
+        return os.str();
+    }
     case SteelType::INT:
         return strToInt(m_value.i);
     case SteelType::DOUBLE:
@@ -154,12 +146,12 @@ SteelType::operator bool () const
     switch(m_storage)
     {
     case SteelType::FUNCTOR:
-      return m_functor != NULL;
-	case SteelType::HASHMAP:
+        return m_functor != NULL;
+    case SteelType::HASHMAP:
     case SteelType::ARRAY:
         return true;
     case SteelType::HANDLE:
-        return (m_value.h == NULL?false:true);
+        return (m_map == NULL?false:true);
     case SteelType::BOOL:
         return m_value.b;
     case SteelType::INT:
@@ -176,7 +168,7 @@ SteelType::operator SteelType::Container () const
 {
     if( !isArray() ) throw TypeMismatch();
 
-    else return *m_value.a;
+    else return *m_array;
 }
 
 void SteelType::set(int i)
@@ -211,32 +203,37 @@ void SteelType::set(Handle h)
 
 void SteelType::set(Functor f)
 {
-  m_functor = f;
-  m_value.i = 0;
-  m_storage = SteelType::FUNCTOR;
+    m_functor = f;
+    m_value.i = 0;
+    m_storage = SteelType::FUNCTOR;
 }
 
 
 void SteelType::set(const Container &ref)
 {
-    m_value.a = new SteelType::Container(ref);
+    m_array = std::shared_ptr<SteelType::Container>(new SteelType::Container(ref));
     m_storage = SteelType::ARRAY;
+    m_bCopyArray = false;
 }
 
 void SteelType::set(const Map &ref)
 {
-	m_value.m = new SteelType::Map(ref);
-	m_storage = SteelType::HASHMAP;
+    m_map = std::shared_ptr<SteelType::Map>(new SteelType::Map(ref));
+    m_storage = SteelType::HASHMAP;
+    m_bCopyHash = false;
 }
 
 SteelType & SteelType::operator=(SteelType&& rhs){
-  m_functor = std::move(rhs.m_functor);
-  m_value = rhs.m_value;
-  m_storage = rhs.m_storage;
- //m_bConst = rhs.m_bConst;
-  rhs.m_value.i = 0;
-  rhs.m_storage = SteelType::INT;
-  return *this;
+    m_functor = std::move(rhs.m_functor);
+    m_array = std::move(rhs.m_array);
+    m_map = std::move(rhs.m_map);
+    m_value = rhs.m_value;
+    m_storage = rhs.m_storage;
+    m_bCopyArray = rhs.m_bCopyArray; // Right? Move this value?
+    m_bCopyHash = rhs.m_bCopyHash; // Is it correct to move this? I think so
+    rhs.m_value.i = 0;
+    rhs.m_storage = SteelType::INT;
+    return *this;
 }
 
 SteelType & SteelType::operator=(const SteelType &rhs)
@@ -245,18 +242,17 @@ SteelType & SteelType::operator=(const SteelType &rhs)
 
     if(m_storage == SteelType::STRING)
         delete m_value.s;
-    else if (m_storage == SteelType::ARRAY)
-        delete m_value.a;
-	else if(m_storage == SteelType::HASHMAP)
-		delete m_value.m;
 
     m_storage = SteelType::INT;
 
     if(rhs.m_storage == SteelType::STRING)
         set ( *rhs.m_value.s );
-    else if ( rhs.m_storage == SteelType::ARRAY)
-        set ( *rhs.m_value.a );
-    else if ( rhs.m_storage == SteelType::BOOL)
+    else if ( rhs.m_storage == SteelType::ARRAY){
+        //set ( *rhs.m_value.a );
+        m_bCopyArray = true;
+        m_array = rhs.m_array;
+        m_storage = SteelType::ARRAY;
+    }else if ( rhs.m_storage == SteelType::BOOL)
         set ( rhs.m_value.b );
     else if ( rhs.m_storage == SteelType::INT)
         set ( rhs.m_value.i );
@@ -265,26 +261,35 @@ SteelType & SteelType::operator=(const SteelType &rhs)
     else if ( rhs.m_storage == SteelType::HANDLE)
         set ( rhs.m_value.h );
     else if ( rhs.m_storage == SteelType::FUNCTOR)
-	set ( rhs.m_functor );
-    else if ( rhs.m_storage == SteelType::HASHMAP)
-	set ( *rhs.m_value.m );
+        set ( rhs.m_functor );
+    else if ( rhs.m_storage == SteelType::HASHMAP){
+        //set ( *rhs.m_value.m );
+        m_bCopyHash = true;
+        m_map = rhs.m_map;
+        m_storage = SteelType::HASHMAP;
+    }
 
     return *this;
 }
 
 SteelType::Functor SteelType::getFunctor() const 
 { 
-  if(!isFunctor())
-    throw TypeMismatch();
-  return m_functor; 
+    if(!isFunctor())
+        throw TypeMismatch();
+    return m_functor; 
 }
 
 SteelType SteelType::pop_back()
 {
     if( ! isArray() ) throw TypeMismatch();
 
-    SteelType back = (*m_value.a).back();
-    (*m_value.a).pop_back();
+    if(m_bCopyArray){
+        set(*m_array);
+        m_bCopyArray = false;
+    }
+
+    SteelType back = m_array->back();
+    m_array->pop_back();
     return back;
 }
 
@@ -292,43 +297,64 @@ SteelType SteelType::pop()
 {
     if( ! isArray() ) throw TypeMismatch();
 
-    SteelType front = (*m_value.a).front();
-    (*m_value.a).pop_front();
+    if(m_bCopyArray){
+        set(*m_array);
+        m_bCopyArray = false;
+    }
+    
+    SteelType front = m_array->front();
+    m_array->pop_front();
     return front;
 }
 
 SteelType SteelType::removeElement ( int index )
 {
     if( ! isArray() ) throw TypeMismatch();
+
+    if(m_bCopyArray){
+        set(*m_array);
+        m_bCopyArray = false;
+    }
     
-    SteelType val = (*m_value.a)[index];
-    m_value.a->erase(m_value.a->begin() + index);
+    SteelType val = m_array->operator[](index);
+    m_array->erase(m_array->begin() + index);
     return val;
 }
 
 SteelType* SteelType::getLValue( const std::string& key ) const 
 {
-	if ( !isHashMap() ) throw TypeMismatch();
-	Map::const_iterator findit = m_value.m->find(key);
-	if(findit == m_value.m->end()) {
-		// Throw exception... or silent but graceful failure?
-		//throw UnknownIdentifier();
-		(*m_value.m)[key] = SteelType();
-	}
-	return &((*m_value.m)[key]);
+    if ( !isHashMap() ) throw TypeMismatch();
+    
+    if(m_bCopyHash){
+        const_cast<SteelType*>(this)->set(*m_map); // Copy-on-write. getting an L-value is a write.
+        const_cast<SteelType*>(this)->m_bCopyHash = false;
+    }
+
+    Map::iterator findit = m_map->find(key);
+    if(findit == m_map->end()) {
+        // Throw exception... or silent but graceful failure?
+        //throw UnknownIdentifier();
+        m_map->operator[](key) = SteelType();
+        return &(m_map->operator[](key));
+    }
+    return &(findit->second);
 }
 
 
 SteelType SteelType::getElement( const std::string& key ) const 
 {
-	if ( !isHashMap() ) throw TypeMismatch();
-	return (*m_value.m)[key];
+    if ( !isHashMap() ) throw TypeMismatch();
+    return m_map->operator[](key);
 }
 
 void SteelType::setElement( const std::string& key, const SteelType& value ) 
 {
-	if ( !isHashMap() ) throw TypeMismatch();
-	(*m_value.m)[key] = value;
+    if ( !isHashMap() ) throw TypeMismatch();
+    if(m_bCopyHash){
+        set(*m_map);
+        m_bCopyHash = false;
+    }
+    (*m_map)[key] = value;
 }
 
 
@@ -336,15 +362,15 @@ void SteelType::shuffle ()
 {
     if( ! isArray() ) throw TypeMismatch();
     
-    std::random_shuffle(m_value.a->begin(),m_value.a->end());
+    std::random_shuffle(m_array->begin(),m_array->end());
 }
 
 
 void SteelType::push(const SteelType &var) // adds to the front
 {
-  if (! isArray() ) throw TypeMismatch();
+    if (! isArray() ) throw TypeMismatch();
 
-  (*m_value.a).push_front(var);
+    m_array->push_front(var);
 }
 
 
@@ -355,152 +381,168 @@ SteelType SteelType::operator+=(const SteelType &rhs)
     
     if(m_storage == SteelType::ARRAY)
     {
-		add(rhs);
-		return *this;
+        if(m_bCopyArray){
+            set(*m_array); // Copy on write
+            m_bCopyArray = false;
+        }
+        add(rhs);
+        return *this;
     }
     else if(rhs.m_storage == SteelType::ARRAY)
     {
-		SteelType val = *this;
-		set(Container());
-		add(val);
-		add(rhs);
-		return *this;
+        if(m_bCopyArray){
+            set(*m_array); // Copy on write
+            m_bCopyArray = false;
+        }
+        SteelType val = *this;
+        set(Container());
+        add(val);
+        add(rhs);
+        return *this;
     }
     
     if(m_storage == SteelType::HASHMAP){
-		if(rhs.m_storage == SteelType::HASHMAP){
-			add(*rhs.m_value.m);
-			return *this;
-		}else{
-			throw OperationMismatch();
-		}
-	}
+        if(rhs.m_storage == SteelType::HASHMAP){
+            if(m_bCopyHash){
+                set(*m_map); // Copy on write
+                m_bCopyHash = false;
+            }
+            add(*rhs.m_map);
+            return *this;
+        }else{
+            throw OperationMismatch();
+        }
+    }
 
-  switch(s)
-  {
-  case SteelType::FUNCTOR:
-  case SteelType::BOOL:
-  case SteelType::HANDLE:
-  case SteelType::HASHMAP:
-      throw OperationMismatch();
-  case SteelType::INT:
-      set ( (int)*this + (int)rhs );
-      break;
-  case SteelType::DOUBLE:
-      set ( (double)*this + (double)rhs );
-      break;
-  case SteelType::STRING:
-      set ( (std::string)*this + (std::string)rhs );
-      break;
-  }
+    switch(s)
+    {
+    case SteelType::FUNCTOR:
+    case SteelType::BOOL:
+    case SteelType::HANDLE:
+    case SteelType::HASHMAP:
+        throw OperationMismatch();
+    case SteelType::INT:
+        set ( (int)*this + (int)rhs );
+        break;
+    case SteelType::DOUBLE:
+        set ( (double)*this + (double)rhs );
+        break;
+    case SteelType::STRING:
+        set ( (std::string)*this + (std::string)rhs );
+        break;
+    }
 
-  return *this;
+    return *this;
 }
 
 SteelType SteelType::operator-=(const SteelType &rhs)
 {
-  storage s = std::max(m_storage,rhs.m_storage);
+    storage s = std::max(m_storage,rhs.m_storage);
 
-  switch(s)
-  {
-  case SteelType::ARRAY:
-  case SteelType::BOOL:
-  case SteelType::STRING:
-  case SteelType::HANDLE:
-  case SteelType::FUNCTOR:
-      throw OperationMismatch();
-  case SteelType::INT:
-      set ( (int)*this - (int)rhs );
-      break;
-  case SteelType::DOUBLE:
-      set ( (double)*this - (double)rhs );
-      break;
-  case SteelType::HASHMAP:
-	  m_value.m->erase((std::string)rhs);
-	  break;
-  }
+    switch(s)
+    {
+    case SteelType::ARRAY:
+    case SteelType::BOOL:
+    case SteelType::STRING:
+    case SteelType::HANDLE:
+    case SteelType::FUNCTOR:
+        throw OperationMismatch();
+    case SteelType::INT:
+        set ( (int)*this - (int)rhs );
+        break;
+    case SteelType::DOUBLE:
+        set ( (double)*this - (double)rhs );
+        break;
+    case SteelType::HASHMAP:
+        if(m_bCopyHash){
+            set(*m_map); // Copy on write
+            m_bCopyHash = false;
+        }
+        m_map->erase((std::string)rhs);
+        break;
+    }
 
-  return *this;
+    return *this;
 }
 
 SteelType SteelType::operator*=(const SteelType &rhs)
 {
-  storage s = std::max(m_storage,rhs.m_storage);
+    storage s = std::max(m_storage,rhs.m_storage);
 
-  switch(s)
-  {
-  case SteelType::ARRAY:
-  case SteelType::BOOL:
-  case SteelType::HANDLE:
-  case SteelType::STRING:
-  case SteelType::FUNCTOR:
-  case SteelType::HASHMAP:
-      throw OperationMismatch();
-  case SteelType::INT:
-      set ( (int)*this * (int)rhs );
-      break;
-  case SteelType::DOUBLE:
-      set ( (double)*this * (double)rhs );
-      break;
-  }
+    switch(s)
+    {
+    case SteelType::ARRAY:
+    case SteelType::BOOL:
+    case SteelType::HANDLE:
+    case SteelType::STRING:
+    case SteelType::FUNCTOR:
+    case SteelType::HASHMAP:
+        throw OperationMismatch();
+    case SteelType::INT:
+        set ( (int)*this * (int)rhs );
+        break;
+    case SteelType::DOUBLE:
+        set ( (double)*this * (double)rhs );
+        break;
+    }
 
-  return *this;
+    return *this;
 
 }
 
 SteelType SteelType::operator/=(const SteelType &rhs)
 {
-  storage s = std::max(m_storage,rhs.m_storage);
+    storage s = std::max(m_storage,rhs.m_storage);
 
-  double right = (double)rhs;
-  if(right == 0.0) throw DivideByZero();
-  switch(s)
-  {
-  case SteelType::ARRAY:
-  case SteelType::BOOL:
-  case SteelType::HANDLE:
-  case SteelType::STRING:
-  case SteelType::FUNCTOR:
-  case SteelType::HASHMAP:
-      throw OperationMismatch();
-  case SteelType::INT:
-      set ( (int)*this / (int)rhs );
-      break;
-  case SteelType::DOUBLE:
-      set ( (double)*this / (double)rhs );
-      break;
+    double right = (double)rhs;
+    if(right == 0.0) throw DivideByZero();
+    switch(s)
+    {
+    case SteelType::ARRAY:
+    case SteelType::BOOL:
+    case SteelType::HANDLE:
+    case SteelType::STRING:
+    case SteelType::FUNCTOR:
+    case SteelType::HASHMAP:
+        throw OperationMismatch();
+    case SteelType::INT:
+        set ( (int)*this / (int)rhs );
+        break;
+    case SteelType::DOUBLE:
+        set ( (double)*this / (double)rhs );
+        break;
 
-  }
+    }
 
-  return *this;
+    return *this;
 
 }
 
 SteelType SteelType::operator%=(const SteelType &rhs)
 {
-  storage s = std::max(m_storage,rhs.m_storage);
+    storage s = std::max(m_storage,rhs.m_storage);
 
-  if((double)rhs == 0.0) throw DivideByZero();
+    if((double)rhs == 0.0) throw DivideByZero();
 
-  switch(s)
-  {
-  case SteelType::ARRAY:
-  case SteelType::BOOL:
-  case SteelType::HANDLE:
-  case SteelType::STRING:
-  case SteelType::FUNCTOR:
-  case SteelType::HASHMAP:
-      throw OperationMismatch();
-  case SteelType::INT:
-      set ( (int)*this % (int)rhs );
-      break;
-  case SteelType::DOUBLE:
-      set ( (int)*this % (int)rhs );
-      break;
+    switch(s)
+    {
+    case SteelType::ARRAY:
+    case SteelType::BOOL:
+    case SteelType::HANDLE:
+    case SteelType::STRING:
+    case SteelType::FUNCTOR:
+    case SteelType::HASHMAP:
+        throw OperationMismatch();
+    case SteelType::INT:
+        set ( (int)*this % (int)rhs );
+        break;
+    case SteelType::DOUBLE:
+        set ( (int)*this % (int)rhs );
+        break;
 
-  }
+    }
 
-  return *this;
+    return *this;
 }
 
 SteelType  SteelType::operator+(const SteelType &rhs)
@@ -511,18 +553,18 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     switch(s)
     {
     case SteelType::ARRAY:
-      if(m_storage == SteelType::ARRAY)
-      {
-		val = *this;
-		val.add(rhs);
-      }
-      else
-      {
-		val.set(Container());
-		val.add(*this);
-		val.add(rhs);
-      }
-      return val;
+        if(m_storage == SteelType::ARRAY)
+	{
+            val = *this;
+            val.add(rhs);
+	}
+        else
+	{
+            val.set(Container());
+            val.add(*this);
+            val.add(rhs);
+	}
+        return val;
     case SteelType::FUNCTOR:
     case SteelType::BOOL:
     case SteelType::HANDLE:
@@ -537,17 +579,17 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     case SteelType::STRING:
         val.set ( (std::string)*this + (std::string)rhs);
         return val;
-	case SteelType::HASHMAP:{
-		if(m_storage == SteelType::HASHMAP && rhs.m_storage == HASHMAP){
-		    val = *this;
-			val.add(*rhs.m_value.m);
-			return val;
-		}else{
-			throw OperationMismatch();
-		}
-      }
-      return val;		
-	}
+    case SteelType::HASHMAP:{
+        if(m_storage == SteelType::HASHMAP && rhs.m_storage == HASHMAP){
+            val = *this;
+            val.add(*rhs.m_map); // This will cause a C-O-W
+            return val;
+        }else{
+            throw OperationMismatch();
+        }
+    }
+        return val;		
+    }
     
 
     assert ( 0 );
@@ -557,12 +599,12 @@ SteelType  SteelType::operator+(const SteelType &rhs)
 
 void SteelType::add(const SteelType::Map& i_map)
 {
-	if(!isHashMap()) throw OperationMismatch();
-	for(SteelType::Map::const_iterator it = i_map.begin(); it != i_map.end(); it++){
-		//m_value.m->insert(SteelType::Map::value_type(it->first,it->second));
-		// TODO: Overwrite existing values?? Add them with operator+??? ignore them??
-		(*m_value.m)[it->first] = it->second;
-	}
+    if(!isHashMap()) throw OperationMismatch();
+    for(SteelType::Map::const_iterator it = i_map.begin(); it != i_map.end(); it++){
+        //m_value.m->insert(SteelType::Map::value_type(it->first,it->second));
+        // TODO: Overwrite existing values?? Add them with operator+??? ignore them??
+        (*m_map)[it->first] = it->second;
+    }
 }
 
 SteelType  SteelType::operator-(const SteelType &rhs)
@@ -587,10 +629,11 @@ SteelType  SteelType::operator-(const SteelType &rhs)
     case SteelType::STRING:
         throw OperationMismatch();
         return val;
-	case SteelType::HASHMAP:
-		val.set(*m_value.m);
-		val.m_value.m->erase((std::string)rhs);
-		return val;
+    case SteelType::HASHMAP:
+        val.set(*m_map);
+        val -= rhs; // in order to activate val's copy-on-write
+        //val.m_map->erase((std::string)rhs);
+        return val;
     }
 
     assert ( 0 );
@@ -608,7 +651,7 @@ SteelType  SteelType::operator*(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -637,7 +680,7 @@ SteelType  SteelType::operator^(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -670,11 +713,11 @@ SteelType  SteelType::operator/(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
-      val.set ( (int)*this / right );
+        val.set ( (int)*this / right );
         return val;
     case SteelType::DOUBLE:
         val.set ( (double)*this / right);
@@ -703,7 +746,7 @@ SteelType  SteelType::operator%(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
         return val;
     case SteelType::INT:
@@ -731,7 +774,7 @@ bool  Steel::operator==(const SteelType &lhs, const SteelType &rhs)
     case SteelType::ARRAY:
         if( rhs.m_storage == SteelType::ARRAY
             && lhs.m_storage == SteelType::ARRAY
-            && *lhs.m_value.a == *rhs.m_value.a )
+            && *lhs.m_array == *rhs.m_array )
             val = true;
         break;
     case SteelType::BOOL:
@@ -755,19 +798,19 @@ bool  Steel::operator==(const SteelType &lhs, const SteelType &rhs)
             val = true;
         break;
     case SteelType::FUNCTOR:
-	if( rhs.m_storage == SteelType::FUNCTOR &&
-	    lhs.m_storage == SteelType::FUNCTOR &&
-	    rhs.m_functor == lhs.m_functor)
-	    val= true;
+        if( rhs.m_storage == SteelType::FUNCTOR &&
+            lhs.m_storage == SteelType::FUNCTOR &&
+            rhs.m_functor == lhs.m_functor)
+            val= true;
  
-		break;
-	case SteelType::HASHMAP:
-		if(rhs.m_storage == SteelType::HASHMAP &&
-			lhs.m_storage == SteelType::HASHMAP && 
-			*rhs.m_value.m == *lhs.m_value.m)
-			val = true;
-		break;
-	}
+        break;
+    case SteelType::HASHMAP:
+        if(rhs.m_storage == SteelType::HASHMAP &&
+           lhs.m_storage == SteelType::HASHMAP && 
+           *rhs.m_map == *lhs.m_map)
+            val = true;
+        break;
+    }
 	
     return val;
 }
@@ -790,9 +833,9 @@ SteelType  SteelType::operator<(const SteelType &rhs)
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:{
 		
-		val.set( (std::string)*this < (std::string)rhs );
-	}
-	break;
+        val.set( (std::string)*this < (std::string)rhs );
+    }
+        break;
     case SteelType::INT:
         if((int)*this < (int)rhs)
             val.set(true);
@@ -824,7 +867,7 @@ SteelType  SteelType::operator<=(const SteelType &rhs)
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
         val.set( (std::string)*this <= (std::string)rhs);
-		break;
+        break;
     case SteelType::INT:
         if((int)*this <= (int)rhs)
             val.set(true);
@@ -871,7 +914,7 @@ SteelType  SteelType::d(const SteelType &rhs)
     int sides = (int)rhs;
 
     if(sides == 0){
-      throw DivideByZero();
+        throw DivideByZero();
     }
 
     int total = 0;
@@ -899,7 +942,7 @@ SteelType SteelType::operator-()
     case SteelType::ARRAY:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
     case SteelType::INT:
         var.set(0 - m_value.i);
@@ -943,15 +986,15 @@ SteelType SteelType::operator!()
         else var.set(false);
         break;
     case SteelType::FUNCTOR:
-	var.set(m_functor == NULL);
-	break;
+        var.set(m_functor == NULL);
+        break;
     case SteelType::ARRAY:
-        throw OperationMismatch();
-    
-	case SteelType::HASHMAP:
-		var.set(m_value.m == NULL);
-		break;
-	}
+        var.set(m_array == nullptr);
+        break;
+    case SteelType::HASHMAP:
+        var.set(m_map == NULL);
+        break;
+    }
     return var;
 }
 
@@ -964,7 +1007,7 @@ SteelType SteelType::operator++()
     case SteelType::STRING:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
     case SteelType::INT:
         m_value.i = m_value.i + 1;
@@ -995,7 +1038,7 @@ SteelType SteelType::operator--()
     case SteelType::STRING:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-	case SteelType::HASHMAP:
+    case SteelType::HASHMAP:
         throw OperationMismatch();
     case SteelType::INT:
         m_value.i = m_value.i - 1;
@@ -1078,7 +1121,7 @@ SteelType SteelType::getElement(int index) const
     // I would check that we're an array, but getArraySize does already
     if( index >= getArraySize() ) throw OutOfBounds();
 
-    return (*m_value.a)[index];
+    return (*m_array)[index];
 }
 
 SteelType *SteelType::getLValue(int index) const
@@ -1086,10 +1129,14 @@ SteelType *SteelType::getLValue(int index) const
     // Not a valid lvalue if its const
     // TODO: Throw ConstViolation. But then you have to catch it
     if(m_bConst) return NULL;
+    if(m_bCopyArray){
+        const_cast<SteelType*>(this)->set(*m_array); // Getting an Lvalue is a write. Copy-on-write
+        const_cast<SteelType*>(this)->m_bCopyArray = false;
+    }
 
     if ( index >= getArraySize() ) throw OutOfBounds();
 
-    return & ((*m_value.a)[index]);
+    return & ((*m_array)[index]);
 }
 
 void SteelType::setElement(int index,const SteelType &val)
@@ -1098,14 +1145,19 @@ void SteelType::setElement(int index,const SteelType &val)
 
     if( index >= getArraySize() ) throw OutOfBounds();
 
-    (*m_value.a)[index] = val;
+    if(m_bCopyArray){
+        set(*m_array);
+        m_bCopyArray = false;
+    }
+
+    (*m_array)[index] = val;
 }
 
 int SteelType::getArraySize()const
 {
     if( !isArray() ) throw TypeMismatch();
 
-    int val = m_value.a->size();
+    int val = m_array->size();
     return val;
 }
 
@@ -1113,15 +1165,19 @@ void SteelType::add(const SteelType &var)
 {
     if( !isArray() ) throw TypeMismatch();
 
+    if(m_bCopyArray){
+        set(*m_array); // Copy-on-write
+        m_bCopyArray = false;
+    }
 
     if(var.isArray())
     {
-	for(int i=0;i<var.getArraySize();i++)
-	  m_value.a->push_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
+        for(int i=0;i<var.getArraySize();i++)
+            m_array->push_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
     }
     else
     {
-      m_value.a->push_back ( var );
+        m_array->push_back ( var );
     }
 }
 
@@ -1129,9 +1185,13 @@ void SteelType::add(const SteelType &var)
 void SteelType::pushb(const SteelType& var)
 {
     if( !isArray() ) throw TypeMismatch();
-
     
-    m_value.a->push_back ( var );
+    if(m_bCopyArray){
+        set(*m_array);
+        m_bCopyArray = false;
+    }
+    
+    m_array->push_back ( var );
 }
 
 
@@ -1149,25 +1209,25 @@ void SteelType::makeConst()
 void SteelType::debugPrint()
 {
     switch(m_storage){
-        case INT:
-        case DOUBLE:
-        case BOOL:
-            std::cout << (std::string)*this << std::endl;
-            break;
-        case ARRAY:
-            std::cout << "Array with " << m_value.a->size() << std::endl;
-            break;
-        case HANDLE:
-            std::cout << "Handle" << std::endl;
-            break;
-        case FUNCTOR:
-            std::cout << "Functor Count:" << m_functor.use_count() << std::endl;
-            break;
-		case HASHMAP:
-			std::cout << "Hash Map with " << m_value.m->size() << std::endl;
-			break;
-        default:
-            std::cout << "Bogus storage type" << std::endl;
+    case INT:
+    case DOUBLE:
+    case BOOL:
+        std::cout << (std::string)*this << std::endl;
+        break;
+    case ARRAY:
+        std::cout << "Array with " << m_array->size() << std::endl;
+        break;
+    case HANDLE:
+        std::cout << "Handle" << std::endl;
+        break;
+    case FUNCTOR:
+        std::cout << "Functor Count:" << m_functor.use_count() << std::endl;
+        break;
+    case HASHMAP:
+        std::cout << "Hash Map with " << m_map->size() << std::endl;
+        break;
+    default:
+        std::cout << "Bogus storage type" << std::endl;
     }
 }
 #endif

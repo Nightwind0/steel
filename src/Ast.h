@@ -844,15 +844,12 @@ namespace Steel {
 	public:
 		AstDeclaration(unsigned int line,
 					   const std::string &script)
-		:AstStatement(line,script),m_bHasValue(false){}
+		  :AstStatement(line,script){}
 		virtual ~AstDeclaration(){}
 		
-		virtual void setValue(const SteelType &value);
 		virtual bool hasInitializer() const { return false; }    
 		virtual AstIdentifier* getIdentifier() const =0;
 	protected:
-		bool m_bHasValue;
-		SteelType m_value;
 	};
 	
 	class AstVarDeclaration : public AstDeclaration
@@ -959,8 +956,6 @@ namespace Steel {
 		int defaultCount() const;
 		
 		void executeDeclarations(SteelInterpreter *pInterpreter);
-		void executeDeclarations(SteelInterpreter *pInterpreter, 
-									const SteelType::Container &params);
 		bool containsName(const std::string& id)const;
 	private:
 		int mnDefaults;
