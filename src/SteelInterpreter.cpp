@@ -725,7 +725,7 @@ void SteelInterpreter::registerBifs()
                                                   (this,&SteelInterpreter::print)));
     addFunction("println",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const std::string&>
                                                    (this,&SteelInterpreter::println)));
-    addFunction("len",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelArray&>(this,&SteelInterpreter::len)));
+    addFunction("len",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::len)));
     addFunction("real",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::real)));
     addFunction("integer",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::integer)));
     addFunction("boolean",std::shared_ptr<SteelFunctor>(new SteelFunctor1Arg<SteelInterpreter,const SteelType&>(this,&SteelInterpreter::boolean)));
@@ -864,11 +864,11 @@ SteelType SteelInterpreter::println(const std::string &str)
     return var;
 }
 
-SteelType SteelInterpreter::len(const SteelArray &array)
+SteelType SteelInterpreter::len(const SteelType &array)
 {
     SteelType val;
 
-    val.set((int)array.size());
+    val.set(array.getArraySize());
 
     return val;
 }

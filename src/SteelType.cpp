@@ -167,7 +167,6 @@ SteelType::operator bool () const
 SteelType::operator SteelType::Container () const
 {
     if( !isArray() ) throw TypeMismatch();
-
     else return *m_array;
 }
 

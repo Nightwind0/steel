@@ -205,7 +205,7 @@ private:
     SteelType require (const std::string &filename);
     SteelType print   (const std::string &str);
     SteelType println (const std::string &str);
-    SteelType len     (const SteelArray &ref);
+    SteelType len     (const SteelType &ref);
     SteelType real    (const SteelType &str);
     SteelType integer (const SteelType &str);
     SteelType boolean (const SteelType &str);
