@@ -133,7 +133,7 @@ public:
     SteelType popReturnStack();
     void pushReturnStack(const SteelType& value);
 
-
+    static const std::string getVersion();
     //shared_ptr<SteelFunctor> lookup_functor(const std::string &name, const std::string &ns);
     //shared_ptr<SteelFunctor> lookup_functor(const std::string &name);
 	

@@ -145,6 +145,9 @@ SteelInterpreter::~SteelInterpreter()
     popScope();
 }
 
+const std::string SteelInterpreter::getVersion(){
+  return VERSION;
+}
 
 void SteelInterpreter::addFunction(const std::string &name,
                                    std::shared_ptr<SteelFunctor> pFunc)

@@ -16,7 +16,8 @@ void usage(){
     "-n,--no-exec: don't execute the script, just build it" << std::endl <<
     "-d,--debug: show scanner and parser debug spew" << std::endl << 
     "--no-scan-debug: use with -d, show only parser debug spew" << std::endl <<
-    "-t: enable thread safety (for testing purposes)" << std::endl;
+    "-t: enable thread safety (for testing purposes)" << std::endl <<
+    "-v,--version: show version of steel interpreter" << std::endl;
 }
 
 
@@ -38,6 +39,7 @@ int main(int argc, char * argv[])
     bool bScanDebug = false;
     bool bCin = false;
     bool bEnableThreadSafety=false;
+    bool bShowVersion=false;
     std::string filename;
 
     for(int i=1;i<argc;i++)
@@ -53,7 +55,9 @@ int main(int argc, char * argv[])
 	{
 	  bScanDebug = false;
 	}
-        else if(arg == "--no-exec" ||
+        else if(arg == "--version" || arg == "-v"){
+          bShowVersion = true;
+        }else if(arg == "--no-exec" ||
                 arg == "-n")
         {
             bRun = false;
@@ -80,6 +84,12 @@ int main(int argc, char * argv[])
       usage();
       return -1;
     }
+
+    if(bShowVersion){
+      std::cout << "steel version " << SteelInterpreter::getVersion() << std::endl;
+      return 0;
+    }
+
 
     if(bCin){
       filename =  "<STDIN>";

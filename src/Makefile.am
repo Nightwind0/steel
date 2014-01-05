@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -std=c++0x
+AM_CPPFLAGS = -std=c++0x -DVERSION="\"$(VERSION)\""
 lib_LTLIBRARIES = libsteel.la
 bin_PROGRAMS = steel
 
