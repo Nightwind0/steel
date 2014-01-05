@@ -208,20 +208,20 @@ public:
           */
         enum Name
         {
-            array_literal = 290,
-            call = 305,
-            case_list = 301,
-            exp = 303,
-            func_definition = 284,
-            optionalexp = 299,
-            pair = 295,
-            pair_list = 293,
-            param_definition = 286,
-            param_list = 310,
+            array_literal = 297,
+            call = 312,
+            case_list = 308,
+            exp = 310,
+            func_definition = 291,
+            optionalexp = 306,
+            pair = 302,
+            pair_list = 300,
+            param_definition = 293,
+            param_list = 317,
             root = 0,
-            statement = 297,
-            statement_list = 288,
-            vardecl = 308,
+            statement = 304,
+            statement_list = 295,
+            vardecl = 315,
             /// Nonterminal which will be attempted to be parsed by the Parse()
             /// method by default (specified by the %default_parse_nonterminal
             /// directive).

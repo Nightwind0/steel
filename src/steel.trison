@@ -558,6 +558,11 @@ SteelParser::Token SteelParser::Scan ()
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			}
 |
+	FOR '(' vardecl:decl ';' optionalexp:condition ';' optionalexp:iteration ')' statement:stmt %prec CORRECT
+			%target.cpp{
+				return new AstLoopStatement(decl->GetLine(),decl->GetScript(),decl,condition,iteration,stmt);
+			}
+|
 	FOR '(' optionalexp:start ';' optionalexp:condition ';' optionalexp:iteration ')' statement:stmt %prec CORRECT
 			%target.cpp{
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);

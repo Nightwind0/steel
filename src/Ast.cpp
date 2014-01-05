@@ -679,7 +679,13 @@ ostream & AstReturnStatement::print(std::ostream &out)
 AstLoopStatement::AstLoopStatement(unsigned int line, const std::string &script,
                                    AstExpression *pStart, AstExpression *pCondition,
                                    AstExpression *pIteration, AstStatement* pStmt)
-    :AstStatement(line,script),m_pStart(pStart),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt)
+  :AstStatement(line,script),m_pStart(pStart),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(NULL)
+{
+}
+AstLoopStatement::AstLoopStatement(unsigned int line, const std::string &script,
+                                   AstDeclaration *pDecl, AstExpression *pCondition,
+                                   AstExpression *pIteration, AstStatement* pStmt)
+  :AstStatement(line,script),m_pStart(NULL),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(pDecl)
 {
 }
 
@@ -689,6 +695,7 @@ AstLoopStatement::~AstLoopStatement()
     delete m_pCondition;
     delete m_pIteration;
     delete m_pStatement;
+    delete m_pDecl;
 }
 
 AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter)
@@ -696,7 +703,8 @@ AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter
     // A for loop has its own scope like in C++
     // (Beyond the scope that the body may have anyway)
     pInterpreter->pushScope();
-    for( m_pStart->evaluate( pInterpreter) ;
+    if(m_pDecl) m_pDecl->execute(pInterpreter);
+    for( m_pStart?m_pStart->evaluate( pInterpreter):1 ;
          m_pCondition->evaluate(pInterpreter) ;
          m_pIteration->evaluate( pInterpreter )
         )
@@ -722,10 +730,11 @@ AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter
 }
 
 void AstLoopStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pStart->FindIdentifiers(o_ids);
-	m_pCondition->FindIdentifiers(o_ids);
-	m_pIteration->FindIdentifiers(o_ids);
-	m_pStatement->FindIdentifiers(o_ids);
+  m_pDecl->FindIdentifiers(o_ids);
+  m_pStart->FindIdentifiers(o_ids);
+  m_pCondition->FindIdentifiers(o_ids);
+  m_pIteration->FindIdentifiers(o_ids);
+  m_pStatement->FindIdentifiers(o_ids);
 }
 
 

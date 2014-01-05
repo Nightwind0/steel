@@ -271,13 +271,16 @@ namespace Steel {
 		
 	};
 	
-	
+	class AstDeclaration;	
 	class AstLoopStatement : public AstStatement
 	{
 	public:
 		AstLoopStatement(unsigned int line, const std::string &script,
-						 AstExpression *pStart, AstExpression *pCondition,
-				   AstExpression *pIteration, AstStatement * pStmt);
+                                 AstExpression *pStart, AstExpression *pCondition,
+                                 AstExpression *pIteration, AstStatement * pStmt);
+		AstLoopStatement(unsigned int line, const std::string &script,
+                                 AstDeclaration *pDecl, AstExpression *pCondition,
+                                 AstExpression *pIteration, AstStatement * pStmt);
 		
 		virtual ~AstLoopStatement();
 		
@@ -288,10 +291,11 @@ namespace Steel {
 		AstExpression *m_pStart;
 		AstExpression *m_pCondition;
 		AstExpression *m_pIteration;
-		AstStatement * m_pStatement;
+		AstStatement *m_pStatement;
+                AstDeclaration *m_pDecl;
 	};
 	
-	class AstDeclaration;
+
 	
 	class AstForEachStatement : public AstStatement
 	{
