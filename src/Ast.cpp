@@ -2044,8 +2044,8 @@ AstArrayDeclaration::AstArrayDeclaration(unsigned int line,
 
 AstArrayDeclaration::~AstArrayDeclaration()
 {
-    delete m_pId;
-    delete m_pIndex;
+  //delete m_pId;
+  // delete m_pIndex;
     delete m_pExp;
 }
 
