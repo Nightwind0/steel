@@ -41,7 +41,7 @@ SteelType::~SteelType()
 }
 
 
-SteelType::operator int () const
+SteelType::operator const int () const
 {
     switch(m_storage)
     {
@@ -79,7 +79,7 @@ SteelType::operator Functor() const
     else return m_functor;
 }
 
-SteelType::operator double () const
+SteelType::operator const double () const
 {
     switch(m_storage)
     {
@@ -103,7 +103,7 @@ SteelType::operator double () const
     return 0.0;
 }
 
-SteelType::operator std::string () const
+SteelType::operator const std::string () const
 {
     switch(m_storage)
     {
@@ -164,10 +164,15 @@ SteelType::operator bool () const
     return true;
 }
 
-SteelType::operator SteelType::Container () const
+SteelType::operator const SteelType::Container () const
 {
     if( !isArray() ) throw TypeMismatch();
     else return *m_array;
+}
+
+SteelType::operator const SteelType::Map () const{
+  if ( !isHashMap() ) throw TypeMismatch();
+  else return *m_map;
 }
 
 void SteelType::set(int i)

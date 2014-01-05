@@ -2,6 +2,7 @@
 #define _AUX_VARIABLES_HH
 
 #include "SteelType.h"
+#include <map>
 #include <unordered_map>
 #include <vector>
 
@@ -10,13 +11,16 @@ namespace Steel {
 	public:
 		AuxVariables();
 		~AuxVariables();
+
+                typedef std::map<std::string,SteelType*> VarPtrFile;
+                typedef std::map<std::string,SteelType> VariableFile;
 		
 		SteelType lookup(const std::string& id);
 		SteelType* lookupLValue(const std::string& id);
 		void add(const std::string& id, SteelType* value);
-		bool transferOwnership(const std::unordered_map<std::string,SteelType>& file); 
+		bool transferOwnership(const VariableFile& file); 
 	private:
-		std::unordered_map<std::string,SteelType*> m_variables;		
+                VarPtrFile m_variables;		
 		std::vector<SteelType*> m_owned;
 	};
 };

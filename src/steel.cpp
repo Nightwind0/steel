@@ -80,14 +80,14 @@ int main(int argc, char * argv[])
 	}
     }
 
-    if(!bCin && !filename.size()) {
-      usage();
-      return -1;
-    }
-
     if(bShowVersion){
       std::cout << "steel version " << SteelInterpreter::getVersion() << std::endl;
       return 0;
+    }
+
+    if(!bCin && !filename.size()) {
+      usage();
+      return -1;
     }
 
 

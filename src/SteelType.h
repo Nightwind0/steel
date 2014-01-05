@@ -32,15 +32,16 @@ public:
     typedef std::deque<SteelType> Container;
     typedef std::unordered_map<std::string,SteelType> Map;
 
-    operator int () const;
-    operator unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
-    operator double () const;
-    operator std::string () const;
+    //operator int () const;
+    operator const int () const;
+    operator const unsigned int() const { return static_cast<unsigned int>( (int)(*this) ); }
+    operator const double () const;
+    operator const std::string () const;
     operator bool () const;
-    operator Container () const;
+    operator const Container () const;
     operator Handle () const;
     operator Functor () const;
-
+    operator const Map () const;
     void set(int i);
     void set(double d);
     void set(bool b);

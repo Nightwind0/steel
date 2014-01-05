@@ -24,7 +24,7 @@ SteelType AuxVariables::lookup( const std::string& id )  {
 
 
 SteelType* AuxVariables::lookupLValue( const std::string& id ) {
-	std::unordered_map<std::string,SteelType*>::iterator it = m_variables.find(id);
+	VarPtrFile::iterator it = m_variables.find(id);
 	if( it != m_variables.end()  )	{
 		// Found a match.
 		assert(it->second);
@@ -39,11 +39,11 @@ void AuxVariables::add( const std::string& id, SteelType* value ) {
 	m_variables[id] = value;
 }
 
-bool AuxVariables::transferOwnership( const std::unordered_map< std::string, SteelType >& file ) {
-	for(std::unordered_map<std::string,SteelType*>::iterator mine_it = m_variables.begin();
+bool AuxVariables::transferOwnership( const VariableFile& file ) {
+	for(VarPtrFile::iterator mine_it = m_variables.begin();
 		mine_it != m_variables.end(); mine_it++){
 		SteelType* mine = mine_it->second;
-		for(std::unordered_map<std::string,SteelType>::const_iterator it = file.begin();
+		for(VariableFile::const_iterator it = file.begin();
 			it != file.end(); it++){
 		  const std::string name = it->first;
 		  const SteelType * theirs = &(it->second);

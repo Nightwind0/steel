@@ -50,7 +50,7 @@ private:
     SteelType m_value;
 };
 
-typedef std::vector<ParameterListItem> ParameterList;
+ typedef std::vector<ParameterListItem> ParameterList;
 
 //using std::shared_ptr;
 
@@ -154,7 +154,7 @@ public:
     void linkAuxVariables(AuxVariables* pVariables);
     void unlinkAuxVariables(AuxVariables* pVariables);
 private:
-
+    typedef std::map<std::string, SteelType> VariableFile;
     void push_context();
     void pop_context();
     
@@ -172,7 +172,7 @@ private:
     mutable Mutex m_stack_mutex;
     mutable Mutex m_import_mutex;
 #endif 
-    typedef std::unordered_map<std::string, SteelType> VariableFile;
+
     std::deque<VariableFile> m_symbols;
 
     void clear_imports();
