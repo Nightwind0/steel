@@ -162,7 +162,7 @@ int SteelScanner::NewlineCount(const std::string &text)
 		// Eat the comment
 	}
 |
-	([\t ]+)
+	([ \t]+)
 	 %target.cpp {
 		// Eat it
 	 }
@@ -471,13 +471,13 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
 
 %state_machine COMMENT_GUTS %ungreedy
 :
-    (.*[*]/) // everything up through the closing delimiter of a block comment
+    ((\n|.)*[*]/) // everything up through the closing delimiter of a block comment
     %target.cpp {
         m_line += NewlineCount(accepted_string);
         SwitchToStateMachine(StateMachine::MAIN);
     }
 |
-    (.*\z) // everything up through EOF
+    ((\n|.)*\z) // everything up through EOF
     %target.cpp {
         m_line += NewlineCount(accepted_string);
         //EmitWarning("unterminated block comment", GetFiLoc());

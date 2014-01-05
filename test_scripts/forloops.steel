@@ -1,0 +1,14 @@
+
+for(var i=3;i<10;i++) // With declaration
+            println(i);
+
+declare i = 8;
+for(i=0;i<20;i++) // Using expression
+        println(2^i);
+
+
+
+for(;i<30;i++) // No initial
+        println(i^2);
+
+        
