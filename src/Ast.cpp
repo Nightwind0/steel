@@ -1638,16 +1638,6 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
-        SteelType * pL = m_pLValue->lvalue(pInterpreter);
-        if(NULL == pL)
-        {
-            // Okay. It wasn't an lvalue, but thats okay, 
-            // We're not in an lvalue context (Although, 
-            // If it IS an lvalue, we speed up the interpreter
-            // By knowing that. 
-            // We can just evaluate it and hope that it's
-            // An array type that it evaluates to. 
-            // If not, then we're in trouble. 
 
             SteelType val = m_pLValue->evaluate(pInterpreter);
         
@@ -1657,6 +1647,7 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
                 return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
               else if(val.isHashMap())
                 return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
+	      else throw TypeMismatch();
             }
             catch(TypeMismatch)
             {
@@ -1668,11 +1659,7 @@ SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
 
             // The rest of the exceptions should be cought by the outer try.
             // Such as out of bounds.. and anything that goes wrong inside the index expression
-        }
-		if(pL->isArray())
-			return pInterpreter->lookup(pL, (int)m_pExp->evaluate(pInterpreter));
-		else if(pL->isHashMap())
-			return pInterpreter->lookup(pL, (const std::string)m_pExp->evaluate(pInterpreter));
+      
     }
     catch(UnknownIdentifier id)
     {

@@ -83,3 +83,12 @@ declare @pa[15];
 
 @pa[2] = "hi";
 println (@pa[2]);
+
+
+const a2 = [8,2,0,-1,14,2];
+
+const f = a2[1];
+
+println(a2[0]);
+
+printarray(a2);

@@ -445,7 +445,6 @@ SteelType SteelType::operator-=(const SteelType &rhs)
 
     switch(s)
     {
-    case SteelType::ARRAY:
     case SteelType::BOOL:
     case SteelType::STRING:
     case SteelType::HANDLE:
@@ -457,6 +456,12 @@ SteelType SteelType::operator-=(const SteelType &rhs)
     case SteelType::DOUBLE:
         set ( (double)*this - (double)rhs );
         break;
+    case SteelType::ARRAY:
+      if(m_bCopyArray){
+	set(*m_array);
+      }
+      m_array->erase(m_array->begin()+(int)rhs);
+      break;
     case SteelType::HASHMAP:
         if(m_bCopyHash){
             set(*m_map); // Copy on write
