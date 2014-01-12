@@ -185,8 +185,8 @@ private:
   
     void registerBifs();
     std::vector<std::string> m_namespace_scope;  
-    
-    std::set<std::string> m_requires;
+    typedef std::set<std::string> RequireSet;
+    std::deque<RequireSet> m_requires;
 
     ParamStack m_param_stack; // Currently only one stack
     ReturnStack m_return_stack; 

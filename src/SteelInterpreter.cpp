@@ -459,7 +459,6 @@ void SteelInterpreter::pop_context()
     {
         clear_imports();
         free_file_handles();
-        m_requires.clear();
     }
     //m_return_stack.pop_front();
 }
@@ -698,6 +697,7 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &i_name)
 void SteelInterpreter::pushScope()
 {
     AutoLock mutex(m_scope_mutex);
+    m_requires.push_front ( RequireSet() );
     m_symbols.push_front ( VariableFile() );
 }
 
@@ -710,6 +710,7 @@ void SteelInterpreter::popScope()
         (*aux_it)->transferOwnership(m_symbols.front());
     }
     m_symbols.pop_front();
+    m_requires.pop_front();
 }
 
 void SteelInterpreter::setFileProvider( IFileProvider* provider )
@@ -797,8 +798,15 @@ void SteelInterpreter::registerBifs()
 
 SteelType SteelInterpreter::require(const std::string &filename)
 {
-    if(m_requires.find(filename) == m_requires.end())
-    {
+  bool found = false;
+
+  for(auto it = std::begin(m_requires); it != std::end(m_requires); it++){
+    if(it->find(filename) != it->end()){
+      found = true;
+      break;
+    }
+  }
+  if (!found){
         IFile * file = m_file_provider->create();
         if(!file->open(filename.c_str()))
         {
@@ -816,7 +824,7 @@ SteelType SteelInterpreter::require(const std::string &filename)
         file->close();
         delete file;
 	
-        m_requires.insert(filename);
+        m_requires.front().insert(filename);
 		
         SteelParser parser;
         parser.setFileProvider(m_file_provider);
@@ -843,6 +851,7 @@ SteelType SteelInterpreter::require(const std::string &filename)
         pScript->execute(this);
 
         delete pScript; // Right? We ran the code, so we're okay there... and any lingering functions we want will survive this.
+    
     }
     return SteelType();
 }
