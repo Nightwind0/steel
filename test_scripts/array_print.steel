@@ -1,27 +1,29 @@
-function printarray(var @array)
+
+function printarray(declare array)
 {
-	printarray_(@array);
+	printarray_(array);
 	print("\n");
 }
 
 
-function printarray_(var @array)
+function printarray_(declare array)
 {
 	var $i;
 	print("\{");	
-	for($i=0;$i<len(@array);$i++)
+	declare alen = len(array);
+	for($i=0;$i<alen;$i++)
 	{
-		if( is_array (@array[$i] ) )
+		if( is_array (array[$i] ) )
 		{
-			printarray_(@array[$i]);
+			printarray_(array[$i]);
 		}
 		else 
 		{				
-			print(@array[$i]);
+			print(array[$i]);
 			
 		}
 
-		if( $i != len(@array) -1 )
+		if( $i != len(array) -1 )
 		{
 			print(",");
 		}

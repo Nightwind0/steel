@@ -10,9 +10,9 @@ using Steel::AstScript;
 using Steel::SteelException;
 
 void usage(){
-  std::cout << "steel [options] <filename>" << std::endl << 
+  std::cerr << "steel version " << SteelInterpreter::getVersion() << std::endl;
+    std::cerr << "steel [options] <filename>" << std::endl << 
     "Options:" << std::endl <<
-    "-p,--print: ask the script to print itself out after being built" << std::endl <<
     "-n,--no-exec: don't execute the script, just build it" << std::endl <<
     "-d,--debug: show scanner and parser debug spew" << std::endl << 
     "--no-scan-debug: use with -d, show only parser debug spew" << std::endl <<

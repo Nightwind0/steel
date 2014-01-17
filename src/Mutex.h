@@ -2,11 +2,7 @@
 #define _STEEL_MUTEX_H_
 
 
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <pthread.h>
-#endif
+#include <mutex>
 
 #define USE_MUTEXES 1
 
@@ -22,12 +18,7 @@ namespace Steel  {
     bool unlock();
   private:
     bool m_enabled;
-    int m_lock_count;
-#ifdef WIN32
-    CRITICAL_SECTION critical_section;
-#else
-    pthread_mutex_t m_handle;
-#endif
+    std::recursive_mutex m_mutex;
   };
 
   class AutoLock { 

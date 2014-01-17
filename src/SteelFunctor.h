@@ -21,6 +21,7 @@ public:
     SteelFunctor();
     virtual ~SteelFunctor();
     virtual bool isUserFunction() const { return false; }
+    virtual bool isSafeFunction() const { return false; } // Is the function OK to run in a safeRun
     virtual SteelType Call(SteelInterpreter *,const SteelType::Container &params)=0;
     virtual std::string getIdentifier() const { return m_identifier;}
     virtual void setIdentifier(const std::string& id) { m_identifier = id; }
@@ -42,6 +43,8 @@ private:
 	AuxVariables m_nonlocals;
 	SteelInterpreter * m_bound_interpreter;
 };
+
+ class SteelCBoundFunctor;
 
 template<class ObjType>
 class SteelFunctorNoArgs : public SteelFunctor

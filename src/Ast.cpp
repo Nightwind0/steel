@@ -394,7 +394,7 @@ AstStatement::eStopType AstWhileStatement::execute(SteelInterpreter *pInterprete
 ostream & AstWhileStatement::print(std::ostream &out)
 {
     out << "while (" << *m_pCondition << ")\n"
-        << '\t' << *m_pStatement<< std::endl;
+        << '{' << std::endl << *m_pStatement <<  '}' << std::endl;
 
     return out;
 }
@@ -432,7 +432,7 @@ AstStatement::eStopType AstDoStatement::execute(SteelInterpreter *pInterpreter)
 
 ostream & AstDoStatement::print(std::ostream &out)
 {
-    out << "do "<< *m_pStatement << "\n while (" << *m_pCondition << ")\n"
+  out << "do "<< '{' <<*m_pStatement << "}\n while (" << *m_pCondition << ")\n"
         <<  std::endl;
 
     return out;
@@ -477,10 +477,10 @@ void AstIfStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 ostream & AstIfStatement::print(std::ostream &out)
 {
     out << "if (" << *m_pCondition  << ")\n"
-        << '\t' << *m_pStatement << '\n';
+        << "{\n" << *m_pStatement << "}\n";
     if(m_pElse) 
     {
-        out << " else " << *m_pElse << '\n';
+        out << " else {\n" << *m_pElse << "\n}\n";
     }
 
     return out;

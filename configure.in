@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(steel, 0.1.5.0, dpalm@writeme.com)
+AC_INIT(steel, 0.1.5.2, dpalm@writeme.com)
 AC_CONFIG_SRCDIR([src/Ast.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_CONFIG_HEADER( config.h )
@@ -12,7 +12,7 @@ AC_PROG_CC
 AC_DISABLE_SHARED
 AC_PROG_LIBTOOL
 AC_PROG_MAKE_SET
-AM_INIT_AUTOMAKE( steel, 0.1.5.0)
+AM_INIT_AUTOMAKE( steel, 0.1.5.2)
 # AM_MAINTAINER_MODE
 # Checks for libraries.
 

@@ -102,6 +102,11 @@ public:
     // script.
     SteelType runAst(AstScript *pAst, const ParameterList &params);
     SteelType run(const std::string &name,const std::string &script);
+    // This runs the AstScript but makes no calls into C++,
+    // all* C++-bound functions return a 0 value. This is useful
+    // for finding errors
+    // * functions built in to the intrepeter still function as normal
+    SteelType safeRun(AstScript* pAst, const ParameterList &script);
 
     SteelType lookup(const std::string &name);
     SteelType lookup_function(const std::string &ns, const std::string &name);
@@ -245,6 +250,7 @@ private:
     SteelType srand ( int );
     SteelType rad2deg ( double r );
     SteelType deg2rad ( double deg);
+    SteelType sort ( SteelType::Container array, SteelType::Functor comparator );
     
     // IO built-ins
     
