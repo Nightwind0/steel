@@ -213,6 +213,41 @@ private:
         ObjType *m_pObj;
 };
 
+template <class ObjType>
+SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (void) ){
+	return new SteelFunctorNoArgs<ObjType>(obj,ObjFunctor);
+}
+
+template <class ObjType, class A>
+SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (A) ){
+	return new SteelFunctor1Arg<ObjType,A>(obj,ObjFunctor);
+}
+
+
+template <class ObjType, class A, class B>
+  SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (A,B) ){
+	return new SteelFunctor2Arg<ObjType,A,B>(obj,ObjFunctor);
+}
+
+template <class ObjType, class A, class B, class C>
+  SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (A,B,C) ){
+	return new SteelFunctor3Arg<ObjType,A,B,C>(obj,ObjFunctor);
+}
+
+template <class ObjType, class A, class B, class C, class D>
+  SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (A,B,C,D) ){
+	return new SteelFunctor4Arg<ObjType,A,B,C,D>(obj,ObjFunctor);
+}
+
+template <class ObjType, class A, class B, class C, class D, class E>
+  SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (A,B,C,D,E) ){
+	return new SteelFunctor5Arg<ObjType,A,B,C,D,E>(obj,ObjFunctor);
+}
+
+template <class ObjType, class A, class B, class C, class D, class E, class F>
+  SteelFunctor* create_functor(ObjType* obj, SteelType (ObjType::*ObjFunctor) (A,B,C,D,E,F) ){
+	return new SteelFunctor6Arg<ObjType,A,B,C,D,E,F>(obj,ObjFunctor);
+}
 
 
 template<class ObjType>
