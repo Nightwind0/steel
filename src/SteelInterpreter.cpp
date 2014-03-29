@@ -145,6 +145,38 @@ SteelInterpreter::~SteelInterpreter()
     popScope();
 }
 
+
+SteelInterpreter& SteelInterpreter::operator=(const SteelInterpreter& other){
+	if(this != &other){
+		clear();
+		m_symbols = other.m_symbols;
+		// TODO: Copy requires?
+		// TODO: Copy namespace scope??
+		// TODO: file handles?
+		m_param_stack = other.m_param_stack;
+		//m_return_stack = other.m_return_stack; // Why do I have a separate stack for this again?
+		m_aux_variables = other.m_aux_variables; // TODO is this necessary?
+		m_linked_aux_variables = other.m_linked_aux_variables;
+		m_file_provider = other.m_file_provider;
+		m_default_file_provider = other.m_default_file_provider;
+		push_context();
+	}
+	return *this;
+}
+
+void SteelInterpreter::clear() {
+	m_namespace_scope.clear();
+	m_file_handles.clear();
+	while(!m_return_stack.empty()){
+		m_return_stack.pop();
+	}
+	m_param_stack.clear();
+	m_aux_variables.clear();
+	m_linked_aux_variables.clear();
+	m_nContextCount = 0;
+}
+
+
 const std::string SteelInterpreter::getVersion(){
   return VERSION;
 }
@@ -1288,20 +1320,6 @@ SteelType SteelInterpreter::close(SteelType::Handle file)
     return SteelType();
 }
 
-
-SteelInterpreter& SteelInterpreter::operator= ( const SteelInterpreter& other )
-{
-    if(&other == this) return *this;
-
-    m_symbols = other.m_symbols;
-    m_namespace_scope = other.m_namespace_scope;
-    m_requires = other.m_requires;
-    
-    /* Intentionally not copying return stack or context count
-     * 
-     */
-    return *this;
-}
 
 
 

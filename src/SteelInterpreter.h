@@ -21,9 +21,6 @@
 
 
 
-
-#define USE_DYNAMIC_MUTEXES 0
-
 namespace Steel { 
 
 // fwd
@@ -93,8 +90,6 @@ public:
                             const std::string &script,
                             bool debugparser=false,
 			    bool debugscanner=false);
-    
-    SteelInterpreter& operator=(const SteelInterpreter& other);
 
     // After using prebuildAst, you can later run it using runAst
     SteelType runAst(AstScript *pAst);
@@ -158,25 +153,21 @@ public:
     // and  unlink when the closure is destroyed.
     void linkAuxVariables(AuxVariables* pVariables);
     void unlinkAuxVariables(AuxVariables* pVariables);
+	
+	SteelInterpreter& operator=(const SteelInterpreter& other);
 private:
     typedef std::map<std::string, SteelType> VariableFile;
     void push_context();
     void pop_context();
-    
+    void clear();
+	
     std::string name_array_ref(const std::string &array_name);
-#if USE_DYNAMIC_MUTEXES
-    Mutex * m_symbol_mutex;
-    Mutex * m_function_mutex;
-    Mutex * m_scope_mutex;
-    Mutex * m_stack_mutex;
-    Mutex * m_import_mutex;
-#else 
+
     mutable Mutex m_symbol_mutex;
     mutable Mutex m_function_mutex;
     mutable Mutex m_scope_mutex;
     mutable Mutex m_stack_mutex;
     mutable Mutex m_import_mutex;
-#endif 
 
     std::deque<VariableFile> m_symbols;
 
