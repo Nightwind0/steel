@@ -121,7 +121,8 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 			pScript->execute(pInterpreter);
 			delete pScript;
 		    }
-		    value += (std::string)pInterpreter->popReturnStack();
+            const std::string str = pInterpreter->popReturnStack();
+		    value += str;
 		}else{
 		    value += "%err%";
 		}
@@ -292,6 +293,7 @@ AstStatement::eStopType AstScript::execute(SteelInterpreter *pInterpreter)
     {
         return m_pList->execute(pInterpreter);
     }
+    return AstStatement::COMPLETED;
 }
 
 void AstScript::SetList(AstStatementList *pList)
@@ -1704,7 +1706,7 @@ AstPair::~AstPair(){
 }
 
 std::string AstPair::GetKey(SteelInterpreter* pInterpreter){
-  return (std::string) m_key->evaluate(pInterpreter);
+  return  m_key->evaluate(pInterpreter);
 }
 
 SteelType AstPair::GetValue(SteelInterpreter* pInterpreter){

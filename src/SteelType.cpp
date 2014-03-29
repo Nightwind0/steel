@@ -1,3 +1,4 @@
+#include <functional>
 #include <string>
 #include <sstream>
 #include <cmath>
@@ -424,6 +425,7 @@ SteelType SteelType::operator+=(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::HASHMAP:
+    case SteelType::ARRAY:
         throw OperationMismatch();
     case SteelType::INT:
         set ( (int)*this + (int)rhs );
@@ -432,7 +434,8 @@ SteelType SteelType::operator+=(const SteelType &rhs)
         set ( (double)*this + (double)rhs );
         break;
     case SteelType::STRING:
-        set ( (std::string)*this + (std::string)rhs );
+       const std::string this_str = *this + rhs;
+        set ( this_str);
         break;
     }
 
@@ -467,7 +470,8 @@ SteelType SteelType::operator-=(const SteelType &rhs)
             set(*m_map); // Copy on write
             m_bCopyHash = false;
         }
-        m_map->erase((std::string)rhs);
+            const std::string str = rhs;
+            m_map->erase(str);
         break;
     }
 
@@ -585,9 +589,12 @@ SteelType  SteelType::operator+(const SteelType &rhs)
     case SteelType::DOUBLE:
         val.set ( (double)*this + (double)rhs);
         return val;
-    case SteelType::STRING:
-        val.set ( (std::string)*this + (std::string)rhs);
+        case SteelType::STRING:{
+            const std::string this_str  = *this;
+            const std::string other_str = rhs;
+            val.set ( this_str + other_str );
         return val;
+        }
     case SteelType::HASHMAP:{
         if(m_storage == SteelType::HASHMAP && rhs.m_storage == HASHMAP){
             val = *this;
@@ -798,10 +805,13 @@ bool  Steel::operator==(const SteelType &lhs, const SteelType &rhs)
         if((double)lhs == (double)rhs)
             val = true;
         break;
-    case SteelType::STRING:
-        if((std::string)lhs == (std::string)rhs)
+        case SteelType::STRING:{
+            const std::string lhs_str = lhs;
+            const std::string rhs_str = rhs;
+        if(lhs_str == rhs_str)
             val = true;
         break;
+        }
     case SteelType::HANDLE:
         if((SteelType::IHandle*)lhs == (SteelType::IHandle*)rhs)
             val = true;
@@ -840,9 +850,10 @@ SteelType  SteelType::operator<(const SteelType &rhs)
     case SteelType::ARRAY:
     case SteelType::BOOL:
     case SteelType::HANDLE:
+    case SteelType::HASHMAP:
     case SteelType::FUNCTOR:{
-		
-        val.set( (std::string)*this < (std::string)rhs );
+        const std::string this_str = *this + rhs;
+        val.set( this_str );
     }
         break;
     case SteelType::INT:
@@ -853,10 +864,13 @@ SteelType  SteelType::operator<(const SteelType &rhs)
         if((double)*this < (double)rhs)
             val.set(true);
         break;
-    case SteelType::STRING:
-        if((std::string)*this < (std::string)rhs)
+        case SteelType::STRING:{
+            const std::string this_str = *this;
+            const std::string that_str = rhs;
+        if(this_str < that_str)
             val.set(true);
         break;
+        }
        
     }
 
@@ -875,8 +889,12 @@ SteelType  SteelType::operator<=(const SteelType &rhs)
     case SteelType::BOOL:
     case SteelType::HANDLE:
     case SteelType::FUNCTOR:
-        val.set( (std::string)*this <= (std::string)rhs);
-        break;
+        case SteelType::HASHMAP:{
+            const std::string this_str = *this;
+            const std::string that_str = rhs;
+            val.set( this_str <= that_str );
+            break;
+        }
     case SteelType::INT:
         if((int)*this <= (int)rhs)
             val.set(true);
@@ -885,9 +903,12 @@ SteelType  SteelType::operator<=(const SteelType &rhs)
         if((double)*this <= (double)rhs)
             val.set(true);
         break;
-    case SteelType::STRING:
-        if((std::string)*this <= (std::string)rhs)
-            val.set(true);
+        case SteelType::STRING:{
+            const std::string this_str = *this;
+            const std::string that_str = rhs;
+            if(this_str <= that_str)
+                val.set(true);
+        }
         break;
        
     }
@@ -1220,9 +1241,11 @@ void SteelType::debugPrint()
     switch(m_storage){
     case INT:
     case DOUBLE:
-    case BOOL:
-        std::cout << (std::string)*this << std::endl;
-        break;
+        case BOOL:{
+            const std::string this_str = *this;
+            std::cout << this_str << std::endl;
+            break;
+        }
     case ARRAY:
         std::cout << "Array with " << m_array->size() << std::endl;
         break;

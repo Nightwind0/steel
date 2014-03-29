@@ -1,12 +1,12 @@
 #ifndef SR_STEELTYPE_H
 #define SR_STEELTYPE_H
 
+#include <functional>
+#include <string>
 #include <deque>
 #include <memory>
 #include <unordered_map>
-#ifndef _WINDOWS
-#include <tr1/memory>
-#endif
+#include <memory>
 
 namespace Steel { 
 class SteelFunctor;
@@ -30,7 +30,7 @@ public:
     typedef IHandle * Handle;
     typedef std::shared_ptr<SteelFunctor> Functor;
     typedef std::deque<SteelType> Container;
-    typedef std::unordered_map<std::string,SteelType> Map;
+    typedef std::unordered_map<std::string,SteelType,std::hash<std::string>> Map;
 
     //operator int () const;
     operator const int () const;

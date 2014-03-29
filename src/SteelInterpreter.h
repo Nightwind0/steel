@@ -10,9 +10,6 @@
 #include <deque>
 #include <fstream>
 #include <memory>
-#ifndef _WINDOWS
-#include <tr1/memory>
-#endif
 #include "SteelParser.h"
 #include "SteelFunctor.h"
 #include "Mutex.h"

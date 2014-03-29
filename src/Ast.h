@@ -5,14 +5,11 @@
 #include <list>
 #include <iostream>
 #include <memory>
-#ifndef _WINDOWS
-#include <tr1/memory>
-#endif
 #include "SteelType.h"
 
 
 using std::ostream;
-using std::tr1::shared_ptr;
+using std::shared_ptr;
 
 namespace Steel { 
 	class SteelInterpreter;

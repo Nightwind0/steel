@@ -20,7 +20,7 @@ namespace Steel {
 		void add(const std::string& id, SteelType* value);
 		bool transferOwnership(const VariableFile& file); 
 	private:
-                VarPtrFile m_variables;		
+        VarPtrFile m_variables;		
 		std::vector<SteelType*> m_owned;
 	};
 };
