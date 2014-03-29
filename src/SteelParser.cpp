@@ -1885,7 +1885,7 @@ AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT());
 #line 837 "steel.trison"
 
 						addError(GET_LINE(),"expected expression after 'pushb'.");
-						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),false);
+						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),NULL);
 							  
 #line 1891 "SteelParser.cpp"
             break;

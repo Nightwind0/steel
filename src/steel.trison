@@ -836,7 +836,7 @@ SteelParser::Token SteelParser::Scan ()
 |
 	PUSHB %error  %target.cpp {
 						addError(GET_LINE(),"expected expression after 'pushb'.");
-						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),false);
+						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),NULL);
 							  }
 |
 	FUNCTION '(' param_definition:params ')' '{' statement_list:stmts '}'
