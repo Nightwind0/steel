@@ -11,7 +11,6 @@ libsteel_la_SOURCES = SteelParser.cpp \
 			SteelType.cpp \
 			File.cpp \
 			Mutex.cpp \
-			AuxVariables.cpp \
 			steel.trison \
 			steel.reflex
 
@@ -24,7 +23,6 @@ libsteel_la_HEADERS =   Ast.h \
 						SteelScanner.h \
 						SteelInterpreter.h \
 						Mutex.h \
-						AuxVariables.h \
 						File.h
 
 SteelParser.h : SteelParser.cpp 
