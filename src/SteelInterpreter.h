@@ -136,22 +136,8 @@ public:
 	
     void setFileProvider(IFileProvider* provider);
 	
-    // Registered aux variable files will be queried by the interpreter when 
-    // an identifier is not found in the interpreter's own variable files
-    // they are queried in order of last inserted first.
-    // The idea is that closures register their non-local bindings before the function call
-    // and then remove them after.
-    void registerAuxVariables(AuxVariables* pVariables);
-    void removeAuxVariables(AuxVariables* pVariables);
 	
-    // Linked aux variable files will get ownership of any variables they contain
-    // when the interpreter relinquishes ownership
-    // call this from a function that is a closure when it's non-locals are bound
-    // and  unlink when the closure is destroyed.
-    void linkAuxVariables(AuxVariables* pVariables);
-    void unlinkAuxVariables(AuxVariables* pVariables);
-	
-	SteelInterpreter& operator=(const SteelInterpreter& other);
+    SteelInterpreter& operator=(const SteelInterpreter& other);
 private:
     typedef std::map<std::string, SteelType> VariableFile;
     void push_context();
@@ -185,8 +171,6 @@ private:
     ReturnStack m_return_stack; 
     
     std::set<FileHandle*> m_file_handles;
-    std::list<AuxVariables*> m_aux_variables;
-    std::list<AuxVariables*> m_linked_aux_variables;
     FileProvider m_default_file_provider;
     IFileProvider * m_file_provider;
     int m_nContextCount;

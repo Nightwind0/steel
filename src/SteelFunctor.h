@@ -4,6 +4,7 @@
 
 #include <string>
 #include <deque>
+#include <map>
 #include "SteelType.h"
 #include "SteelException.h"
 #include "AuxVariables.h"
@@ -14,6 +15,8 @@ namespace Steel {
 class AstParamDefinitionList;
 class AstStatementList;
 class SteelInterpreter;
+
+ using BoundVariables = std::map<std::string,SteelType>;
 
 class SteelFunctor
 {
@@ -40,8 +43,7 @@ public:
 private:
     std::shared_ptr<AstParamDefinitionList> m_pParams;
     std::shared_ptr<AstStatementList> m_pList;
-	AuxVariables m_nonlocals;
-	SteelInterpreter * m_bound_interpreter;
+    BoundVariables m_bound_variables;
 };
 
  class SteelCBoundFunctor;

@@ -7,19 +7,6 @@
 namespace Steel { 
 	
 
-class AutoRemover
-{
-public:
-  AutoRemover(SteelInterpreter* pInterpreter, AuxVariables* pVariables):m_pInterpreter(pInterpreter),m_aux_vars(pVariables){
-  }
-  ~AutoRemover(){
-	m_pInterpreter->removeAuxVariables(m_aux_vars);
-  }
-private:
-	SteelInterpreter* m_pInterpreter;
-	AuxVariables * m_aux_vars;
-};
-
 SteelFunctor::SteelFunctor()
 {
 }
@@ -32,7 +19,7 @@ SteelFunctor::~SteelFunctor()
 
 
   SteelUserFunction::SteelUserFunction(std::shared_ptr<AstParamDefinitionList> pParams, std::shared_ptr<AstStatementList> pList)
-    :m_pParams(pParams),m_pList(pList),m_bound_interpreter(NULL)
+    :m_pParams(pParams),m_pList(pList)
 {
 }
 
@@ -42,8 +29,7 @@ SteelUserFunction::~SteelUserFunction()
 /*  delete m_pParams;
   delete m_pList;
   */
-	if(m_bound_interpreter)
-		m_bound_interpreter->unlinkAuxVariables(&m_nonlocals);
+
 }
 
 SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelType::Container &supplied_params)
@@ -51,6 +37,7 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
     SteelType ret;
     
     pInterpreter->pushScope();
+
 
     for(SteelType::Container::const_iterator it = supplied_params.begin(); it != supplied_params.end(); it++){
       pInterpreter->pushParamStack(*it);
@@ -66,19 +53,31 @@ SteelType SteelUserFunction::Call(SteelInterpreter * pInterpreter,const SteelTyp
         if( supplied_params.size() != 0) throw ParamMismatch();
     }
 
+    // Put bound locals into scope. This way, the params can reference them
+      for(const auto& bound : m_bound_variables){
+	pInterpreter->declare(bound.first);
+	*pInterpreter->lookup_lvalue(bound.first) = bound.second; 
+      }
+
+
     if(m_pParams)
         m_pParams->executeDeclarations(pInterpreter);
 
     if(m_pList)
     {
-      AutoRemover remover(pInterpreter,&m_nonlocals);
-      pInterpreter->registerAuxVariables(&m_nonlocals);
+      //AutoRemover remover(pInterpreter,&m_nonlocals);
+      //pInterpreter->registerAuxVariables(&m_nonlocals);
       if(m_pList->execute(pInterpreter) == AstStatement::RETURN){
 	ret = pInterpreter->popReturnStack();
       }//else
       //pInterpreter->getReturnStack().push(SteelType());
+      //pInterpreter->removeAuxVariables(&m_nonlocals);
     }
-    
+
+    // Hacky. This syncs up my values. TODO: Fix this hack
+    for(auto& bound : m_bound_variables){
+      bound.second = pInterpreter->lookup(bound.first);
+    }	
     pInterpreter->popScope();
     return ret;
 }
@@ -97,13 +96,13 @@ void SteelUserFunction::bindNonLocals(SteelInterpreter* pInterpreter) {
 			continue; 
 		try{
 		  SteelType *val = pInterpreter->enclose_value(name);
-		  m_nonlocals.add(name,val);
+		  m_bound_variables[name] = *val;
 		}catch(UnknownIdentifier e){
 		}
 	}
-	
-	pInterpreter->linkAuxVariables(&m_nonlocals);
-	m_bound_interpreter = pInterpreter;
+       
+	//pInterpreter->linkAuxVariables(&m_nonlocals);
+	//	m_bound_interpreter = pInterpreter;
 	//TODO:  by the way, don't forget to set them const if they were declared const
 }
 

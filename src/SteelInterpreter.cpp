@@ -156,8 +156,6 @@ SteelInterpreter& SteelInterpreter::operator=(const SteelInterpreter& other){
 		// TODO: file handles?
 		m_param_stack = other.m_param_stack;
 		//m_return_stack = other.m_return_stack; // Why do I have a separate stack for this again?
-		m_aux_variables = other.m_aux_variables; // TODO is this necessary?
-		m_linked_aux_variables = other.m_linked_aux_variables;
 		m_file_provider = other.m_file_provider;
 		m_default_file_provider = other.m_default_file_provider;
 		push_context();
@@ -172,8 +170,6 @@ void SteelInterpreter::clear() {
 		m_return_stack.pop();
 	}
 	m_param_stack.clear();
-	m_aux_variables.clear();
-	m_linked_aux_variables.clear();
 	m_nContextCount = 0;
 }
 
@@ -667,27 +663,6 @@ void SteelInterpreter::registerFunction(const std::string &name,
     addFunction(name,ns,functor);
 }
 
-void SteelInterpreter::registerAuxVariables( AuxVariables* pVariables ) {
-    m_aux_variables.push_front(pVariables);
-}
-
-
-void SteelInterpreter::removeAuxVariables( AuxVariables* pVariables ) {
-    std::list<AuxVariables*>::iterator it = std::find(m_aux_variables.begin(),m_aux_variables.end(),pVariables);
-    if(it != m_aux_variables.end())
-        m_aux_variables.erase(it);
-}
-
-void SteelInterpreter::linkAuxVariables( AuxVariables* pVariables ) {
-    m_linked_aux_variables.push_front(pVariables);
-}
-
-
-void SteelInterpreter::unlinkAuxVariables( AuxVariables* pVariables ) {
-    std::list<AuxVariables*>::iterator it = std::find(m_linked_aux_variables.begin(),m_linked_aux_variables.end(),pVariables);
-    if(it != m_linked_aux_variables.end())
-        m_linked_aux_variables.erase(it);
-}
 
 SteelType * SteelInterpreter::_lookup_internal(const std::string &i_name){
     for(std::deque<VariableFile>::iterator i = m_symbols.begin();
@@ -701,13 +676,7 @@ SteelType * SteelInterpreter::_lookup_internal(const std::string &i_name){
         }
     }
     
-    // Still not found. Try the aux variables
-    for(std::list<AuxVariables*>::iterator it = m_aux_variables.begin();
-        it != m_aux_variables.end(); it++){
-        SteelType* pVar = (*it)->lookupLValue(i_name);
-        if(pVar != NULL) 
-            return pVar;
-    }
+
     return NULL;
 }
 
@@ -738,10 +707,6 @@ void SteelInterpreter::popScope()
 {
     AutoLock mutex(m_scope_mutex);
     assert(!m_symbols.empty());
-    for(std::list<AuxVariables*>::iterator aux_it = m_linked_aux_variables.begin();
-        aux_it != m_linked_aux_variables.end(); aux_it++){
-        (*aux_it)->transferOwnership(m_symbols.front());
-    }
     m_symbols.pop_front();
     m_requires.pop_front();
 }
