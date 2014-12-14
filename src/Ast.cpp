@@ -732,11 +732,19 @@ AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter
 }
 
 void AstLoopStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-  m_pDecl->FindIdentifiers(o_ids);
-  m_pStart->FindIdentifiers(o_ids);
-  m_pCondition->FindIdentifiers(o_ids);
-  m_pIteration->FindIdentifiers(o_ids);
-  m_pStatement->FindIdentifiers(o_ids);
+  if(m_pDecl)
+    m_pDecl->FindIdentifiers(o_ids);
+
+  if(m_pStart)
+    m_pStart->FindIdentifiers(o_ids);
+
+  if(m_pCondition)
+    m_pCondition->FindIdentifiers(o_ids);
+  if(m_pIteration)
+    m_pIteration->FindIdentifiers(o_ids);
+
+  if(m_pStatement)
+    m_pStatement->FindIdentifiers(o_ids);
 }
 
 
