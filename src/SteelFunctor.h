@@ -7,7 +7,7 @@
 #include <map>
 #include "SteelType.h"
 #include "SteelException.h"
-#include "AuxVariables.h"
+
 
 namespace Steel { 
 

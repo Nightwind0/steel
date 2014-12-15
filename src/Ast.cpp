@@ -22,7 +22,8 @@ AstBase::~AstBase()
 }
 
 
-void AstBase::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
+void AstBase::FindIdentifiers( std::list<AstIdentifier*>& o_ids ) {
+  ;
 }
 
 
@@ -243,7 +244,7 @@ AstExpressionStatement::AstExpressionStatement(unsigned int line, const std::str
 }
 AstExpressionStatement::~AstExpressionStatement()
 {
-    delete m_pExp;
+    
 }
 
 ostream & AstExpressionStatement::print(std::ostream &out)
@@ -268,12 +269,12 @@ void AstExpressionStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids
 
 
 AstScript::AstScript(unsigned int line, const std::string &script)
-    :AstStatement(line,script),m_pList(NULL)
+    :AstStatement(line,script),m_pList(nullptr)
 {
 }
 AstScript::~AstScript()
 {
-    delete m_pList;
+    
 }
 
 ostream & AstScript::print(std::ostream &out)
@@ -298,7 +299,7 @@ AstStatement::eStopType AstScript::execute(SteelInterpreter *pInterpreter)
 
 void AstScript::SetList(AstStatementList *pList)
 {
-    m_pList = pList;
+    m_pList = std::unique_ptr<AstStatementList>(pList);
     m_pList->setTopLevel();
 }
 
@@ -310,8 +311,7 @@ AstStatementList::AstStatementList(unsigned int line, const std::string &script)
 
 AstStatementList::~AstStatementList()
 {
-    for(std::list<AstStatement*>::iterator i = m_list.begin();
-        i != m_list.end(); i++) delete *i;
+
 }
 
 void AstStatementList::setTopLevel()
@@ -320,9 +320,8 @@ void AstStatementList::setTopLevel()
 }
 
 void AstStatementList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-    for(std::list<AstStatement*>::iterator i = m_list.begin();
-        i != m_list.end(); i++) 
-		(*i)->FindIdentifiers(o_ids);
+    for(auto& i : m_list) 
+      i->FindIdentifiers(o_ids);
 	
 }
 
@@ -332,12 +331,10 @@ AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter
     eStopType ret = COMPLETED;
     if(!m_bTopLevel)
 		pInterpreter->pushScope();
-    for(std::list<AstStatement*>::const_iterator it = m_list.begin();
-        it != m_list.end(); it++)
+    for(auto& it : m_list)
     {
-    
-        AstStatement * pStatement = *it;
-        eStopType stop = pStatement->execute(pInterpreter);
+
+        eStopType stop = it->execute(pInterpreter);
 
         if(stop == BREAK || stop == RETURN || stop ==  CONTINUE)
         {
@@ -354,11 +351,9 @@ AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter
 ostream & AstStatementList::print(std::ostream &out)
 {
     out << "{\n";
-    for(std::list<AstStatement*>::const_iterator it = m_list.begin();
-        it != m_list.end(); it++)
+    for(const auto& it : m_list)
     {
-        AstStatement * pStatement = *it;
-        out << "\t\t" << *pStatement;
+        out << "\t\t" << *it;
     }
     out << "\t}\n";
 
@@ -372,8 +367,7 @@ AstWhileStatement::AstWhileStatement(unsigned int line, const std::string &scrip
 }
 AstWhileStatement::~AstWhileStatement()
 {
-    delete m_pCondition;
-    delete m_pStatement;
+
 }
 
 AstStatement::eStopType AstWhileStatement::execute(SteelInterpreter *pInterpreter)
@@ -414,8 +408,7 @@ AstDoStatement::AstDoStatement(unsigned int line, const std::string &script, Ast
 }
 AstDoStatement::~AstDoStatement()
 {
-    delete m_pCondition;
-    delete m_pStatement;
+
 }
 
 AstStatement::eStopType AstDoStatement::execute(SteelInterpreter *pInterpreter)
@@ -455,9 +448,7 @@ AstIfStatement::AstIfStatement(unsigned int line, const std::string &script,
 }
 AstIfStatement::~AstIfStatement()
 {
-    delete m_pCondition;
-    delete m_pElse;
-    delete m_pStatement;
+
 }
 
 AstStatement::eStopType AstIfStatement::execute(SteelInterpreter *pInterpreter)
@@ -498,7 +489,7 @@ AstCaseStatement::AstCaseStatement(unsigned int line, const std::string& script,
 
 AstCaseStatement::~AstCaseStatement()
 {
-    delete m_pStatement;
+
 }
 
 ostream& AstCaseStatement::print(std::ostream& out)
@@ -517,7 +508,7 @@ void AstCaseStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 
 
 AstCaseStatementList::AstCaseStatementList(unsigned int line, const std::string& script)
-    :AstBase(line,script),m_pDefault(NULL)
+    :AstBase(line,script),m_pDefault(nullptr)
 {
 
 }
@@ -536,8 +527,8 @@ ostream& AstCaseStatementList::print(std::ostream& out)
 void AstCaseStatementList::add(AstExpression* matchExpression, AstCaseStatement* statement)
 {
     Case case_;
-    case_.matchExpression = matchExpression;
-    case_.statement = statement;
+    case_.matchExpression = std::shared_ptr<AstExpression>(matchExpression);
+    case_.statement = std::shared_ptr<AstCaseStatement>(statement);
     m_cases.push_back(case_);
 }
 
@@ -547,7 +538,7 @@ bool AstCaseStatementList::setDefault(AstCaseStatement* statement)
 	return false;
     }
 
-    m_pDefault = statement;
+    m_pDefault = std::unique_ptr<AstCaseStatement>(statement);
     return true;
 }
 
@@ -604,7 +595,7 @@ AstStatement::eStopType AstSwitchStatement::execute(SteelInterpreter* pInterpret
     // If its break, we stop. If it's return, we return .
     // TODO: Future; Add enums to steel. Then, have the C++ be able to inject enums in,
     // and then ONLY accept literal ints or enums in switch statements
-    eStopType stopType =  m_pCases->executeCaseMatching(m_pValue,pInterpreter);
+    eStopType stopType =  m_pCases->executeCaseMatching(m_pValue.get(),pInterpreter);
 
     // Eat breaks
     if(stopType == BREAK) 
@@ -627,7 +618,7 @@ AstReturnStatement::AstReturnStatement(unsigned int line, const std::string &scr
 
 AstReturnStatement::~AstReturnStatement()
 {
-    delete m_pExpression;
+    
 }
 
 AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpreter)
@@ -681,23 +672,19 @@ ostream & AstReturnStatement::print(std::ostream &out)
 AstLoopStatement::AstLoopStatement(unsigned int line, const std::string &script,
                                    AstExpression *pStart, AstExpression *pCondition,
                                    AstExpression *pIteration, AstStatement* pStmt)
-  :AstStatement(line,script),m_pStart(pStart),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(NULL)
+  :AstStatement(line,script),m_pStart(pStart),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(nullptr)
 {
 }
 AstLoopStatement::AstLoopStatement(unsigned int line, const std::string &script,
                                    AstDeclaration *pDecl, AstExpression *pCondition,
                                    AstExpression *pIteration, AstStatement* pStmt)
-  :AstStatement(line,script),m_pStart(NULL),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(pDecl)
+  :AstStatement(line,script),m_pStart(nullptr),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(pDecl)
 {
 }
 
 AstLoopStatement::~AstLoopStatement()
 {
-    delete m_pStart;
-    delete m_pCondition;
-    delete m_pIteration;
-    delete m_pStatement;
-    delete m_pDecl;
+
 }
 
 AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter)
@@ -758,22 +745,19 @@ ostream & AstLoopStatement::print(std::ostream &out)
 
 AstForEachStatement::AstForEachStatement(unsigned int line, const std::string& script,
 					 AstDeclaration* decl, AstExpression * array_exp, AstStatement* stmt)
-    :AstStatement(line,script),m_pLValue(NULL),m_pDeclaration(decl),m_pArrayExpression(array_exp),m_pStatement(stmt)
+    :AstStatement(line,script),m_pLValue(nullptr),m_pDeclaration(decl),m_pArrayExpression(array_exp),m_pStatement(stmt)
 {
 }
 
 AstForEachStatement::AstForEachStatement(unsigned int line, const std::string& script,
 					 AstIdentifier* lvalue, AstExpression* array_exp, AstStatement* stmt)
-    :AstStatement(line,script),m_pDeclaration(NULL),m_pLValue(lvalue),m_pArrayExpression(array_exp),m_pStatement(stmt)
+    :AstStatement(line,script),m_pDeclaration(nullptr),m_pLValue(lvalue),m_pArrayExpression(array_exp),m_pStatement(stmt)
 {
 }
 
 AstForEachStatement::~AstForEachStatement()
 {
-    if(m_pDeclaration) delete m_pDeclaration;
-    if(m_pArrayExpression) delete m_pArrayExpression;
-    if(m_pLValue) delete m_pLValue;
-    if(m_pStatement) delete m_pStatement;
+
 }
 
 void AstForEachStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
@@ -797,24 +781,24 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
     pInterpreter->pushScope();
     try{
 
-	SteelType * val = NULL;
+	SteelType * val = nullptr;
 	if(m_pDeclaration)
 	{
-	  AstDeclaration * vardecl = m_pDeclaration;
+	  AstDeclaration * vardecl = m_pDeclaration.get();
 
 	  vardecl->execute(pInterpreter);
 	  AstIdentifier *pId = vardecl->getIdentifier();
 
 	  val = pId->lvalue(pInterpreter);
 
-	  if(NULL == val) throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid lvalue used as iterator in foreach.");
+	  if(nullptr == val) throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid lvalue used as iterator in foreach.");
 	    
 	}
 	else if(m_pLValue)
 	{
 	   val =  m_pLValue->lvalue(pInterpreter);
 
-	   if(NULL == val) throw SteelException(SteelException::INVALID_LVALUE,
+	   if(nullptr == val) throw SteelException(SteelException::INVALID_LVALUE,
                                               GetLine(),
                                               GetScript(),
                                               "Invalid lvalue used as iterator in foreach.");
@@ -864,7 +848,7 @@ AstIncDec::AstIncDec(unsigned int line,
 }
 AstIncDec::~AstIncDec()
 {
-    delete m_pLValue;
+   
 }
 
 void AstIncDec::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
@@ -891,7 +875,7 @@ SteelType AstIncrement::evaluate(SteelInterpreter *pInterpreter)
     {
         SteelType *pVar = m_pLValue->lvalue(pInterpreter);
 
-        if(NULL == pVar) throw SteelException(SteelException::INVALID_LVALUE,
+        if(nullptr == pVar) throw SteelException(SteelException::INVALID_LVALUE,
                                               GetLine(),
                                               GetScript(),
                                               "Invalid lvalue before increment (++) operator.");
@@ -921,7 +905,7 @@ SteelType AstIncrement::evaluate(SteelInterpreter *pInterpreter)
 
 SteelType * AstIncrement::lvalue(SteelInterpreter *pInterpreter)
 {
-    return NULL;
+    return nullptr;
 }
 
 
@@ -943,7 +927,7 @@ SteelType AstDecrement::evaluate(SteelInterpreter *pInterpreter)
     {
         SteelType *pVar = m_pLValue->lvalue(pInterpreter);
 
-        if(NULL == pVar) throw SteelException(SteelException::INVALID_LVALUE,
+        if(nullptr == pVar) throw SteelException(SteelException::INVALID_LVALUE,
                                               GetLine(),
                                               GetScript(),
                                               "Invalid lvalue before decrement (--) operator.");
@@ -973,7 +957,7 @@ SteelType AstDecrement::evaluate(SteelInterpreter *pInterpreter)
 
 SteelType * AstDecrement::lvalue(SteelInterpreter *pInterpreter)
 {
-    return NULL;
+    return nullptr;
 }
 
 
@@ -987,8 +971,7 @@ AstBinOp::AstBinOp(unsigned int line,
 }
 AstBinOp::~AstBinOp()
 {
-    delete m_right;
-    delete m_left;
+
 }
 
 std::string AstBinOp::ToString(Op op)
@@ -1043,7 +1026,7 @@ std::string AstBinOp::ToString(Op op)
 
 SteelType *AstBinOp::lvalue(SteelInterpreter *pInterpreter)
 {
-    return NULL;
+    return nullptr;
 }
 
 SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
@@ -1209,7 +1192,7 @@ AstUnaryOp::AstUnaryOp(unsigned int line,
 
 AstUnaryOp::~AstUnaryOp()
 {
-    delete m_operand;
+
 }
 
 std::string AstUnaryOp::ToString(Op op)
@@ -1230,7 +1213,7 @@ std::string AstUnaryOp::ToString(Op op)
 
 SteelType *AstUnaryOp::lvalue(SteelInterpreter *pInterpreter)
 {
-    return NULL;
+    return nullptr;
 }
 
 SteelType AstUnaryOp::evaluate(SteelInterpreter *pInterpreter)
@@ -1301,7 +1284,7 @@ AstPop::AstPop(unsigned int line,
 
 AstPop::~AstPop()
 {
-    delete m_pLValue;
+
 }
 
 SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
@@ -1309,7 +1292,7 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
     
     SteelType *pL = m_pLValue->lvalue(pInterpreter);
     
-    if(NULL == pL) 
+    if(nullptr == pL) 
     {
         throw SteelException(SteelException::INVALID_LVALUE,
                              GetLine(),
@@ -1344,8 +1327,7 @@ AstPush::AstPush(unsigned int line,
 
 AstPush::~AstPush()
 {
-    delete m_pLValue;
-    delete m_pExp;
+
 }
 
 SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
@@ -1353,7 +1335,7 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
     
     SteelType *pL = m_pLValue->lvalue(pInterpreter);
     
-    if(NULL == pL) 
+    if(nullptr == pL) 
     {
         throw SteelException(SteelException::INVALID_LVALUE,
                              GetLine(),
@@ -1388,8 +1370,7 @@ AstRemove::AstRemove(unsigned int line,
 
 AstRemove::~AstRemove()
 {
-    delete m_pLValue;
-    delete m_pExp;
+ 
 }
 
 SteelType AstRemove::evaluate(SteelInterpreter *pInterpreter)
@@ -1397,7 +1378,7 @@ SteelType AstRemove::evaluate(SteelInterpreter *pInterpreter)
     
     SteelType *pL = m_pLValue->lvalue(pInterpreter);
     
-    if(NULL == pL) 
+    if(nullptr == pL) 
     {
         throw SteelException(SteelException::INVALID_LVALUE,
                              GetLine(),
@@ -1423,8 +1404,7 @@ AstCallExpression::AstCallExpression(unsigned int line,
 
 AstCallExpression::~AstCallExpression()
 {
-    delete m_pExp;
-    delete m_pParams;
+
 }
 
 SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
@@ -1515,14 +1495,12 @@ AstArrayLiteral::AstArrayLiteral(unsigned int line, const std::string& script):A
 
 AstArrayLiteral::~AstArrayLiteral()
 {
-  for(std::list<AstExpression*>::iterator it = m_list.begin(); it!= m_list.end(); it++){
-    delete *it;
-  }
+
 }
 
 void AstArrayLiteral::add(AstExpression* pExp)
 {
-  m_list.push_back(pExp);
+  m_list.push_back(std::unique_ptr<AstExpression>(pExp));
 }
 
 SteelType AstArrayLiteral::evaluate(SteelInterpreter* pInterpreter)
@@ -1530,16 +1508,16 @@ SteelType AstArrayLiteral::evaluate(SteelInterpreter* pInterpreter)
   SteelType array;
   array.set(SteelType::Container());
 
-  for(std::list<AstExpression*>::iterator it = m_list.begin(); it!= m_list.end(); it++){
-    array.pushb((*it)->evaluate(pInterpreter));
+  for(auto& it : m_list){
+    array.pushb(it->evaluate(pInterpreter));
   }
 
   return array;  
 }
 
 void AstArrayLiteral::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
- for(std::list<AstExpression*>::iterator it = m_list.begin(); it!= m_list.end(); it++){
-	 (*it)->FindIdentifiers(o_ids);
+ for(auto& it : m_list){
+	 it->FindIdentifiers(o_ids);
   }	
 }
 
@@ -1579,8 +1557,7 @@ AstArrayElement::AstArrayElement(unsigned int line,
 
 AstArrayElement::~AstArrayElement()
 {
-    delete m_pLValue;
-    delete m_pExp;
+
 }
 
 int AstArrayElement::getArrayIndex(SteelInterpreter *pInterpreter) const
@@ -1595,7 +1572,7 @@ SteelType * AstArrayElement::lvalue(SteelInterpreter *pInterpreter)
     {
     
         SteelType * pArray = m_pLValue->lvalue(pInterpreter);
-        if(NULL == pArray)
+        if(nullptr == pArray)
         {
             throw SteelException(SteelException::INVALID_LVALUE,
                                  GetLine(),
@@ -1641,7 +1618,7 @@ SteelType * AstArrayElement::lvalue(SteelInterpreter *pInterpreter)
                              "lvalue subscript was out of bounds.");
     }
 
-    return NULL;
+    return nullptr;
 }
 
 SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
@@ -1737,27 +1714,27 @@ AstPairList::~AstPairList()
 
 void AstPairList::add(AstPair* pair)
 {
-  m_list.push_back(pair);
+  m_list.push_back(std::unique_ptr<AstPair>(pair));
 }
 
 SteelType AstPairList::evaluate(SteelInterpreter *pInterpreter)
 {
   SteelType hashmap;
   hashmap.set(SteelType::Map());
-  for(std::list<AstPair*>::iterator it = m_list.begin(); it != m_list.end(); it++){
-    hashmap.setElement((*it)->GetKey(pInterpreter),(*it)->GetValue(pInterpreter));
+  for(auto & it : m_list){
+    hashmap.setElement(it->GetKey(pInterpreter),it->GetValue(pInterpreter));
   }
   return hashmap;
 }
 
 SteelType* AstPairList::lvalue(SteelInterpreter *pInterpreter)
 {
-  return NULL;
+  return nullptr;
 }
 
 void AstPairList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
- for(std::list<AstPair*>::iterator it = m_list.begin(); it != m_list.end(); it++){
-    (*it)->FindIdentifiers(o_ids);
+ for(auto & it : m_list){
+    it->FindIdentifiers(o_ids);
   }	
 }
 
@@ -1773,14 +1750,13 @@ AstVarAssignmentExpression::AstVarAssignmentExpression(unsigned int line,
 
 AstVarAssignmentExpression::~AstVarAssignmentExpression()
 {
-    delete m_pLValue;
-    delete m_pExpression;
+
 }
 
 SteelType *AstVarAssignmentExpression::lvalue(SteelInterpreter *pInterpreter)
 {
     // Not an lvalue. I found out.
-    return NULL;
+    return nullptr;
 }
 
 SteelType AstVarAssignmentExpression::evaluate(SteelInterpreter *pInterpreter)
@@ -1789,7 +1765,7 @@ SteelType AstVarAssignmentExpression::evaluate(SteelInterpreter *pInterpreter)
     try
     {
         SteelType *pL = m_pLValue->lvalue(pInterpreter);
-        if(pL == NULL)
+        if(pL == nullptr)
             throw SteelException(SteelException::INVALID_LVALUE,
                                  GetLine(),
                                  GetScript(),
@@ -1836,19 +1812,17 @@ AstParamList::AstParamList(unsigned int line,
 }
 AstParamList::~AstParamList()
 {
-    for(std::list<AstExpression*>::iterator i = m_params.begin();
-        i != m_params.end(); i++) delete *i;
+// 
 }
 
 SteelType::Container AstParamList::getParamList(SteelInterpreter *pInterpreter) const 
 {
     SteelType::Container params;
 
-    for(std::list<AstExpression*>::const_iterator i = m_params.begin();
-        i != m_params.end(); i++)
+    for(auto & i : m_params)
     {
     
-        SteelType var = (*i)->evaluate(pInterpreter);
+        SteelType var = i->evaluate(pInterpreter);
         params.push_back ( var );
     }
     
@@ -1857,31 +1831,20 @@ SteelType::Container AstParamList::getParamList(SteelInterpreter *pInterpreter) 
 }
 
 void AstParamList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
- for(std::list<AstExpression*>::const_iterator i = m_params.begin();
-        i != m_params.end(); i++)
+ for(auto& i : m_params)
     {
-		(*i)->FindIdentifiers(o_ids);
-	}
+		i->FindIdentifiers(o_ids);
+      
+    }
 }
 
 
 void AstParamList::add(AstExpression *pExp)
 {
-    m_params.push_back(pExp);
+    m_params.push_back(std::unique_ptr<AstExpression>(pExp));
 }
 ostream & AstParamList::print(std::ostream &out)
 {
-    for(std::list<AstExpression*>::const_iterator i = m_params.begin();
-        i != m_params.end(); i++)
-    {
-        std::list<AstExpression*>::const_iterator next = i ;
-        next++;
-
-        if(next == m_params.end())
-            out << *(*i);
-        else
-            out  << *(*i) << ',';
-    }
     
 
     return out;
@@ -1911,7 +1874,7 @@ SteelType * AstIdentifier::lvalue(SteelInterpreter *pInterpreter)
                              "Unknown identifier:'" + getValue() + '\'');
     }
 
-    return NULL;
+    return nullptr;
 };
 
 
@@ -1952,8 +1915,7 @@ AstDeclaration::AstDeclaration(unsigned int line,
 
 AstDeclaration::~AstDeclaration()
 {
-    delete m_pId;
-    delete m_pExp;
+
 }
 
 AstStatement::eStopType AstDeclaration::execute(SteelInterpreter *pInterpreter)
@@ -1976,7 +1938,7 @@ AstStatement::eStopType AstDeclaration::execute(SteelInterpreter *pInterpreter)
             SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
 	    
             // If this is null, its crazy, because we JUST declared its ass.
-            assert ( NULL != pVar);
+            assert ( nullptr != pVar);
             
 	
 	    if(!pInterpreter->paramStackEmpty()){
@@ -2044,21 +2006,19 @@ AstArrayDeclaration::AstArrayDeclaration(unsigned int line,
                                          const std::string &script,
                                          AstIdentifier *pId,
                                          AstExpression *pInt)
-  :AstDeclaration(line,script,pId,pInt),m_pId(pId),m_pIndex(pInt),m_pExp(NULL)
+  :AstDeclaration(line,script,pId,pInt),m_pId(pId),m_pIndex(pInt),m_pExp(nullptr)
 {
 }
 
 AstArrayDeclaration::~AstArrayDeclaration()
 {
-  //delete m_pId;
-  // delete m_pIndex;
-    delete m_pExp;
+
 }
 
 void AstArrayDeclaration::assign(AstExpression *pExp)
 {
     // Todo: Actually evaluate this here and toss it
-    m_pExp = pExp;
+    m_pExp = std::unique_ptr<AstExpression>(pExp);
 }
 
 void AstArrayDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
@@ -2088,7 +2048,7 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
     try{
         SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
         // If this is null here, we're in a BAD way. Programming error.
-        assert ( NULL != pVar);
+        assert ( nullptr != pVar);
 	
 	if(!pInterpreter->paramStackEmpty()){
 	  pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
@@ -2157,9 +2117,7 @@ AstParamDefinitionList::AstParamDefinitionList(unsigned int line,
 
 AstParamDefinitionList::~AstParamDefinitionList()
 {
-    for(std::list<AstDeclaration*>::iterator i = m_params.begin();
-        i != m_params.end(); i++) 
-        delete *i;
+
 }
 
 void AstParamDefinitionList::add(AstDeclaration *pDef)
@@ -2177,7 +2135,7 @@ void AstParamDefinitionList::add(AstDeclaration *pDef)
         }
     }
 
-    m_params.push_back( pDef );
+    m_params.push_back( std::unique_ptr<AstDeclaration>(pDef) );
 }
 
 
@@ -2194,18 +2152,16 @@ int AstParamDefinitionList::defaultCount() const
 
 void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter)
 {
-  for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
-      i != m_params.end(); i++)
+  for(auto & i : m_params)
     {
-       (*i)->execute(pInterpreter);
+       i->execute(pInterpreter);
     }
 }
 
 
 bool AstParamDefinitionList::containsName( const std::string& id ) const {
-	for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
-		i != m_params.end(); i++){
-		AstIdentifier * ident = (*i)->getIdentifier();
+	for(auto& i : m_params){
+		AstIdentifier * ident = i->getIdentifier();
 		if(ident->getValue() == id)
 			return true;
 	}
@@ -2217,17 +2173,7 @@ bool AstParamDefinitionList::containsName( const std::string& id ) const {
 
 ostream & AstParamDefinitionList::print (std::ostream &out)
 {
-    for(std::list<AstDeclaration*>::const_iterator i = m_params.begin();
-        i != m_params.end(); i++)
-    {
-        std::list<AstDeclaration*>::const_iterator next = i ;
-        next++;
 
-        if(next == m_params.end())
-            out << *(*i);
-        else
-            out  << *(*i) << ',';
-    }
     return out;
 }    
 
@@ -2262,7 +2208,7 @@ AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
 }
 AstFunctionDefinition::~AstFunctionDefinition()
 {
-  delete m_pId;
+
   /*
     delete m_pId;
     delete m_pParams;
@@ -2277,7 +2223,7 @@ AstFunctionDefinition::~AstFunctionDefinition()
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)
 {
   std::string ns = SteelInterpreter::kszGlobalNamespace;
-  AstFuncIdentifier * fid = dynamic_cast<AstFuncIdentifier*>(m_pId);
+  AstFuncIdentifier * fid = dynamic_cast<AstFuncIdentifier*>(m_pId.get());
   if(fid){
     ns = fid->GetNamespace();
   }

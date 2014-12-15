@@ -86,9 +86,11 @@ void SteelUserFunction::bindNonLocals(SteelInterpreter* pInterpreter) {
 	// TODO: Here we go through our statements looking for variable identifiers
 	// be there arrays, hashes, scalars, doesn't matter. 
 	// and we take those id's and look up their values in the interpreter,
-	// and copy them into our nonlocal variable file. 
-	std::list<AstIdentifier*> ids;
-	m_pList->FindIdentifiers(ids);
+	// and copy them into our nonlocal variable file.
+	if(m_pList){
+	  std::list<AstIdentifier*> ids;
+	  m_pList->FindIdentifiers(ids);
+
 	
 	for(std::list<AstIdentifier*>::const_iterator it = ids.begin(); it != ids.end(); it++){
 		const std::string name = (*it)->getValue();
@@ -100,7 +102,7 @@ void SteelUserFunction::bindNonLocals(SteelInterpreter* pInterpreter) {
 		}catch(UnknownIdentifier e){
 		}
 	}
-       
+	}
 	//pInterpreter->linkAuxVariables(&m_nonlocals);
 	//	m_bound_interpreter = pInterpreter;
 	//TODO:  by the way, don't forget to set them const if they were declared const

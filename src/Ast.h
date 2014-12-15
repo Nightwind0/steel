@@ -98,7 +98,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);
 	private:
 		
-		AstStatementList *m_pList;
+		std::unique_ptr<AstStatementList> m_pList;
 	};
 	
 	class AstExpressionStatement : public AstStatement
@@ -112,7 +112,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  
 		void setTopLevel();
 	private:
-		AstExpression* m_pExp;
+		std::unique_ptr<AstExpression> m_pExp;
 	};
 	
 	
@@ -123,12 +123,12 @@ namespace Steel {
 		virtual ~AstStatementList();
 		
 		virtual ostream & print(std::ostream &out);
-		void add(AstStatement *pStatement) { m_list.push_back(pStatement); }
+		void add(AstStatement *pStatement) { m_list.push_back(std::unique_ptr<AstStatement>(pStatement)); }
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		void setTopLevel();
 	private:
-		std::list<AstStatement*> m_list;
+		std::list<std::unique_ptr<AstStatement>> m_list;
 		bool m_bTopLevel;
 	};
 	
@@ -142,8 +142,8 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression * m_pCondition;
-		AstStatement * m_pStatement;
+		std::unique_ptr<AstExpression> m_pCondition;
+		std::unique_ptr<AstStatement>  m_pStatement;
 	};
 	
 	class AstDoStatement : public AstStatement
@@ -156,8 +156,8 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression * m_pCondition;
-		AstStatement * m_pStatement;
+		std::unique_ptr<AstExpression>  m_pCondition;
+		std::unique_ptr<AstStatement>  m_pStatement;
 	};
 	
 	
@@ -173,9 +173,9 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression *m_pCondition;
-		AstStatement *m_pElse;
-		AstStatement * m_pStatement;
+		std::unique_ptr<AstExpression> m_pCondition;
+		std::unique_ptr<AstStatement> m_pElse;
+		std::unique_ptr<AstStatement> m_pStatement;
 	};
 	
 	
@@ -189,7 +189,7 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter* pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstStatement* m_pStatement;
+		std::unique_ptr<AstStatement> m_pStatement;
 	};
 	
 	class AstCaseStatementList: public AstBase
@@ -205,11 +205,11 @@ namespace Steel {
 		AstStatement::eStopType executeCaseMatching(AstExpression* value, SteelInterpreter* pInterpreter);
 	private:
 		struct Case{
-			AstExpression* matchExpression;
-			AstCaseStatement* statement;
+			std::shared_ptr<AstExpression> matchExpression;
+			std::shared_ptr<AstCaseStatement> statement;
 		};
 		std::list<Case> m_cases;
-		AstCaseStatement* m_pDefault;
+		std::unique_ptr<AstCaseStatement> m_pDefault;
 		
 	};
 	
@@ -223,8 +223,8 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter* pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression* m_pValue;
-		AstCaseStatementList* m_pCases;
+		std::unique_ptr<AstExpression> m_pValue;
+		std::unique_ptr<AstCaseStatementList> m_pCases;
 	};
 	
 	
@@ -238,7 +238,7 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression *m_pExpression;
+		std::unique_ptr<AstExpression> m_pExpression;
 	};
 	
 	
@@ -285,11 +285,11 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression *m_pStart;
-		AstExpression *m_pCondition;
-		AstExpression *m_pIteration;
-		AstStatement *m_pStatement;
-                AstDeclaration *m_pDecl;
+		std::unique_ptr<AstExpression> m_pStart;
+		std::unique_ptr<AstExpression> m_pCondition;
+		std::unique_ptr<AstExpression> m_pIteration;
+		std::unique_ptr<AstStatement> m_pStatement;
+                std::unique_ptr<AstDeclaration> m_pDecl;
 	};
 	
 
@@ -307,10 +307,10 @@ namespace Steel {
 		virtual eStopType execute(SteelInterpreter* pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstDeclaration* m_pDeclaration;
-		AstIdentifier* m_pLValue;
-		AstExpression* m_pArrayExpression;
-		AstStatement* m_pStatement;
+		std::unique_ptr<AstDeclaration> m_pDeclaration;
+		std::unique_ptr<AstIdentifier> m_pLValue;
+		std::unique_ptr<AstExpression> m_pArrayExpression;
+		std::unique_ptr<AstStatement> m_pStatement;
 	};
 	
 	
@@ -402,7 +402,7 @@ namespace Steel {
 		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  				
 	private:
-		SteelType *m_pLValue;
+		SteelType* m_pLValue;
 		std::string m_value;
 	};
 	
@@ -443,8 +443,8 @@ namespace Steel {
 		SteelType GetValue(SteelInterpreter* pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstExpression* m_key;
-		AstExpression* m_value;
+		std::unique_ptr<AstExpression> m_key;
+		std::unique_ptr<AstExpression> m_value;
 	};
 	
 	class AstPairList: public AstExpression
@@ -458,7 +458,7 @@ namespace Steel {
 		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		std::list<AstPair*> m_list;
+		std::list<std::unique_ptr<AstPair>> m_list;
 	};
 	
 	
@@ -479,7 +479,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	protected:
 		
-		AstExpression * m_pLValue;
+		std::unique_ptr<AstExpression>  m_pLValue;
 		Order m_order;
 	};
 	
@@ -563,8 +563,8 @@ namespace Steel {
 				 const std::string &script,
 		   Op op, AstExpression *right=NULL, AstExpression *left=NULL);
 		virtual ~AstBinOp();
-		void setLeft(AstExpression* left) { m_left = left; }
-		void setRight(AstExpression* right) { m_right = right; }
+		void setLeft(AstExpression* left) { m_left = std::unique_ptr<AstExpression>(left); }
+		void setRight(AstExpression* right) { m_right = std::unique_ptr<AstExpression>(right); }
 		virtual ostream & print(std::ostream &out);
 		virtual SteelType evaluate(SteelInterpreter *pInterpreter);
 		virtual SteelType * lvalue(SteelInterpreter *pInterpreter);
@@ -572,8 +572,8 @@ namespace Steel {
 		
 	private:
 		Op m_op;
-		AstExpression *m_right;
-		AstExpression *m_left;
+		std::unique_ptr<AstExpression> m_right;
+		std::unique_ptr<AstExpression> m_left;
 	};
 	
 	class AstUnaryOp : public AstExpression
@@ -599,7 +599,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  				
 	private:
 		Op m_op;
-		AstExpression *m_operand;
+		std::unique_ptr<AstExpression> m_operand;
 	};
 	
 	class AstPop : public AstExpression
@@ -615,7 +615,7 @@ namespace Steel {
 		virtual SteelType * lvalue(SteelInterpreter *pInterpreter) { return NULL; }
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  				
 	private:
-		AstExpression *m_pLValue;
+		std::unique_ptr<AstExpression> m_pLValue;
 		bool m_bPopBack;
 	};
 	
@@ -634,8 +634,8 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		AstExpression *m_pLValue;
-		AstExpression* m_pExp;
+		std::unique_ptr<AstExpression> m_pLValue;
+		std::unique_ptr<AstExpression> m_pExp;
 		bool m_bPushFront;
 	};
 	
@@ -653,8 +653,8 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		AstExpression *m_pLValue;
-		AstExpression* m_pExp;
+		std::unique_ptr<AstExpression> m_pLValue;
+		std::unique_ptr<AstExpression> m_pExp;
 	};
 	
 	
@@ -677,8 +677,8 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		AstExpression *m_pExp;
-		AstParamList *m_pParams;
+		std::unique_ptr<AstExpression> m_pExp;
+		std::unique_ptr<AstParamList> m_pParams;
 		SteelType m_functor;
 	};
 	
@@ -696,7 +696,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		std::list<AstExpression*> m_list;
+		std::list<std::unique_ptr<AstExpression>> m_list;
 	};
 	
 	
@@ -716,8 +716,8 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		AstExpression * m_pLValue;
-		AstExpression * m_pExp;
+		std::unique_ptr<AstExpression>  m_pLValue;
+		std::unique_ptr<AstExpression>  m_pExp;
 	};
 	
 	class AstVarAssignmentExpression : public AstExpression
@@ -736,8 +736,8 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		AstExpression * m_pLValue;
-		AstExpression * m_pExpression;
+		std::unique_ptr<AstExpression>  m_pLValue;
+		std::unique_ptr<AstExpression>  m_pExpression;
 	};
 	
 	
@@ -792,7 +792,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 		
 	private:
-		std::list<AstExpression*> m_params;
+		std::list<std::unique_ptr<AstExpression>> m_params;
 	};
 	
 	class AstDeclaration : public AstStatement
@@ -814,10 +814,10 @@ namespace Steel {
 		virtual bool hasInitializer() const { return m_pExp != NULL; }
 		virtual bool isConst() const { return m_bConst; }
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);
-		virtual AstIdentifier * getIdentifier() const { return m_pId; }// not normally usd
+		virtual AstIdentifier * getIdentifier() const { return m_pId.get(); }// not normally usd
         private:
-                AstIdentifier *m_pId ;
-                AstExpression *m_pExp;
+                std::unique_ptr<AstIdentifier> m_pId ;
+                std::unique_ptr<AstExpression> m_pExp;
                 bool m_bConst;
         };
 		
@@ -835,12 +835,12 @@ namespace Steel {
 		virtual ostream & print(std::ostream &out);
 		virtual bool hasInitializer() const { return m_pExp != NULL; }
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
-		virtual AstIdentifier* getIdentifier() const { return m_pId; }
+		virtual AstIdentifier* getIdentifier() const { return m_pId.get(); }
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		AstIdentifier *m_pId;
-		AstExpression *m_pIndex;
-		AstExpression *m_pExp;
+		std::unique_ptr<AstIdentifier> m_pId;
+		std::unique_ptr<AstExpression> m_pIndex;
+		std::unique_ptr<AstExpression> m_pExp;
 	};
 	
 	
@@ -879,7 +879,7 @@ namespace Steel {
 		bool containsName(const std::string& id)const;
 	private:
 		int mnDefaults;
-		std::list<AstDeclaration*> m_params;
+		std::list<std::unique_ptr<AstDeclaration>> m_params;
 	};
 	
 	class AstFunctionDefinition : public AstStatement
@@ -898,7 +898,7 @@ namespace Steel {
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 			
 	private:
-		AstIdentifier * m_pId;
+		std::unique_ptr<AstIdentifier>  m_pId;
                 std::shared_ptr<AstParamDefinitionList> m_pParams;
                 std::shared_ptr<AstStatementList> m_pStatements;
 	};

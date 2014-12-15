@@ -14,7 +14,7 @@
 #include "SteelFunctor.h"
 #include "Mutex.h"
 #include "File.h"
-#include "AuxVariables.h"
+
 
 
 
