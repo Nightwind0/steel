@@ -377,7 +377,7 @@ void SteelType::push(const SteelType &var) // adds to the front
 {
     if (! isArray() ) throw TypeMismatch();
 
-    m_array->push_front(var);
+    m_array->emplace_front(var);
 }
 
 
@@ -1205,11 +1205,11 @@ void SteelType::add(const SteelType &var)
     if(var.isArray())
     {
         for(int i=0;i<var.getArraySize();i++)
-            m_array->push_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
+            m_array->emplace_back ( var.getElement(i) ); // Don't call add(), you'll flatten any arrays underneath
     }
     else
     {
-        m_array->push_back ( var );
+        m_array->emplace_back ( var );
     }
 }
 
@@ -1223,7 +1223,7 @@ void SteelType::pushb(const SteelType& var)
         m_bCopyArray = false;
     }
     
-    m_array->push_back ( var );
+    m_array->emplace_back ( var );
 }
 
 

@@ -529,7 +529,7 @@ void AstCaseStatementList::add(AstExpression* matchExpression, AstCaseStatement*
     Case case_;
     case_.matchExpression = std::shared_ptr<AstExpression>(matchExpression);
     case_.statement = std::shared_ptr<AstCaseStatement>(statement);
-    m_cases.push_back(case_);
+    m_cases.emplace_back(case_);
 }
 
 bool AstCaseStatementList::setDefault(AstCaseStatement* statement)
@@ -1500,7 +1500,7 @@ AstArrayLiteral::~AstArrayLiteral()
 
 void AstArrayLiteral::add(AstExpression* pExp)
 {
-  m_list.push_back(std::unique_ptr<AstExpression>(pExp));
+  m_list.emplace_back(std::unique_ptr<AstExpression>(pExp));
 }
 
 SteelType AstArrayLiteral::evaluate(SteelInterpreter* pInterpreter)
@@ -1679,7 +1679,7 @@ ostream & AstArrayElement::print(std::ostream &out)
 
 
 void AstIdentifier::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	o_ids.push_back(this);
+	o_ids.emplace_back(this);
 }
 
 
@@ -1714,7 +1714,7 @@ AstPairList::~AstPairList()
 
 void AstPairList::add(AstPair* pair)
 {
-  m_list.push_back(std::unique_ptr<AstPair>(pair));
+  m_list.emplace_back(std::unique_ptr<AstPair>(pair));
 }
 
 SteelType AstPairList::evaluate(SteelInterpreter *pInterpreter)
@@ -1823,7 +1823,7 @@ SteelType::Container AstParamList::getParamList(SteelInterpreter *pInterpreter) 
     {
     
         SteelType var = i->evaluate(pInterpreter);
-        params.push_back ( var );
+        params.emplace_back ( var );
     }
     
 
@@ -1841,7 +1841,7 @@ void AstParamList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 
 void AstParamList::add(AstExpression *pExp)
 {
-    m_params.push_back(std::unique_ptr<AstExpression>(pExp));
+    m_params.emplace_back(std::unique_ptr<AstExpression>(pExp));
 }
 ostream & AstParamList::print(std::ostream &out)
 {
@@ -2135,7 +2135,7 @@ void AstParamDefinitionList::add(AstDeclaration *pDef)
         }
     }
 
-    m_params.push_back( std::unique_ptr<AstDeclaration>(pDef) );
+    m_params.emplace_back( std::unique_ptr<AstDeclaration>(pDef) );
 }
 
 
