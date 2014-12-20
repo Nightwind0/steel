@@ -17,7 +17,7 @@ class SteelType
 public:
     SteelType();
     SteelType(const SteelType &);
-    SteelType(SteelType&&);
+    SteelType(SteelType&&)noexcept;
     ~SteelType();
    
     // The only need for this class is so that dynamic_cast can be used
@@ -79,7 +79,7 @@ public:
     Functor getFunctor()const;
     // Assignment
     SteelType & operator=(const SteelType &rhs);
-    SteelType & operator=(SteelType&& rhs);
+    SteelType & operator=(SteelType&& rhs)noexcept;
     // Unary operators
     SteelType operator-();
     SteelType operator!();

@@ -27,7 +27,7 @@ SteelType::SteelType(const SteelType &rhs)
     m_bConst = false;
 }
 
-SteelType::SteelType(SteelType&& rhs):m_functor(std::move(rhs.m_functor)),m_array(std::move(rhs.m_array)),m_map(std::move(rhs.m_map)),m_value(rhs.m_value),m_storage(rhs.m_storage),m_bConst(rhs.m_bConst),m_bCopyArray(rhs.m_bCopyArray),m_bCopyHash(rhs.m_bCopyHash)
+SteelType::SteelType(SteelType&& rhs)noexcept:m_functor(std::move(rhs.m_functor)),m_array(std::move(rhs.m_array)),m_map(std::move(rhs.m_map)),m_value(std::move(rhs.m_value)),m_storage(std::move(rhs.m_storage)),m_bConst(rhs.m_bConst),m_bCopyArray(rhs.m_bCopyArray),m_bCopyHash(rhs.m_bCopyHash)
 {
     rhs.m_value.i = 0;
     rhs.m_storage = SteelType::INT;
@@ -228,16 +228,18 @@ void SteelType::set(const Map &ref)
     m_bCopyHash = false;
 }
 
-SteelType & SteelType::operator=(SteelType&& rhs){
-  m_functor = std::move(rhs.m_functor);
-  m_array = std::move(rhs.m_array);
-  m_map = std::move(rhs.m_map);
-  m_value = rhs.m_value;
-  m_storage = rhs.m_storage;
-  m_bCopyArray = rhs.m_bCopyArray; // Right? Move this value?
-  m_bCopyHash = rhs.m_bCopyHash; // Is it correct to move this? I think so
-  rhs.m_value.i = 0;
-  rhs.m_storage = SteelType::INT;
+SteelType & SteelType::operator=(SteelType&& rhs)noexcept{
+  if(this != &rhs){
+    m_functor = std::move(rhs.m_functor);
+    m_array = std::move(rhs.m_array);
+    m_map = std::move(rhs.m_map);
+    m_value = rhs.m_value;
+    m_storage = rhs.m_storage;
+    m_bCopyArray = rhs.m_bCopyArray; // Right? Move this value?
+    m_bCopyHash = rhs.m_bCopyHash; // Is it correct to move this? I think so
+    rhs.m_value.i = 0;
+    rhs.m_storage = SteelType::INT;
+  }
   return *this;
 }
 
