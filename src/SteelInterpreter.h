@@ -145,7 +145,7 @@ private:
       SymbolEntry* m_next;
     };
   
-    using Scope = std::deque<std::map<std::string,SymbolEntry*>>;
+    using Scope = std::deque<std::set<std::string>>;
     using SymbolTable = std::map<std::string,SymbolEntry*>;
 
     void push_context();

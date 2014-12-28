@@ -15,3 +15,15 @@ using "hippo";
 squeak();
 squeak();
 honk();
+
+
+var i = 5;
+{
+var i = 6;
+println(i);
+	{
+	   var i = 7;
+	   println(i);
+	}
+}
+println(i);

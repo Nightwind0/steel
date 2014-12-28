@@ -552,7 +552,7 @@ void SteelInterpreter::declare(const std::string &name)
     }
     
 
-    scope[name] = new_entry;
+    scope.insert(name);
 }
 void SteelInterpreter::declare_function(const std::string& ns, const std::string &name, std::shared_ptr<SteelFunctor> &datum){
     SteelType func;
@@ -615,8 +615,7 @@ void SteelInterpreter::declare_array(const std::string &name, int size)
     }
     
 
-    scope[name] = new_entry;
-    
+    scope.insert(name); 
     
 }
 
@@ -728,7 +727,7 @@ void SteelInterpreter::pushScope()
 {
     AutoLock mutex(m_scope_mutex);
     m_requires.push_front ( RequireSet() );
-    m_scopes.push_front( std::map<std::string,SymbolEntry*>() );
+    m_scopes.push_front( std::set<std::string>() );
 }
 
 void SteelInterpreter::popScope()
@@ -737,8 +736,8 @@ void SteelInterpreter::popScope()
     assert(!m_symbols.empty());
     
     auto& front = m_scopes.front();
-    for(auto it : front) {
-      auto symbol_it = m_symbols.find(it.first);
+    for(const auto& it : front) {
+      const auto& symbol_it = m_symbols.find(it);
       assert(symbol_it != m_symbols.end());
       SymbolEntry * new_head = symbol_it->second->m_next;
       delete symbol_it->second;
