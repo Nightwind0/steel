@@ -141,7 +141,6 @@ public:
 private:
     struct SymbolEntry {
       SteelType m_value;
-      SymbolEntry* m_prev;
       SymbolEntry* m_next;
     };
   

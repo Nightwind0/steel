@@ -540,11 +540,10 @@ void SteelInterpreter::declare(const std::string &name)
     auto symbol_it = m_symbols.find(name);
     
     SymbolEntry* new_entry = new SymbolEntry();
-    new_entry->m_next = new_entry->m_prev = nullptr;
+    new_entry->m_next  = nullptr;
     
     if(symbol_it != m_symbols.end()){
       SymbolEntry* entry = symbol_it->second;
-      entry->m_prev = new_entry;
       new_entry->m_next = entry;
       symbol_it->second = new_entry; // ???
     }else{
@@ -599,7 +598,7 @@ void SteelInterpreter::declare_array(const std::string &name, int size)
     auto symbol_it = m_symbols.find(name);
     
     SymbolEntry* new_entry = new SymbolEntry();
-    new_entry->m_next = new_entry->m_prev = nullptr;
+    new_entry->m_next = nullptr;
     SteelType var;
     var.set ( SteelArray( max(size,0)  ) );
 
@@ -607,7 +606,6 @@ void SteelInterpreter::declare_array(const std::string &name, int size)
     
     if(symbol_it != m_symbols.end()){
       SymbolEntry* entry = symbol_it->second;
-      entry->m_prev = new_entry;
       new_entry->m_next = entry;
       symbol_it->second = new_entry; // ???
     }else{
