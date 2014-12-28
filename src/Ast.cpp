@@ -1852,7 +1852,9 @@ ostream & AstParamList::print(std::ostream &out)
 #if 1 
 SteelType * AstIdentifier::lvalue(SteelInterpreter *pInterpreter)
 {
-  //if(m_pLValue) return m_pLValue; // Note: Seems like it should be okay to cache but its not, due to closures (AuxVariables)
+  // Note: Seems like it should be okay to cache but its not, due to closures (AuxVariables) 
+  // New note: In previous implementations of closures that may have been true, maybe its ok now?
+  //if(m_pLValue) return m_pLValue; 
 
     try
     {

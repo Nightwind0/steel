@@ -139,7 +139,15 @@ public:
 	
     SteelInterpreter& operator=(const SteelInterpreter& other);
 private:
-    typedef std::map<std::string, SteelType> VariableFile;
+    struct SymbolEntry {
+      SteelType m_value;
+      SymbolEntry* m_prev;
+      SymbolEntry* m_next;
+    };
+  
+    using Scope = std::deque<std::map<std::string,SymbolEntry*>>;
+    using SymbolTable = std::map<std::string,SymbolEntry*>;
+
     void push_context();
     void pop_context();
     void clear();
@@ -152,7 +160,9 @@ private:
     mutable Mutex m_stack_mutex;
     mutable Mutex m_import_mutex;
 
-    std::deque<VariableFile> m_symbols;
+    SymbolTable m_symbols;
+    Scope m_scopes;
+
 
     void clear_imports();
     void free_file_handles();

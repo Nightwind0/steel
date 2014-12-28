@@ -528,16 +528,31 @@ void SteelInterpreter::declare(const std::string &name)
 {
     AutoLock mutex(m_symbol_mutex);
     assert(!m_symbols.empty());
-    VariableFile &file = m_symbols.front();
+    auto &scope = m_scopes.front();
 
-    VariableFile::iterator it = file.find(name);
+    auto it = scope.find(name);
 
-    if(it != file.end() )
+    if(it != scope.end() )
     {
         throw AlreadyDefined(name);
     }
+    
+    auto symbol_it = m_symbols.find(name);
+    
+    SymbolEntry* new_entry = new SymbolEntry();
+    new_entry->m_next = new_entry->m_prev = nullptr;
+    
+    if(symbol_it != m_symbols.end()){
+      SymbolEntry* entry = symbol_it->second;
+      entry->m_prev = new_entry;
+      new_entry->m_next = entry;
+      symbol_it->second = new_entry; // ???
+    }else{
+      m_symbols[name] = new_entry;
+    }
+    
 
-    file[name] = SteelType();
+    scope[name] = new_entry;
 }
 void SteelInterpreter::declare_function(const std::string& ns, const std::string &name, std::shared_ptr<SteelFunctor> &datum){
     SteelType func;
@@ -568,23 +583,41 @@ void SteelInterpreter::declare_const(const std::string &name, const T &value)
 // Note: Step 1 is to create a SteelArray in the ArrayFile
 // is to create a SteelType in the variable file, and set it's 
 // array reference to the array
-void SteelInterpreter::declare_array(const std::string &array_name, int size)
+void SteelInterpreter::declare_array(const std::string &name, int size)
 {
     AutoLock mutex(m_symbol_mutex);
     assert(!m_symbols.empty());
-    VariableFile &file = m_symbols.front();
+    auto &scope = m_scopes.front();
 
-    VariableFile::iterator it = file.find(array_name);
+    auto it = scope.find(name);
 
-    if(it != file.end() )
+    if(it != scope.end() )
     {
-        throw AlreadyDefined(array_name);
+        throw AlreadyDefined(name);
     }
-
+    
+    auto symbol_it = m_symbols.find(name);
+    
+    SymbolEntry* new_entry = new SymbolEntry();
+    new_entry->m_next = new_entry->m_prev = nullptr;
     SteelType var;
     var.set ( SteelArray( max(size,0)  ) );
+
+    new_entry->m_value = var;
     
-    file[array_name]  = var;
+    if(symbol_it != m_symbols.end()){
+      SymbolEntry* entry = symbol_it->second;
+      entry->m_prev = new_entry;
+      new_entry->m_next = entry;
+      symbol_it->second = new_entry; // ???
+    }else{
+      m_symbols[name] = new_entry;
+    }
+    
+
+    scope[name] = new_entry;
+    
+    
 }
 
 SteelType *SteelInterpreter::enclose_value(const std::string &name)
@@ -665,19 +698,14 @@ void SteelInterpreter::registerFunction(const std::string &name,
 
 
 SteelType * SteelInterpreter::_lookup_internal(const std::string &i_name){
-    for(std::deque<VariableFile>::iterator i = m_symbols.begin();
-        i != m_symbols.end(); i++)
-    {
-        VariableFile::iterator it = (*i).find(i_name);
-        if( it != (*i).end()  )
-        {
-            // Found a match.
-            return &(it->second);
-        }
-    }
-    
-
-    return NULL;
+  auto it = m_symbols.find(i_name);
+  
+  if(it != m_symbols.end()){
+    SymbolEntry* entry = it->second;
+    return &entry->m_value;
+  }
+ 
+    return nullptr;
 }
 
 SteelType * SteelInterpreter::lookup_internal(const std::string &i_name)
@@ -692,7 +720,7 @@ SteelType * SteelInterpreter::lookup_internal(const std::string &i_name)
         if(val) return val;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -700,14 +728,27 @@ void SteelInterpreter::pushScope()
 {
     AutoLock mutex(m_scope_mutex);
     m_requires.push_front ( RequireSet() );
-    m_symbols.push_front ( VariableFile() );
+    m_scopes.push_front( std::map<std::string,SymbolEntry*>() );
 }
 
 void SteelInterpreter::popScope()
 {
     AutoLock mutex(m_scope_mutex);
     assert(!m_symbols.empty());
-    m_symbols.pop_front();
+    
+    auto& front = m_scopes.front();
+    for(auto it : front) {
+      auto symbol_it = m_symbols.find(it.first);
+      assert(symbol_it != m_symbols.end());
+      SymbolEntry * new_head = symbol_it->second->m_next;
+      delete symbol_it->second;
+      if(new_head){
+	symbol_it->second = new_head;
+      }else{
+	m_symbols.erase(symbol_it);
+      }
+    }
+    m_scopes.pop_front();
     m_requires.pop_front();
 }
 
