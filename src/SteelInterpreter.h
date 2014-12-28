@@ -146,7 +146,7 @@ private:
     };
   
     using Scope = std::deque<std::set<std::string>>;
-    using SymbolTable = std::map<std::string,SymbolEntry*>;
+    using SymbolTable = std::unordered_map<std::string,SymbolEntry*>;
 
     void push_context();
     void pop_context();
