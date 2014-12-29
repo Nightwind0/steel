@@ -539,11 +539,11 @@ void SteelInterpreter::declare(const std::string &name)
     
     auto symbol_it = m_symbols.find(name);
     
-    SymbolEntry* new_entry = new SymbolEntry();
+    std::shared_ptr<SymbolEntry> new_entry(new SymbolEntry);
     new_entry->m_next  = nullptr;
     
     if(symbol_it != m_symbols.end()){
-      SymbolEntry* entry = symbol_it->second;
+      std::shared_ptr<SymbolEntry> entry = symbol_it->second;
       new_entry->m_next = entry;
       symbol_it->second = new_entry; // ???
     }else{
@@ -597,7 +597,7 @@ void SteelInterpreter::declare_array(const std::string &name, int size)
     
     auto symbol_it = m_symbols.find(name);
     
-    SymbolEntry* new_entry = new SymbolEntry();
+    std::shared_ptr<SymbolEntry> new_entry(new SymbolEntry);
     new_entry->m_next = nullptr;
     SteelType var;
     var.set ( SteelArray( max(size,0)  ) );
@@ -605,7 +605,7 @@ void SteelInterpreter::declare_array(const std::string &name, int size)
     new_entry->m_value = var;
     
     if(symbol_it != m_symbols.end()){
-      SymbolEntry* entry = symbol_it->second;
+      std::shared_ptr<SymbolEntry> entry = symbol_it->second;
       new_entry->m_next = entry;
       symbol_it->second = new_entry; // ???
     }else{
@@ -698,7 +698,7 @@ SteelType * SteelInterpreter::_lookup_internal(const std::string &i_name){
   auto it = m_symbols.find(i_name);
   
   if(it != m_symbols.end()){
-    SymbolEntry* entry = it->second;
+    std::shared_ptr<SymbolEntry> entry = it->second;
     return &entry->m_value;
   }
  
@@ -737,8 +737,8 @@ void SteelInterpreter::popScope()
     for(const auto& it : front) {
       const auto& symbol_it = m_symbols.find(it);
       assert(symbol_it != m_symbols.end());
-      SymbolEntry * new_head = symbol_it->second->m_next;
-      delete symbol_it->second;
+      std::shared_ptr<SymbolEntry>  new_head = symbol_it->second->m_next;
+      symbol_it->second = nullptr;
       if(new_head){
 	symbol_it->second = new_head;
       }else{

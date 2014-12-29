@@ -25,5 +25,19 @@ println(i);
 	   var i = 7;
 	   println(i);
 	}
+println(i);
 }
 println(i);
+
+{ 
+  var j;
+  println(j);
+  {
+     j = 12;
+     println(j);
+     {
+	var j = 13;
+     }
+  }
+  println(j);
+}

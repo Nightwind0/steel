@@ -141,11 +141,11 @@ public:
 private:
     struct SymbolEntry {
       SteelType m_value;
-      SymbolEntry* m_next;
+      std::shared_ptr<SymbolEntry> m_next;
     };
   
     using Scope = std::deque<std::set<std::string>>;
-    using SymbolTable = std::unordered_map<std::string,SymbolEntry*>;
+    using SymbolTable = std::unordered_map<std::string,std::shared_ptr<SymbolEntry>>;
 
     void push_context();
     void pop_context();
