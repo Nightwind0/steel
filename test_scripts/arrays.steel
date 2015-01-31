@@ -3,15 +3,15 @@ require("array_print.steel");
 
 function make_2d(var $size_a, var $size_b)
 {
-	var @array[$size_a];
+	var array[$size_a];
 	var $i;
 	for(;$i<$size_a;$i = $i + 1)
 	{
-		var @temp[$size_b];
-		@array[$i] = @temp;
+		var temp[$size_b];
+		array[$i] = temp;
 	}
 
-	return @array;	
+	return array;	
 }
 
 

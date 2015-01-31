@@ -195,7 +195,6 @@ SteelParser::Token SteelParser::Scan ()
 %prec.left POW
 %prec.right UNARY
 %prec.left CALL
-%prec.left PAREN
 %prec.left INC_DEC
 %prec.left MEMBER
 
@@ -674,20 +673,21 @@ SteelParser::Token SteelParser::Scan ()
 ;
 
 
+%nonterminal value %type.cpp "AstExpression*"
+:
+	LITERAL:l %target.cpp { return l; }
+|
+	STRING:s %target.cpp { return s; } 
+|
+	IDENTIFIER:i %target.cpp { return i; }
+;
+
 
 %nonterminal case_list %type.cpp "AstCaseStatementList*"
 :
-	case_list:list CASE LITERAL:l CASE_DELIM statement_list:stmt %target.cpp { list->add(l,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	case_list:list CASE value:option CASE_DELIM statement_list:stmt %target.cpp { list->add(option,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
-	case_list:list CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
-|
-	case_list:list CASE IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list;}
-|
-	CASE LITERAL:l CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(l,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
-|
-	CASE STRING:str CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(str,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
-|
-	CASE IDENTIFIER:var CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(var,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
+	CASE value:option CASE_DELIM statement_list:stmt %target.cpp { AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(option,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
 	DEFAULT CASE_DELIM statement_list:stmt %target.cpp {AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->setDefault(new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; }
 |
@@ -707,11 +707,7 @@ SteelParser::Token SteelParser::Scan ()
 :
 	call:call %target.cpp{ return call; }
 |
-	STRING:s %target.cpp{ return s; }
-|
-	LITERAL:l %target.cpp { return l; }
-|
-	IDENTIFIER:id %target.cpp{ return id; }
+	value:option %target.cpp { return option; }
 |
         IDENTIFIER:ns SCOPE IDENTIFIER:func %target.cpp { return new AstFuncIdentifier(ns->GetLine(),ns->GetScript(),ns->getValue(),func->getValue()); }
 |
@@ -767,7 +763,7 @@ SteelParser::Token SteelParser::Scan ()
 	    }
 
 |
-	'(' exp:exp ')' %prec PAREN %target.cpp { return exp; }
+	'(' exp:exp ')'  %target.cpp { return exp; }
 |
 	'-' exp:exp  %prec UNARY %target.cpp { return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); }
 |
@@ -804,7 +800,7 @@ SteelParser::Token SteelParser::Scan ()
 										}
 
 |
-	exp:lvalue DECREMENT %prec PAREN %target.cpp {
+	exp:lvalue DECREMENT %prec UNARY %target.cpp {
 									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
 
 									}
@@ -825,14 +821,14 @@ SteelParser::Token SteelParser::Scan ()
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
 							  }
 |
-	PUSH exp:lvalue ',' exp:rvalue  %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,true); }
+	PUSH exp:lvalue ',' exp:rvalue %prec UNARY  %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,true); }
 |
 	PUSH %error  %target.cpp {
 						addError(GET_LINE(),"expected expression after 'push'.");
 						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
 							  }
 |
-	PUSHB exp:lvalue ',' exp:rvalue  %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,false); }
+	PUSHB exp:lvalue ',' exp:rvalue  %prec UNARY %target.cpp { return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,false); }
 |
 	PUSHB %error  %target.cpp {
 						addError(GET_LINE(),"expected expression after 'pushb'.");
