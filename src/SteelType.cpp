@@ -123,12 +123,12 @@ SteelType::operator const std::string () const
     }
     case SteelType::HANDLE:{
         std::ostringstream os;
-        os << "#H(" << std::hex << m_map.get() << ')';
+        os << "#H(" << std::hex << m_value.h << ')';
         return os.str();
     }
     case SteelType::HASHMAP:{
         std::ostringstream os;
-        os << "#M(" << std::hex << m_array.get() << ')';
+        os << "#M(" << std::hex << m_map.get() << ')';
         return os.str();
     }
     case SteelType::INT:
