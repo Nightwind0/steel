@@ -1,1 +1,8 @@
-Don't read me.
+Steel is a dynamically typed interpreted scripting language that I created originally for my RPG engine "Stone Ring". 
+It has syntax familiar to C-style language programmers, and not too distant syntactically from languages like Javascript, php, and others of that ilk. 
+
+Steel is a passion project. I know there are many other languages available that would have worked for adding scriptability to my game engine, but I wanted to create my own. It was a great learning experience. 
+
+In the future I plan to add byte code to Steel and a byte code VM so that I can easily pause and resume execution.
+
+It uses trison and reflex, successors to bison and flex created by my friend Victor Dods to generate the parser and scanner. 
