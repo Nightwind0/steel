@@ -6,3 +6,5 @@ Steel is a passion project. I know there are many other languages available that
 In the future I plan to add byte code to Steel and a byte code VM so that I can easily pause and resume execution.
 
 It uses trison and reflex, successors to bison and flex created by my friend Victor Dods to generate the parser and scanner. 
+
+For more informatino, see the wiki for Steel on my github, username Nightwind0
