@@ -702,7 +702,7 @@ SteelType  SteelType::operator^(const SteelType &rhs)
         throw OperationMismatch();
         return val;
     case SteelType::INT:
-        val.set ( pow(*this,(int)rhs) );
+      val.set ( std::pow(float(int(*this)),float((int)rhs)) );
         return val;
     case SteelType::DOUBLE:
         val.set ( pow(*this,(double)rhs) );

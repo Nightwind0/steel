@@ -1,4 +1,5 @@
 #include "Ast.h"
+#include "Compilation.h"
 #include "SteelInterpreter.h"
 #include "SteelType.h"
 #include "SteelException.h"
@@ -7,7 +8,7 @@
 #include <cassert>
 #include <memory>
 
-namespace Steel { 
+using namespace Steel;
 
 ostream & operator<<(ostream &,AstBase&);
 
@@ -29,8 +30,8 @@ void AstBase::FindIdentifiers( std::list<AstIdentifier*>& o_ids ) {
 
 
 AstInteger::AstInteger(unsigned int line,
-                       const std::string &script,
-                       int value)
+		       const std::string &script,
+		       int value)
     :AstExpression(line,script),m_value(value)
 {
 }
@@ -48,8 +49,14 @@ SteelType AstInteger::evaluate(SteelInterpreter *pInterpreter)
     return val;
 }
 
+
+void AstInteger::CompileByteCode(Compilation& compilation){
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,static_cast<uint32_t>(m_value))); // TODO:Is this cast okay here?
+}
+
+
 AstString::AstString(unsigned int line,
-                     const std::string &script)
+		     const std::string &script)
     : AstExpression(line,script)
 {
 }
@@ -69,6 +76,11 @@ ostream & AstString::print(std::ostream &out)
 {
     out << '\"' << m_value << '\"';
     return out;
+}
+
+void AstString::CompileByteCode(Compilation& compilation){
+    StringIndex si = compilation.StringLiteral(m_value);
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHS,si));
 }
 
 
@@ -122,7 +134,7 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 			pScript->execute(pInterpreter);
 			delete pScript;
 		    }
-            const std::string str = pInterpreter->popReturnStack();
+		    const std::string str = pInterpreter->popReturnStack();
 		    value += str;
 		}else{
 		    value += "%err%";
@@ -157,8 +169,8 @@ SteelType AstString::evaluate(SteelInterpreter *pInterpreter)
 
 
 AstFloat::AstFloat(unsigned int line,
-                   const std::string &script,
-                   double value)
+		   const std::string &script,
+		   double value)
     : AstExpression(line,script),m_value(value)
 {
     
@@ -178,9 +190,15 @@ SteelType AstFloat::evaluate(SteelInterpreter *pInterpreter)
     return var;
 }
 
+void AstFloat::CompileByteCode(Compilation &compilation){
+  uint32_t intVal = *reinterpret_cast<uint32_t*>(&m_value);
+  compilation.AddCode(ByteCode(ByteCode::Operation::PUSHF, intVal));
+}
+
+
 AstBoolean::AstBoolean(unsigned int line,
-                       const std::string &script,
-                       bool value)
+		       const std::string &script,
+		       bool value)
     :AstExpression(line,script),m_bValue(value)
 {
 }
@@ -201,15 +219,38 @@ SteelType AstBoolean::evaluate(SteelInterpreter *pInterpreter)
     return var;
 }
 
-
+void AstBoolean::CompileByteCode(Compilation& compilation){
+  compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI, (uint32_t)(m_bValue?1:0)));
+}
 
 
 AstIdentifier::AstIdentifier(unsigned int line,
-                             const std::string &script,
-                             const std::string &value)
-  : AstExpression(line,script),m_value(value),m_pLValue(nullptr)
+			     const std::string &script,
+			     const std::string &value)
+    : AstExpression(line,script),m_value(value),m_pLValue(nullptr)
 {
     
+}
+
+void AstIdentifier::CompileByteCode(Compilation& compilation){
+    VariableIndex idx = 0;
+    if(idx = compilation.Variable(m_value)){
+	compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,idx));
+    }else{
+	compilation.AddCode(ByteCode(ByteCode::Operation::LOADEX, compilation.StringLiteral(m_value)));
+    }
+}
+
+void AstIdentifier::CompileAsLValue(Compilation& compilation){
+    VariableIndex idx = 0;
+    if(idx = compilation.Variable(m_value)){
+	if(compilation.IsConst(idx)){
+	  throw SteelException(SteelException::VALUE_IS_CONSTANT,GetLine(),GetScript(),"Cannot assign to constant value");
+	}
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,idx));
+    }else{
+	compilation.AddCode(ByteCode(ByteCode::Operation::STOREEX, compilation.StringLiteral(m_value)));
+    }
 }
 
 ostream & AstIdentifier::print(std::ostream &out)
@@ -237,6 +278,8 @@ ostream & AstStatement::print(std::ostream &out)
 
 
 
+
+
 AstExpressionStatement::AstExpressionStatement(unsigned int line, const std::string &script, AstExpression *pExp)
     :AstStatement(line,script),m_pExp(pExp)
 {
@@ -249,8 +292,17 @@ AstExpressionStatement::~AstExpressionStatement()
 
 ostream & AstExpressionStatement::print(std::ostream &out)
 {
-    out << *m_pExp << ';' << std::endl;
+  //out << *m_pExp << ';' << std::endl;
     return out;
+}
+
+
+void AstExpressionStatement::CompileByteCode(Compilation& compilation){
+    m_pExp->CompileByteCode(compilation);
+    // TODO: My theory here is that anything executed here will 
+    // wind up as a single value on the top of stack that never gets popped....
+    // So I explicitly pop it here.
+    compilation.AddCode(ByteCode(ByteCode::Operation::POP));
 }
 
 AstStatement::eStopType AstExpressionStatement::execute(SteelInterpreter *pInterpreter)
@@ -264,7 +316,7 @@ AstStatement::eStopType AstExpressionStatement::execute(SteelInterpreter *pInter
 }
 
 void AstExpressionStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pExp->FindIdentifiers(o_ids);
+    m_pExp->FindIdentifiers(o_ids);
 }
 
 
@@ -277,14 +329,14 @@ AstScript::~AstScript()
     
 }
 
-ostream & AstScript::print(std::ostream &out)
+std::ostream & AstScript::print(std::ostream &out)
 {
-    if(m_pList) out << *m_pList;
+  //if(m_pList) out << *m_pList;
 
     return out;
 }
 void AstScript::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pList->FindIdentifiers(o_ids);
+    m_pList->FindIdentifiers(o_ids);
 }
 
 
@@ -292,10 +344,16 @@ AstStatement::eStopType AstScript::execute(SteelInterpreter *pInterpreter)
 {
     if(m_pList)
     {
-        return m_pList->execute(pInterpreter);
+	return m_pList->execute(pInterpreter);
     }
     return AstStatement::COMPLETED;
 }
+
+void AstScript::CompileByteCode(Compilation& compilation)
+{
+    m_pList->CompileByteCode(compilation);
+}
+
 
 void AstScript::SetList(AstStatementList *pList)
 {
@@ -320,8 +378,8 @@ void AstStatementList::setTopLevel()
 }
 
 void AstStatementList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-    for(auto& i : m_list) 
-      i->FindIdentifiers(o_ids);
+  for(auto& i : m_list)
+	i->FindIdentifiers(o_ids);
 	
 }
 
@@ -330,32 +388,38 @@ AstStatement::eStopType AstStatementList::execute(SteelInterpreter *pInterpreter
 {
     eStopType ret = COMPLETED;
     if(!m_bTopLevel)
-		pInterpreter->pushScope();
+	pInterpreter->pushScope();
     for(auto& it : m_list)
     {
+    
 
-        eStopType stop = it->execute(pInterpreter);
+	eStopType stop = it->execute(pInterpreter);
 
-        if(stop == BREAK || stop == RETURN || stop ==  CONTINUE)
-        {
-            ret = stop;
-            break;
-        }
+	if(stop == BREAK || stop == RETURN || stop ==  CONTINUE)
+	{
+	    ret = stop;
+	    break;
+	}
     }
     if(!m_bTopLevel)
-		pInterpreter->popScope();
+	pInterpreter->popScope();
 
     return ret;
 }
 
+void AstStatementList::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    for(auto& it : m_list){
+	it->CompileByteCode(compilation);
+    }  
+    compilation.PopScope();
+}
+
+
+
 ostream & AstStatementList::print(std::ostream &out)
 {
-    out << "{\n";
-    for(const auto& it : m_list)
-    {
-        out << "\t\t" << *it;
-    }
-    out << "\t}\n";
 
     return out;
 }
@@ -375,29 +439,47 @@ AstStatement::eStopType AstWhileStatement::execute(SteelInterpreter *pInterprete
     // I expect it to cast to boolean
     while( m_pCondition->evaluate(pInterpreter) )
     {
-        eStopType stop = m_pStatement->execute(pInterpreter);
+	eStopType stop = m_pStatement->execute(pInterpreter);
 
-        if(stop == BREAK) return COMPLETED;
-        else if(stop == RETURN) return RETURN;
+	if(stop == BREAK) return COMPLETED;
+	else if(stop == RETURN) return RETURN;
 
-        // Note: if stop is CONTINUE,
-        // Then we just want to keep looping. So no action.
+	// Note: if stop is CONTINUE,
+	// Then we just want to keep looping. So no action.
     }
 
     return COMPLETED;
 }
 
+void AstWhileStatement::CompileByteCode(Compilation& compilation)
+{
+  CodePosition start = compilation.PushLoopStart(compilation.CurrentPosition());
+
+    m_pCondition->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::BZ)); // Fill in the param later
+    CodePosition branch = compilation.CurrentPosition();
+    m_pStatement->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::B,start));
+    CodePosition end = compilation.CurrentPosition() + 1;
+    compilation.SetParam32(branch,end); // Now we fill in the BZ
+    compilation.PopLoopStart();
+}
+
+
+
+
+
 ostream & AstWhileStatement::print(std::ostream &out)
 {
     out << "while (" << *m_pCondition << ")\n"
-        << '{' << std::endl << *m_pStatement <<  '}' << std::endl;
+	<< '{' << std::endl << *m_pStatement <<  '}' << std::endl;
 
     return out;
 }
 
 void AstWhileStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pCondition->FindIdentifiers(o_ids);
-	m_pStatement->FindIdentifiers(o_ids);
+    m_pCondition->FindIdentifiers(o_ids);
+    m_pStatement->FindIdentifiers(o_ids);
 }
 
 
@@ -415,34 +497,45 @@ AstStatement::eStopType AstDoStatement::execute(SteelInterpreter *pInterpreter)
 {
     // I expect it to cast to boolean
     do {
-        eStopType stop = m_pStatement->execute(pInterpreter);
-        if(stop == BREAK) return COMPLETED;
-        else if(stop == RETURN) return RETURN;
-        // Note: if stop is CONTINUE,
-        // Then we just want to keep looping. So no action.
+	eStopType stop = m_pStatement->execute(pInterpreter);
+	if(stop == BREAK) return COMPLETED;
+	else if(stop == RETURN) return RETURN;
+	// Note: if stop is CONTINUE,
+	// Then we just want to keep looping. So no action.
     } while( m_pCondition->evaluate(pInterpreter) );
     
     return COMPLETED;
 }
 
+
+void AstDoStatement::CompileByteCode(Compilation& compilation)
+{
+    CodePosition start = compilation.PushLoopStart(compilation.CurrentPosition()+1); // TODO Is +1 right?
+    m_pStatement->CompileByteCode(compilation);
+    m_pCondition->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::BNZ,start));
+    compilation.PopLoopStart(); // This will also fix up any breaks
+}
+
+
 ostream & AstDoStatement::print(std::ostream &out)
 {
-  out << "do "<< '{' <<*m_pStatement << "}\n while (" << *m_pCondition << ")\n"
-        <<  std::endl;
+    out << "do "<< '{' <<*m_pStatement << "}\n while (" << *m_pCondition << ")\n"
+	<<  std::endl;
 
     return out;
 }
 
 void AstDoStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pCondition->FindIdentifiers(o_ids);
-	m_pStatement->FindIdentifiers(o_ids);
+    m_pCondition->FindIdentifiers(o_ids);
+    m_pStatement->FindIdentifiers(o_ids);
 }
 
 
 
 AstIfStatement::AstIfStatement(unsigned int line, const std::string &script,
-                               AstExpression *pExp, AstStatement *pStmt,
-                               AstStatement *pElse)
+			       AstExpression *pExp, AstStatement *pStmt,
+			       AstStatement *pElse)
     :AstStatement(line,script),m_pCondition(pExp),m_pStatement(pStmt),m_pElse(pElse)
 {
 }
@@ -454,26 +547,42 @@ AstIfStatement::~AstIfStatement()
 AstStatement::eStopType AstIfStatement::execute(SteelInterpreter *pInterpreter)
 {
     if(m_pCondition->evaluate(pInterpreter))
-        return m_pStatement->execute(pInterpreter);
+	return m_pStatement->execute(pInterpreter);
     else if ( m_pElse) return m_pElse->execute(pInterpreter);
     else return COMPLETED;
 
 }
 
+void AstIfStatement::CompileByteCode(Compilation& compilation)
+{
+    m_pCondition->CompileByteCode(compilation);
+    CodePosition cond = compilation.CurrentPosition();
+    compilation.AddCode(ByteCode(ByteCode::Operation::BZ)); // Give the param later
+    m_pStatement->CompileByteCode(compilation);
+    if(m_pElse){
+	CodePosition els = compilation.CurrentPosition() + 1;
+	compilation.SetParam32(cond,els);    
+	m_pElse->CompileByteCode(compilation);
+    }else{
+	CodePosition end = compilation.CurrentPosition() + 1;
+	compilation.SetParam32(cond,end);    
+    }
+}
+
 void AstIfStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pCondition->FindIdentifiers(o_ids);
-	m_pElse->FindIdentifiers(o_ids);
-	m_pStatement->FindIdentifiers(o_ids);
+    m_pCondition->FindIdentifiers(o_ids);
+    m_pElse->FindIdentifiers(o_ids);
+    m_pStatement->FindIdentifiers(o_ids);
 }
 
 
 ostream & AstIfStatement::print(std::ostream &out)
 {
     out << "if (" << *m_pCondition  << ")\n"
-        << "{\n" << *m_pStatement << "}\n";
+	<< "{\n" << *m_pStatement << "}\n";
     if(m_pElse) 
     {
-        out << " else {\n" << *m_pElse << "\n}\n";
+	out << " else {\n" << *m_pElse << "\n}\n";
     }
 
     return out;
@@ -481,7 +590,7 @@ ostream & AstIfStatement::print(std::ostream &out)
 
 
 AstCaseStatement::AstCaseStatement(unsigned int line, const std::string& script,
-                                   AstStatement* pStmt)
+				   AstStatement* pStmt)
     :AstStatement(line,script),m_pStatement(pStmt)
 {
 
@@ -503,15 +612,20 @@ AstStatement::eStopType AstCaseStatement::execute(SteelInterpreter* pInterpreter
 }
 
 void AstCaseStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-  m_pStatement->FindIdentifiers(o_ids);
+    m_pStatement->FindIdentifiers(o_ids);
 }
 
+void AstCaseStatement::CompileByteCode(Steel::Compilation& c) {
+  
+}
 
 AstCaseStatementList::AstCaseStatementList(unsigned int line, const std::string& script)
     :AstBase(line,script),m_pDefault(nullptr)
 {
 
 }
+
+
 
 AstCaseStatementList::~AstCaseStatementList()
 {
@@ -529,7 +643,29 @@ void AstCaseStatementList::add(AstExpression* matchExpression, AstCaseStatement*
     Case case_;
     case_.matchExpression = std::shared_ptr<AstExpression>(matchExpression);
     case_.statement = std::shared_ptr<AstCaseStatement>(statement);
-    m_cases.emplace_back(case_);
+    m_cases.push_back(case_);
+}
+
+void AstCaseStatementList::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    VariableIndex tmp = compilation.TempVariable();
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,tmp));
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE,tmp)); // Store the TOS (the switch value) to tmp
+    
+    for(std::list<Case>::iterator iter = m_cases.begin();
+	iter != m_cases.end(); iter++){
+      compilation.PushLoopStart(compilation.CurrentPosition());
+	compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,tmp));
+	(*iter).matchExpression->CompileByteCode(compilation);
+	compilation.AddCode(ByteCode(ByteCode::Operation::EQ));
+	compilation.AddCode(ByteCode(ByteCode::Operation::BZ));
+	CodePosition br = compilation.CurrentPosition();
+	(*iter).statement->CompileByteCode(compilation);
+	compilation.SetParam32(br+1,compilation.CurrentPosition()); // TODO: Is +1 right?
+	compilation.PopLoopStart();
+    }
+    compilation.PopScope();
 }
 
 bool AstCaseStatementList::setDefault(AstCaseStatement* statement)
@@ -567,11 +703,11 @@ AstStatement::eStopType AstCaseStatementList::executeCaseMatching(AstExpression*
 }
 
 void AstCaseStatementList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-  for(std::list<Case>::iterator iter = m_cases.begin();
+    for(std::list<Case>::iterator iter = m_cases.begin();
 	iter != m_cases.end(); iter++){
-	  (*iter).statement->FindIdentifiers(o_ids);
-  }	
-  m_pDefault->FindIdentifiers(o_ids);
+	(*iter).statement->FindIdentifiers(o_ids);
+    }	
+    m_pDefault->FindIdentifiers(o_ids);
 }
 
 
@@ -604,9 +740,18 @@ AstStatement::eStopType AstSwitchStatement::execute(SteelInterpreter* pInterpret
     return stopType;
 }
 
+void AstSwitchStatement::CompileByteCode(Compilation& compilation)
+{
+    // First, evaluate the value.
+    m_pValue->CompileByteCode(compilation);
+    // The CaseList will then take that value and make sure it's TOS
+    // For every case that runs. 
+    // From there I think it will be set up as cascading if-else
+}
+
 void AstSwitchStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pCases->FindIdentifiers(o_ids);
-	m_pValue->FindIdentifiers(o_ids);
+    m_pCases->FindIdentifiers(o_ids);
+    m_pValue->FindIdentifiers(o_ids);
 }
 
 
@@ -624,19 +769,40 @@ AstReturnStatement::~AstReturnStatement()
 AstStatement::eStopType AstReturnStatement::execute(SteelInterpreter *pInterpreter)
 {
     if( m_pExpression )
-      pInterpreter->pushReturnStack(m_pExpression->evaluate(pInterpreter) );
+	pInterpreter->pushReturnStack(m_pExpression->evaluate(pInterpreter) );
     else pInterpreter->pushReturnStack(SteelType());
     return RETURN;
 }
 
+void AstReturnStatement::CompileByteCode(Compilation& compilation){
+    if(m_pExpression){
+	m_pExpression->CompileByteCode(compilation);
+    }else{
+	// Stick a zero on here, the caller will be expecting some kind of value.
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,0u));
+    }
+
+    compilation.AddCode(ByteCode(ByteCode::Operation::RETURN));
+}
+
 void AstReturnStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pExpression->FindIdentifiers(o_ids);
+    m_pExpression->FindIdentifiers(o_ids);
+}
+
+
+void AstBreakStatement::CompileByteCode(Compilation& compilation){
+	  compilation.AddCode(ByteCode(ByteCode::Operation::B));
+	  compilation.BreakAt(compilation.CurrentPosition());
+}
+
+void AstContinueStatement::CompileByteCode(Compilation& compilation){
+  compilation.AddCode(ByteCode(ByteCode::Operation::B,compilation.GetLoopStart()));
 }
 
 
 AstImport::AstImport(unsigned int line, 
-                     const std::string &script,
-                     AstString *pStr):AstStatement(line,script),m_ns(pStr->getString())
+		     const std::string &script,
+		     AstString *pStr):AstStatement(line,script),m_ns(pStr->getString())
 {
 }
 
@@ -655,14 +821,16 @@ AstStatement::eStopType AstImport::execute(SteelInterpreter *pInterpreter)
     return COMPLETED;
 }
 
-
+void AstImport::CompileByteCode(Compilation& compilation){
+    compilation.Import(m_ns);
+}
 
 ostream & AstReturnStatement::print(std::ostream &out)
 {
     out << "return ";
     if(m_pExpression)
     {
-        out << '(' << *m_pExpression << ')';
+	out << '(' << *m_pExpression << ')';
     }
     out << ';' << std::endl;
     return out;
@@ -670,15 +838,15 @@ ostream & AstReturnStatement::print(std::ostream &out)
 }
 
 AstLoopStatement::AstLoopStatement(unsigned int line, const std::string &script,
-                                   AstExpression *pStart, AstExpression *pCondition,
-                                   AstExpression *pIteration, AstStatement* pStmt)
-  :AstStatement(line,script),m_pStart(pStart),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(nullptr)
+				   AstExpression *pStart, AstExpression *pCondition,
+				   AstExpression *pIteration, AstStatement* pStmt)
+    :AstStatement(line,script),m_pStart(pStart),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(nullptr)
 {
 }
 AstLoopStatement::AstLoopStatement(unsigned int line, const std::string &script,
-                                   AstDeclaration *pDecl, AstExpression *pCondition,
-                                   AstExpression *pIteration, AstStatement* pStmt)
-  :AstStatement(line,script),m_pStart(nullptr),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(pDecl)
+				   AstDeclaration *pDecl, AstExpression *pCondition,
+				   AstExpression *pIteration, AstStatement* pStmt)
+    :AstStatement(line,script),m_pStart(nullptr),m_pCondition(pCondition),m_pIteration(pIteration),m_pStatement(pStmt),m_pDecl(pDecl)
 {
 }
 
@@ -694,43 +862,58 @@ AstStatement::eStopType AstLoopStatement::execute(SteelInterpreter *pInterpreter
     pInterpreter->pushScope();
     if(m_pDecl) m_pDecl->execute(pInterpreter);
     for( m_pStart?m_pStart->evaluate( pInterpreter):1 ;
-         m_pCondition->evaluate(pInterpreter) ;
-         m_pIteration->evaluate( pInterpreter )
-        )
+	 m_pCondition->evaluate(pInterpreter) ;
+	 m_pIteration->evaluate( pInterpreter )
+	)
     {
-        eStopType stop = m_pStatement->execute(pInterpreter);
+	eStopType stop = m_pStatement->execute(pInterpreter);
 
-        if(stop == BREAK) 
-        {
-            pInterpreter->popScope();
-            return COMPLETED;
-        }
-        else if (stop == RETURN) 
-        {
-            pInterpreter->popScope();
-            return RETURN;
-        }
+	if(stop == BREAK) 
+	{
+	    pInterpreter->popScope();
+	    return COMPLETED;
+	}
+	else if (stop == RETURN) 
+	{
+	    pInterpreter->popScope();
+	    return RETURN;
+	}
 
-        // For both CONTINUE and COMPLETED, we just keep going.
+	// For both CONTINUE and COMPLETED, we just keep going.
     }
 
     pInterpreter->popScope();
     return COMPLETED;
 }
 
+void AstLoopStatement::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    if(m_pDecl) m_pDecl->CompileByteCode(compilation);
+    if(m_pStart) m_pStart->CompileByteCode(compilation);
+
+    CodePosition start = compilation.PushLoopStart(compilation.CurrentPosition());
+
+    m_pCondition->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::BZ)); // Fill in the param later
+    CodePosition branch = compilation.CurrentPosition();
+    m_pStatement->CompileByteCode(compilation);
+    m_pIteration->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::B,start));
+    CodePosition end = compilation.CurrentPosition() + 1;
+    compilation.SetParam32(branch,end); // Now we fill in the BZ
+  
+    compilation.PopLoopStart();
+    compilation.PopScope();
+}
+
+
+
 void AstLoopStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-  if(m_pDecl)
     m_pDecl->FindIdentifiers(o_ids);
-
-  if(m_pStart)
     m_pStart->FindIdentifiers(o_ids);
-
-  if(m_pCondition)
     m_pCondition->FindIdentifiers(o_ids);
-  if(m_pIteration)
     m_pIteration->FindIdentifiers(o_ids);
-
-  if(m_pStatement)
     m_pStatement->FindIdentifiers(o_ids);
 }
 
@@ -761,10 +944,10 @@ AstForEachStatement::~AstForEachStatement()
 }
 
 void AstForEachStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-  //if(m_pDeclaration) m_pDeclaration->FindIdentifiers(o_ids);
-	if(m_pArrayExpression) m_pArrayExpression->FindIdentifiers(o_ids);
-	if(m_pLValue) m_pLValue->FindIdentifiers(o_ids);
-	if(m_pStatement) m_pStatement->FindIdentifiers(o_ids);
+    //if(m_pDeclaration) m_pDeclaration->FindIdentifiers(o_ids);
+    if(m_pArrayExpression) m_pArrayExpression->FindIdentifiers(o_ids);
+    if(m_pLValue) m_pLValue->FindIdentifiers(o_ids);
+    if(m_pStatement) m_pStatement->FindIdentifiers(o_ids);
 }
 
 
@@ -772,36 +955,36 @@ void AstForEachStatement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) 
 ostream& AstForEachStatement::print(std::ostream &out)
 {
     // TODO: This
-	return out;
+    return out;
 }
 
 AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpreter)
 {
-	AstStatement::eStopType stoptype;
+    AstStatement::eStopType stoptype;
     pInterpreter->pushScope();
     try{
 
 	SteelType * val = nullptr;
 	if(m_pDeclaration)
 	{
-	  AstDeclaration * vardecl = m_pDeclaration.get();
 
-	  vardecl->execute(pInterpreter);
-	  AstIdentifier *pId = vardecl->getIdentifier();
 
-	  val = pId->lvalue(pInterpreter);
+	    m_pDeclaration->execute(pInterpreter);
+	    AstIdentifier *pId = m_pDeclaration->getIdentifier();
 
-	  if(nullptr == val) throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid lvalue used as iterator in foreach.");
+	    val = pId->lvalue(pInterpreter);
+
+	    if(nullptr == val) throw SteelException(SteelException::INVALID_LVALUE, GetLine(),GetScript(),"Invalid lvalue used as iterator in foreach.");
 	    
 	}
 	else if(m_pLValue)
 	{
-	   val =  m_pLValue->lvalue(pInterpreter);
+	    val =  m_pLValue->lvalue(pInterpreter);
 
-	   if(nullptr == val) throw SteelException(SteelException::INVALID_LVALUE,
-                                              GetLine(),
-                                              GetScript(),
-                                              "Invalid lvalue used as iterator in foreach.");
+	    if(nullptr == val) throw SteelException(SteelException::INVALID_LVALUE,
+						 GetLine(),
+						 GetScript(),
+						 "Invalid lvalue used as iterator in foreach.");
 	}
 	else
 	{
@@ -819,10 +1002,10 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
 	{
 	    *val = array.getElement(i);
 	    stoptype = m_pStatement->execute(pInterpreter);
-		if(stoptype == RETURN || stoptype == BREAK){
-			pInterpreter->popScope();
-			return stoptype;
-		}
+	    if(stoptype == RETURN || stoptype == BREAK){
+		pInterpreter->popScope();
+		return stoptype;
+	    }
 	}
 
     }
@@ -837,12 +1020,50 @@ AstStatement::eStopType AstForEachStatement::execute(SteelInterpreter* pInterpre
 }
 
 
+void AstForEachStatement::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    m_pDeclaration->CompileByteCode(compilation); 
+    VariableIndex idx = m_pDeclaration->getVariableIndex();
+    m_pArrayExpression->CompileByteCode(compilation);
+    StringIndex len_call = compilation.StringLiteral("len");
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOADEX,len_call)); // Load the "len" function onto TOS
+    compilation.AddCode(ByteCode(ByteCode::Operation::JSR)); // Call len function
+    VariableIndex length = compilation.TempVariable();
+
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,length)); // Set our temp as lvalue
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE)); // Save TOS (result of len) to tmp 
+
+    VariableIndex iter = compilation.TempVariable();
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,iter)); // Set our temp as lvalue
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)0)); // Set iter to zero
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+
+    CodePosition loop_start = compilation.CurrentPosition();
+    compilation.PushLoopStart(loop_start);
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,iter)); // Push iter onto TOS
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,length)); // Push length of array onto TOS
+    compilation.AddCode(ByteCode(ByteCode::Operation::LT)); // Push result of iter < length , popping both
+    compilation.AddCode(ByteCode(ByteCode::Operation::BZ));
+    CodePosition branch = compilation.CurrentPosition();
+    m_pStatement->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,iter));
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,iter));
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)1));
+    compilation.AddCode(ByteCode(ByteCode::Operation::SUB));
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+    compilation.PopLoopStart();
+    compilation.SetParam32(branch,compilation.CurrentPosition());
+    compilation.PopScope();
+}
+
+
 
 
 AstIncDec::AstIncDec(unsigned int line,
-                     const std::string &script,
-                     AstExpression *pLValue,
-                     Order order)
+		     const std::string &script,
+		     AstExpression *pLValue,
+		     Order order)
     :AstExpression(line,script),m_pLValue(pLValue),m_order(order)
 {
 }
@@ -852,15 +1073,15 @@ AstIncDec::~AstIncDec()
 }
 
 void AstIncDec::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	return m_pLValue->FindIdentifiers(o_ids);
+    return m_pLValue->FindIdentifiers(o_ids);
 }
 
 
 
 AstIncrement::AstIncrement(unsigned int line,
-                           const std::string &script,
-                           AstExpression *pLValue,
-                           AstIncDec::Order order)
+			   const std::string &script,
+			   AstExpression *pLValue,
+			   AstIncDec::Order order)
     :AstIncDec(line,script,pLValue,order)
 {
 }
@@ -873,46 +1094,79 @@ SteelType AstIncrement::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
-        SteelType *pVar = m_pLValue->lvalue(pInterpreter);
+	SteelType *pVar = m_pLValue->lvalue(pInterpreter);
 
-        if(nullptr == pVar) throw SteelException(SteelException::INVALID_LVALUE,
-                                              GetLine(),
-                                              GetScript(),
-                                              "Invalid lvalue before increment (++) operator.");
+	if(nullptr == pVar) throw SteelException(SteelException::INVALID_LVALUE,
+					      GetLine(),
+					      GetScript(),
+					      "Invalid lvalue before increment (++) operator.");
     
-        if(m_order == PRE)
-            return ++( *pVar );
-        else return (*pVar)++;
+	if(m_order == PRE)
+	    return ++( *pVar );
+	else return (*pVar)++;
 
     }
     catch(OperationMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),
-                             GetScript(),
-                             "Invalid type before increment (++) operator.");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),
+			     GetScript(),
+			     "Invalid type before increment (++) operator.");
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier before increment: '" + id.identifier + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier before increment: '" + id.identifier + '\'');
     }
 
     return SteelType();
 }
 
+
+void AstIncrement::CompileByteCode(Compilation& compilation)
+{
+    if(m_order == PRE){
+	// Rely on the lvalue to place itself in lvalue register
+	// and if its an array or hash, to place the index in the idx register
+	// the VM will then know how to get the appropriate lvalue
+	m_pLValue->CompileAsLValue(compilation); // Get the lvalue register setup for us.
+	m_pLValue->CompileByteCode(compilation); // This will get our current value on the stack of our lvalue
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)1));
+	compilation.AddCode(ByteCode(ByteCode::Operation::ADD));
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+    }else{
+	m_pLValue->CompileByteCode(compilation); // This will get our current value on the stack of our lvalue
+	compilation.PushScope(); // For our temp variable
+	VariableIndex tmpVar = compilation.TempVariable();
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,tmpVar)); // Set our temp as the lvalue
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));  // Store TOS to tmp var
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)1));
+	compilation.AddCode(ByteCode(ByteCode::Operation::ADD));
+	m_pLValue->CompileAsLValue(compilation); // Set the lvalue register up
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+	compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,tmpVar));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+	compilation.PopScope();
+    }
+    // Clear lvalue registers
+    // compilation.AddCode(ByteCode(ByteCode::Operation::CLEARL));
+}
+
+
 SteelType * AstIncrement::lvalue(SteelInterpreter *pInterpreter)
 {
-    return nullptr;
+    return m_pLValue->lvalue(pInterpreter);
 }
 
 
 AstDecrement::AstDecrement(unsigned int line,
-                           const std::string &script,
-                           AstExpression *pLValue,
-                           AstIncDec::Order order)
+			   const std::string &script,
+			   AstExpression *pLValue,
+			   AstIncDec::Order order)
     :AstIncDec(line,script,pLValue,order)
 {
 }
@@ -925,47 +1179,78 @@ SteelType AstDecrement::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
-        SteelType *pVar = m_pLValue->lvalue(pInterpreter);
+	SteelType *pVar = m_pLValue->lvalue(pInterpreter);
 
-        if(nullptr == pVar) throw SteelException(SteelException::INVALID_LVALUE,
-                                              GetLine(),
-                                              GetScript(),
-                                              "Invalid lvalue before decrement (--) operator.");
+	if(nullptr == pVar) throw SteelException(SteelException::INVALID_LVALUE,
+					      GetLine(),
+					      GetScript(),
+					      "Invalid lvalue before decrement (--) operator.");
     
-        if(m_order == PRE)
-            return --( *pVar );
-        else return (*pVar)--;
+	if(m_order == PRE)
+	    return --( *pVar );
+	else return (*pVar)--;
 
     }
     catch(OperationMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),
-                             GetScript(),
-                             "Invalid type before decrement (--) operator.");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),
+			     GetScript(),
+			     "Invalid type before decrement (--) operator.");
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier before decrement: '" + id.identifier + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier before decrement: '" + id.identifier + '\'');
     }
 
     return SteelType();
 }
 
+
+void AstDecrement::CompileByteCode(Compilation& compilation)
+{
+    if(m_order == PRE){
+	// Rely on the lvalue to place itself in lvalue register
+	// and if its an array or hash, to place the index in the idx register
+	// the VM will then know how to get the appropriate lvalue
+	m_pLValue->CompileAsLValue(compilation); // Get the lvalue register setup for us.
+	m_pLValue->CompileByteCode(compilation); // This will get our current value on the stack of our lvalue
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)1));
+	compilation.AddCode(ByteCode(ByteCode::Operation::SUB));
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+    }else{
+	m_pLValue->CompileByteCode(compilation); // This will get our current value on the stack of our lvalue
+	compilation.PushScope(); // For our temp variable
+	VariableIndex tmpVar = compilation.TempVariable();
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,tmpVar)); // Set our temp as the lvalue
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));  // Store TOS to tmp var
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)1));
+	compilation.AddCode(ByteCode(ByteCode::Operation::SUB));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+	m_pLValue->CompileAsLValue(compilation); // Set the lvalue register up
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,tmpVar));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+	compilation.PopScope();
+    }
+    // Clear lvalue registers
+    //    compilaiton.AddCode(ByteCode(ByteCode::Operation::CLEARL));
+}
+
 SteelType * AstDecrement::lvalue(SteelInterpreter *pInterpreter)
 {
-    return nullptr;
+    return m_pLValue->lvalue(pInterpreter); // TODO: Right? For like (--a)++ ?
 }
 
 
 
-
 AstBinOp::AstBinOp(unsigned int line,
-                   const std::string &script,
-                   Op op, AstExpression *left, AstExpression *right)
+		   const std::string &script,
+		   Op op, AstExpression *left, AstExpression *right)
     :AstExpression(line,script),m_op(op),m_right(right),m_left(left)
 {
 }
@@ -979,48 +1264,48 @@ std::string AstBinOp::ToString(Op op)
     switch(op)
     {
     case ADD:
-        return "+";
+	return "+";
     case SUB:
-        return "-";
+	return "-";
     case MULT:
-        return "*";
+	return "*";
     case DIV:
-        return "/";
+	return "/";
     case MOD:
-        return "%";
+	return "%";
     case AND:
-        return " and ";
+	return " and ";
     case OR:
-        return " or ";
+	return " or ";
     case D:
-        return " d ";
+	return " d ";
     case POW:
-        return "^";
+	return "^";
     case ADD_ASSIGN:
-      return "+=";
+	return "+=";
     case SUB_ASSIGN:
-      return "-=";
+	return "-=";
     case MULT_ASSIGN:
-      return "*=";
+	return "*=";
     case DIV_ASSIGN:
-      return "/=";
+	return "/=";
     case MOD_ASSIGN:
-      return "%=";
+	return "%=";
     case EQ:
-        return " == ";
+	return " == ";
     case NE:
-        return " != ";
+	return " != ";
     case LT:
-        return " < ";
+	return " < ";
     case GT:
-        return " > ";
+	return " > ";
     case LTE:
-        return " <= ";
+	return " <= ";
     case GTE:
-        return " >=";
+	return " >=";
     default:
-        assert(0);
-        return "";
+	assert(0);
+	return "";
     }
 }
 
@@ -1033,131 +1318,131 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
 {
     try{
 
-        switch( m_op )
-        {
-        case ADD:
+	switch( m_op )
+	{
+	case ADD:
 
-            return m_left->evaluate(pInterpreter) 
-                + m_right->evaluate(pInterpreter);
+	    return m_left->evaluate(pInterpreter) 
+		+ m_right->evaluate(pInterpreter);
         
-        case SUB:
-            return m_left->evaluate(pInterpreter) 
-                - m_right->evaluate(pInterpreter);
-        case MULT:
-            return m_left->evaluate(pInterpreter) 
-                * m_right->evaluate(pInterpreter);
-        case DIV:
-            return m_left->evaluate(pInterpreter)
-                / m_right->evaluate(pInterpreter);
-        case MOD:
-            return m_left->evaluate(pInterpreter)
-                % m_right->evaluate(pInterpreter);
+	case SUB:
+	    return m_left->evaluate(pInterpreter) 
+		- m_right->evaluate(pInterpreter);
+	case MULT:
+	    return m_left->evaluate(pInterpreter) 
+		* m_right->evaluate(pInterpreter);
+	case DIV:
+	    return m_left->evaluate(pInterpreter)
+		/ m_right->evaluate(pInterpreter);
+	case MOD:
+	    return m_left->evaluate(pInterpreter)
+		% m_right->evaluate(pInterpreter);
 	case ASSIGN:{
-	  SteelType *lv = m_left->lvalue(pInterpreter);
-	  if(!lv)
-	    throw SteelException(SteelException::INVALID_LVALUE,
-				 GetLine(),GetScript(), "Invalid lvalue in assignment.");
-	  return *lv = m_right->evaluate(pInterpreter);
+	    SteelType *lv = m_left->lvalue(pInterpreter);
+	    if(!lv)
+		throw SteelException(SteelException::INVALID_LVALUE,
+				     GetLine(),GetScript(), "Invalid lvalue in assignment.");
+	    return *lv = m_right->evaluate(pInterpreter);
 	}
 	case ADD_ASSIGN:{
-	  SteelType *lv =  m_left->lvalue(pInterpreter);
-	  if(!lv)
-	    throw SteelException(SteelException::INVALID_LVALUE,
-				 GetLine(),GetScript(), "Invalid lvalue in += statement.");
-	  return *lv += m_right->evaluate(pInterpreter);
+	    SteelType *lv =  m_left->lvalue(pInterpreter);
+	    if(!lv)
+		throw SteelException(SteelException::INVALID_LVALUE,
+				     GetLine(),GetScript(), "Invalid lvalue in += statement.");
+	    return *lv += m_right->evaluate(pInterpreter);
 	}case SUB_ASSIGN:{
-	  SteelType *lv =  m_left->lvalue(pInterpreter);
-	  if(!lv)
-	    throw SteelException(SteelException::INVALID_LVALUE,
-				 GetLine(),GetScript(), "Invalid lvalue in -= statement.");
-	  return *lv -= m_right->evaluate(pInterpreter);
+	     SteelType *lv =  m_left->lvalue(pInterpreter);
+	     if(!lv)
+		 throw SteelException(SteelException::INVALID_LVALUE,
+				      GetLine(),GetScript(), "Invalid lvalue in -= statement.");
+	     return *lv -= m_right->evaluate(pInterpreter);
 	 }case MULT_ASSIGN:{
-	  SteelType *lv =  m_left->lvalue(pInterpreter);
-	  if(!lv)
-	    throw SteelException(SteelException::INVALID_LVALUE,
-				 GetLine(),GetScript(), "Invalid lvalue in *= statement.");
-	  return *lv *= m_right->evaluate(pInterpreter);
+	      SteelType *lv =  m_left->lvalue(pInterpreter);
+	      if(!lv)
+		  throw SteelException(SteelException::INVALID_LVALUE,
+				       GetLine(),GetScript(), "Invalid lvalue in *= statement.");
+	      return *lv *= m_right->evaluate(pInterpreter);
 	  }case DIV_ASSIGN:{
-	  SteelType *lv =  m_left->lvalue(pInterpreter);
-	  if(!lv)
-	    throw SteelException(SteelException::INVALID_LVALUE,
-				 GetLine(),GetScript(), "Invalid lvalue in /= statement.");
-	  return *lv /= m_right->evaluate(pInterpreter);
+	       SteelType *lv =  m_left->lvalue(pInterpreter);
+	       if(!lv)
+		   throw SteelException(SteelException::INVALID_LVALUE,
+					GetLine(),GetScript(), "Invalid lvalue in /= statement.");
+	       return *lv /= m_right->evaluate(pInterpreter);
 	   }case MOD_ASSIGN:{
-	  SteelType *lv =  m_left->lvalue(pInterpreter);
-	  if(!lv)
-	    throw SteelException(SteelException::INVALID_LVALUE,
-				 GetLine(),GetScript(), "Invalid lvalue in %= statement.");
-	  return *lv %= m_right->evaluate(pInterpreter);
+		SteelType *lv =  m_left->lvalue(pInterpreter);
+		if(!lv)
+		    throw SteelException(SteelException::INVALID_LVALUE,
+					 GetLine(),GetScript(), "Invalid lvalue in %= statement.");
+		return *lv %= m_right->evaluate(pInterpreter);
 
 	    }case AND:
-        {
-            SteelType var;
-            var.set((bool)m_left->evaluate(pInterpreter)
-                    && (bool)m_right->evaluate(pInterpreter));
+	{
+	    SteelType var;
+	    var.set((bool)m_left->evaluate(pInterpreter)
+		    && (bool)m_right->evaluate(pInterpreter));
 
-            return var;
-        }
-        case OR:
-        {
-            SteelType var;
-            var.set((bool)m_left->evaluate(pInterpreter)
-                    || (bool)m_right->evaluate(pInterpreter));
+	    return var;
+	}
+	case OR:
+	{
+	    SteelType var;
+	    var.set((bool)m_left->evaluate(pInterpreter)
+		    || (bool)m_right->evaluate(pInterpreter));
 
-            return var;
-        }
-        case D:
-            return m_left->evaluate(pInterpreter).d( m_right->evaluate(pInterpreter));
-        case POW:
-            return m_left->evaluate(pInterpreter)
-                ^ m_right->evaluate(pInterpreter);
-        case EQ:
-        {
-            SteelType var;
-            var.set( m_left->evaluate(pInterpreter)
-                     == m_right->evaluate(pInterpreter));
-            return var;
-        }
-        case NE:
-        {
-            SteelType var;
-            var.set ( m_left->evaluate(pInterpreter)
-                      != m_right->evaluate(pInterpreter));
-            return var;
-        }
-        case LT:
-            return m_left->evaluate(pInterpreter)
-                < m_right->evaluate(pInterpreter);
-        case GT:
-            return m_left->evaluate(pInterpreter)
-                > m_right->evaluate(pInterpreter);
-        case LTE:
-            return m_left->evaluate(pInterpreter)
-                <= m_right->evaluate(pInterpreter);
-        case GTE:
-            return m_left->evaluate(pInterpreter)
-                >= m_right->evaluate(pInterpreter);
+	    return var;
+	}
+	case D:
+	    return m_left->evaluate(pInterpreter).d( m_right->evaluate(pInterpreter));
+	case POW:
+	    return m_left->evaluate(pInterpreter)
+		^ m_right->evaluate(pInterpreter);
+	case EQ:
+	{
+	    SteelType var;
+	    var.set( m_left->evaluate(pInterpreter)
+		     == m_right->evaluate(pInterpreter));
+	    return var;
+	}
+	case NE:
+	{
+	    SteelType var;
+	    var.set ( m_left->evaluate(pInterpreter)
+		      != m_right->evaluate(pInterpreter));
+	    return var;
+	}
+	case LT:
+	    return m_left->evaluate(pInterpreter)
+		< m_right->evaluate(pInterpreter);
+	case GT:
+	    return m_left->evaluate(pInterpreter)
+		> m_right->evaluate(pInterpreter);
+	case LTE:
+	    return m_left->evaluate(pInterpreter)
+		<= m_right->evaluate(pInterpreter);
+	case GTE:
+	    return m_left->evaluate(pInterpreter)
+		>= m_right->evaluate(pInterpreter);
 	case BIN_AND:{
-	  SteelType var;
-	  var.set ( (int)m_left->evaluate(pInterpreter) 
-		    & (int)m_right->evaluate(pInterpreter));
-	  return var;
+	    SteelType var;
+	    var.set ( (int)m_left->evaluate(pInterpreter) 
+		      & (int)m_right->evaluate(pInterpreter));
+	    return var;
 	}
 	case BIN_OR:{
-	  SteelType var;
-	  var.set((int)m_left->evaluate(pInterpreter) | (int)m_right->evaluate(pInterpreter));
-	  return var;
+	    SteelType var;
+	    var.set((int)m_left->evaluate(pInterpreter) | (int)m_right->evaluate(pInterpreter));
+	    return var;
 	}
-        default:
-            assert(0);
+	default:
+	    assert(0);
     
-        }
+	}
     }
     catch(OperationMismatch m)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),GetScript(),
-                             "Binary operation '" + ToString(m_op) + "' disallowed between these types");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),GetScript(),
+			     "Binary operation '" + ToString(m_op) + "' disallowed between these types");
     }
     catch(DivideByZero z)
     {
@@ -1169,9 +1454,128 @@ SteelType AstBinOp::evaluate(SteelInterpreter *pInterpreter)
     return SteelType();
 }
 
+
+void AstBinOp::CompileByteCode(Compilation& compilation)
+{
+
+    bool is_assignment = false;
+    switch(m_op){
+    case ASSIGN:
+    case ADD_ASSIGN:
+    case MULT_ASSIGN:
+    case DIV_ASSIGN:
+    case MOD_ASSIGN:
+    case SUB_ASSIGN:
+	is_assignment = true;
+	break;
+    default:
+	break;
+    }
+
+    if(is_assignment){
+	m_left->CompileAsLValue(compilation);
+	switch(m_op){
+	case ASSIGN:
+	    m_right->CompileByteCode(compilation);
+	    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	    break;
+	case ADD_ASSIGN:
+	    m_left->CompileByteCode(compilation);
+	    m_right->CompileByteCode(compilation);
+	    compilation.AddCode(ByteCode(ByteCode::Operation::ADD));
+	    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	    break;
+	case SUB_ASSIGN:
+	    m_left->CompileByteCode(compilation);
+	    m_right->CompileByteCode(compilation);
+	    compilation.AddCode(ByteCode(ByteCode::Operation::SUB));
+	    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	    break;
+	case MULT_ASSIGN:
+	    m_left->CompileByteCode(compilation);
+	    m_right->CompileByteCode(compilation);
+	    compilation.AddCode(ByteCode(ByteCode::Operation::MUL));
+	    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	    break;
+	case DIV_ASSIGN:
+	    m_left->CompileByteCode(compilation);
+	    m_right->CompileByteCode(compilation);
+	    compilation.AddCode(ByteCode(ByteCode::Operation::DIV));
+	    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	    break;
+	case MOD_ASSIGN:
+	    m_left->CompileByteCode(compilation);
+	    m_right->CompileByteCode(compilation);
+	    compilation.AddCode(ByteCode(ByteCode::Operation::MOD));
+	    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	    break;
+	};
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+    }else{
+	
+	m_left->CompileByteCode(compilation);
+	m_right->CompileByteCode(compilation);
+
+	switch(m_op){
+	case ADD:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::ADD));
+	    break;
+	case SUB:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::SUB));
+	    break;
+	case MULT:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::MUL));
+	    break;
+	case DIV:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::DIV));
+	    break;
+	case MOD:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::MOD));
+	    break;
+	case AND:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::ADD));
+	    break;
+	case OR:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::OR));
+	    break;
+	case NE:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::NEQ));
+	    break;
+	case EQ:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::EQ));
+	    break;
+	case POW:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::POW));
+	    break;
+	case D:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::D));
+	    break;
+	case LT:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::LT));
+	    break;
+	case GT:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::GT));
+	    break;
+	case LTE:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::LTE));
+	    break;
+	case GTE:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::GTE));
+	    break;
+	case BIN_AND:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::BAND));
+	    break;
+	case BIN_OR:
+	    compilation.AddCode(ByteCode(ByteCode::Operation::BOR));
+	    break;
+	}
+	
+    }
+}
+
 void AstBinOp::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_left->FindIdentifiers(o_ids);
-	m_right->FindIdentifiers(o_ids);
+    m_left->FindIdentifiers(o_ids);
+    m_right->FindIdentifiers(o_ids);
 }
 
 
@@ -1183,8 +1587,8 @@ ostream & AstBinOp::print(std::ostream &out)
 }
 
 AstUnaryOp::AstUnaryOp(unsigned int line,
-                       const std::string &script, Op op,
-                       AstExpression *operand)
+		       const std::string &script, Op op,
+		       AstExpression *operand)
     :AstExpression(line,script),m_op(op),m_operand(operand)
 {
 
@@ -1200,14 +1604,14 @@ std::string AstUnaryOp::ToString(Op op)
     switch(op)
     {
     case MINUS:
-        return "-";
+	return "-";
     case PLUS:
-        return "+";
+	return "+";
     case NOT:
-        return " not ";
+	return " not ";
     default:
-        assert ( 0 );
-        return "";
+	assert ( 0 );
+	return "";
     }
 }
 
@@ -1220,46 +1624,71 @@ SteelType AstUnaryOp::evaluate(SteelInterpreter *pInterpreter)
 {
     try{
     
-        switch(m_op)
-        {
-        case MINUS:
-            return - m_operand->evaluate(pInterpreter);
-        case PLUS:
-            return m_operand->evaluate(pInterpreter);
+	switch(m_op)
+	{
+	case MINUS:
+	    return - m_operand->evaluate(pInterpreter);
+	case PLUS:
+	    return m_operand->evaluate(pInterpreter);
 	case BIN_NOT:{
-	  SteelType var;
-	  var.set(~int(m_operand->evaluate(pInterpreter)));
-	  return var;
+	    SteelType var;
+	    var.set(~int(m_operand->evaluate(pInterpreter)));
+	    return var;
 	}
-        case NOT:
-            return ! m_operand->evaluate(pInterpreter);
+	case NOT:
+	    return ! m_operand->evaluate(pInterpreter);
 #if 0 // We no longer allow unary cat. Use array() 
-        case CAT:
-        {
-            SteelType var;
-            var.set ( SteelArray() );
-            var.add( m_operand->evaluate(pInterpreter) );
-            return var;
-        }
+	case CAT:
+	{
+	    SteelType var;
+	    var.set ( SteelArray() );
+	    var.add( m_operand->evaluate(pInterpreter) );
+	    return var;
+	}
 #endif
-        }
+	}
     }
     catch(OperationMismatch m)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),GetScript(),
-                             "Unary operation '" + ToString(m_op) + "' disallowed on this type");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),GetScript(),
+			     "Unary operation '" + ToString(m_op) + "' disallowed on this type");
     }
     catch(TypeMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),GetScript(),
-                             "Unary operation '" + ToString(m_op) + "' disallowed on this type");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),GetScript(),
+			     "Unary operation '" + ToString(m_op) + "' disallowed on this type");
     }
 
     assert ( 0 );
     return SteelType();
 }
+
+
+void AstUnaryOp::CompileByteCode(Compilation& compilation)
+{
+    switch(m_op){
+    case MINUS:
+      compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)0));
+	m_operand->CompileByteCode(compilation);
+	compilation.AddCode(ByteCode(ByteCode::Operation::SUB));
+	break;
+    case PLUS:
+	m_operand->CompileByteCode(compilation);
+	break;
+    case NOT:
+	m_operand->CompileByteCode(compilation);
+	compilation.AddCode(ByteCode(ByteCode::Operation::NOT));
+	break;
+    case BIN_NOT:
+	m_operand->CompileByteCode(compilation);
+	compilation.AddCode(ByteCode(ByteCode::Operation::BNOT));
+	break;
+    }
+}
+
+
 
 ostream & AstUnaryOp::print(std::ostream &out)
 {
@@ -1269,14 +1698,14 @@ ostream & AstUnaryOp::print(std::ostream &out)
 }
 
 void AstUnaryOp::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_operand->FindIdentifiers(o_ids);
+    m_operand->FindIdentifiers(o_ids);
 }
 
 
 
 AstPop::AstPop(unsigned int line,
-               const std::string &script,
-               AstExpression *pLValue,
+	       const std::string &script,
+	       AstExpression *pLValue,
 	       bool popBack)
     :AstExpression(line,script),m_pLValue(pLValue),m_bPopBack(popBack)
 {
@@ -1294,30 +1723,47 @@ SteelType AstPop::evaluate(SteelInterpreter *pInterpreter)
     
     if(nullptr == pL) 
     {
-        throw SteelException(SteelException::INVALID_LVALUE,
-                             GetLine(),
-                             GetScript(),
-                             "Invalid lvalue after pop.");
+	throw SteelException(SteelException::INVALID_LVALUE,
+			     GetLine(),
+			     GetScript(),
+			     "Invalid lvalue after pop.");
     }
     try {
-      if(m_bPopBack)
-        return pL->pop_back();
-    else
-      return pL->pop();
+	if(m_bPopBack)
+	    return pL->pop_back();
+	else
+	    return pL->pop();
     }catch(TypeMismatch){
-      throw SteelException(SteelException::TYPE_MISMATCH, GetLine(), GetScript(), "Pop operand was not an array.");
+	throw SteelException(SteelException::TYPE_MISMATCH, GetLine(), GetScript(), "Pop operand was not an array.");
     }
     
 }
 
+void AstPop::CompileByteCode(Compilation& compilation)
+{
+    ByteCode::Operation op = m_bPopBack?ByteCode::Operation::APOPB:ByteCode::Operation::APOP;
+
+    m_pLValue->CompileAsLValue(compilation); // Put our array into lvalue
+    compilation.AddCode(ByteCode(op));    
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+}
+
+void AstPop::CompileAsLValue(Compilation& compilation)
+{
+    ByteCode::Operation op = m_bPopBack?ByteCode::Operation::APOPB:ByteCode::Operation::APOP;
+
+    m_pLValue->CompileAsLValue(compilation); // Put our array into lvalue
+    compilation.AddCode(ByteCode(op));    
+}
+
 void AstPop::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pLValue->FindIdentifiers(o_ids);
+    m_pLValue->FindIdentifiers(o_ids);
 }
 
 
 
 AstPush::AstPush(unsigned int line,
-               const std::string &script,
+		 const std::string &script,
 		 AstExpression *pLValue,
 		 AstExpression *pExp,
 		 bool pushFront)
@@ -1337,33 +1783,54 @@ SteelType AstPush::evaluate(SteelInterpreter *pInterpreter)
     
     if(nullptr == pL) 
     {
-        throw SteelException(SteelException::INVALID_LVALUE,
-                             GetLine(),
-                             GetScript(),
-                             "Invalid lvalue after push.");
+	throw SteelException(SteelException::INVALID_LVALUE,
+			     GetLine(),
+			     GetScript(),
+			     "Invalid lvalue after push.");
     }
     try {
-      if(!m_bPushFront){
-        pL->pushb(m_pExp->evaluate(pInterpreter));
-      }else{
-        pL->push(m_pExp->evaluate(pInterpreter));
-      }
+	if(!m_bPushFront){
+	    pL->pushb(m_pExp->evaluate(pInterpreter));
+	}else{
+	    pL->push(m_pExp->evaluate(pInterpreter));
+	}
     }catch(TypeMismatch){
-      throw SteelException(SteelException::TYPE_MISMATCH, GetLine(), GetScript(), "Push operand was not an array");
+	throw SteelException(SteelException::TYPE_MISMATCH, GetLine(), GetScript(), "Push operand was not an array");
     }
 
     return *pL;
 }
 
+void AstPush::CompileByteCode(Compilation& compilation)
+{
+    ByteCode::Operation op = m_bPushFront?ByteCode::Operation::APUSH:ByteCode::Operation::APUSHB;
+
+    m_pLValue->CompileAsLValue(compilation); // Put our array into lvalue
+    m_pExp->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(op));    
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+}
+
+
+void AstPush::CompileAsLValue(Compilation& compilation)
+{
+    ByteCode::Operation op = m_bPushFront?ByteCode::Operation::APUSH:ByteCode::Operation::APUSHB;
+
+    m_pLValue->CompileAsLValue(compilation); // Put our array into lvalue
+    m_pExp->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(op));    
+}
+
+
 void AstPush::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pLValue->FindIdentifiers(o_ids);
+    m_pLValue->FindIdentifiers(o_ids);
 }
 
 
 AstRemove::AstRemove(unsigned int line,
-               const std::string &script,
-                 AstExpression *pLValue,
-                 AstExpression *pExp)
+		     const std::string &script,
+		     AstExpression *pLValue,
+		     AstExpression *pExp)
     :AstExpression(line,script),m_pLValue(pLValue),m_pExp(pExp)
 {
 }
@@ -1380,23 +1847,40 @@ SteelType AstRemove::evaluate(SteelInterpreter *pInterpreter)
     
     if(nullptr == pL) 
     {
-        throw SteelException(SteelException::INVALID_LVALUE,
-                             GetLine(),
-                             GetScript(),
-                             "Invalid lvalue in remove.");
+	throw SteelException(SteelException::INVALID_LVALUE,
+			     GetLine(),
+			     GetScript(),
+			     "Invalid lvalue in remove.");
     }
     
     return pL->removeElement(m_pExp->evaluate(pInterpreter));
 }
 
+
+void AstRemove::CompileByteCode(Compilation& compilation)
+{
+    m_pLValue->CompileAsLValue(compilation);
+    m_pExp->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::CREM));
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+}
+
+void AstRemove::CompileAsLValue(Compilation& compilation)
+{
+    m_pLValue->CompileAsLValue(compilation);
+    m_pExp->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::CREM));
+}
+
+
 void AstRemove::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pLValue->FindIdentifiers(o_ids);
+    m_pLValue->FindIdentifiers(o_ids);
 }
 
 
 
 AstCallExpression::AstCallExpression(unsigned int line,
-                                     const std::string &script, AstExpression *pExp, AstParamList *pList)
+				     const std::string &script, AstExpression *pExp, AstParamList *pList)
     :AstExpression(line,script),m_pExp(pExp),m_pParams(pList)
 {
     assert ( m_pExp );
@@ -1416,61 +1900,69 @@ SteelType AstCallExpression::evaluate(SteelInterpreter *pInterpreter)
 	m_functor = m_pExp->evaluate(pInterpreter);
 	pFunctor = m_functor.getFunctor();
     }catch(TypeMismatch){
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(), GetScript(),
-                             "Function call expression was not a valid function");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(), GetScript(),
+			     "Function call expression was not a valid function");
     }
     catch(ValueNotFunction v){
-        throw SteelException(SteelException::VALUE_NOT_FUNCTION,
-                             GetLine(), GetScript(),
-                             "Call expression is not a function.");
+	throw SteelException(SteelException::VALUE_NOT_FUNCTION,
+			     GetLine(), GetScript(),
+			     "Call expression is not a function.");
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(), GetScript(),
-                             "Unknown function '" + id.identifier + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(), GetScript(),
+			     "Unknown function '" + id.identifier + '\'');
     }
 
-	try{
+    try{
 
-        if(m_pParams)
-            ret = pFunctor->Call(pInterpreter,m_pParams->getParamList(pInterpreter));
-        else 
-            ret = pFunctor->Call(pInterpreter,SteelType::Container());
+	if(m_pParams)
+	    ret = pFunctor->Call(pInterpreter,m_pParams->getParamList(pInterpreter));
+	else 
+	    ret = pFunctor->Call(pInterpreter,SteelType::Container());
         
 #if 0
-        if(m_pParams)
-            ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),m_pParams->getParamList(pInterpreter) );
-        else ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),SteelType::Container() );
+	if(m_pParams)
+	    ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),m_pParams->getParamList(pInterpreter) );
+	else ret = pInterpreter->call( m_pId->getValue(), m_pId->GetNamespace(),SteelType::Container() );
 #endif
     }
     catch(ParamMismatch )
     {
-        throw SteelException(SteelException::PARAM_MISMATCH,
-                             GetLine(),GetScript(),
-                             "Function '"+ pFunctor->getIdentifier() + "' called with incorrect number of parameters.");
+	throw SteelException(SteelException::PARAM_MISMATCH,
+			     GetLine(),GetScript(),
+			     "Function '"+ pFunctor->getIdentifier() + "' called with incorrect number of parameters.");
     }
     catch(TypeMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(), GetScript(),
-                             "Type mismatch in parameter to function '" + pFunctor->getIdentifier() + '\'');
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(), GetScript(),
+			     "Type mismatch in parameter to function '" + pFunctor->getIdentifier() + '\'');
     }
     catch(FileNotFound)
     {
-      throw SteelException(SteelException::FILE_NOT_FOUND,
-			   GetLine(),GetScript(),
-			   "Couldn't open file in function '" + pFunctor->getIdentifier() + '\'');
+	throw SteelException(SteelException::FILE_NOT_FOUND,
+			     GetLine(),GetScript(),
+			     "Couldn't open file in function '" + pFunctor->getIdentifier() + '\'');
     }
 
 
     return ret;
 }
 
+void AstCallExpression::CompileByteCode(Compilation& compilation)
+{
+    m_pParams->CompileByteCode(compilation); // Should end up with one item on the stack per param.
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,m_pParams->count())); // Push the count of params to TOS
+    m_pExp->CompileByteCode(compilation); // This will put the functor on the stack. Could be a pointer to a CodePosition, or could be a C++-bound functor
+    compilation.AddCode(ByteCode(ByteCode::Operation::JSR)); 
+}
+
 void AstCallExpression::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	if(m_pParams) m_pParams->FindIdentifiers(o_ids);
-	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
+    if(m_pParams) m_pParams->FindIdentifiers(o_ids);
+    if(m_pExp) m_pExp->FindIdentifiers(o_ids);
 }
 
 
@@ -1478,12 +1970,12 @@ ostream & AstCallExpression::print(std::ostream &out)
 {
     if(m_pParams)
     {
-        out << *m_pExp 
-            << '(' << *m_pParams << ')';
+	out << *m_pExp 
+	    << '(' << *m_pParams << ')';
     }
     else
     {
-        out << *m_pExp << "()";
+	out << *m_pExp << "()";
     }
     
     return out;
@@ -1500,24 +1992,38 @@ AstArrayLiteral::~AstArrayLiteral()
 
 void AstArrayLiteral::add(AstExpression* pExp)
 {
-  m_list.emplace_back(std::unique_ptr<AstExpression>(pExp));
+  m_list.push_back(std::unique_ptr<AstExpression>(pExp));
 }
 
 SteelType AstArrayLiteral::evaluate(SteelInterpreter* pInterpreter)
 {
-  SteelType array;
-  array.set(SteelType::Container());
+    SteelType array;
+    array.set(SteelType::Container());
 
-  for(auto& it : m_list){
-    array.pushb(it->evaluate(pInterpreter));
-  }
+    for(auto& it : m_list){
+	array.pushb(it->evaluate(pInterpreter));
+    }
 
-  return array;  
+    return array;  
+}
+
+void AstArrayLiteral::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    VariableIndex idx = compilation.TempVariable(Type::ARRAY);
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,idx)); // Put the new temporary array in the Lvalue register
+    for(auto & it : m_list){
+	it->CompileByteCode(compilation);
+	compilation.AddCode(ByteCode(ByteCode::Operation::APUSHB)); // Pushes the value onto our temp array
+    }
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,(uint32_t)idx)); // Load our variable onto the TOS
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL)); // pop l-value
+    compilation.PopScope();
 }
 
 void AstArrayLiteral::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
- for(auto& it : m_list){
-	 it->FindIdentifiers(o_ids);
+  for(auto& it : m_list){
+	it->FindIdentifiers(o_ids);
   }	
 }
 
@@ -1547,9 +2053,9 @@ void AstArrayLiteral::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
 */
 
 AstArrayElement::AstArrayElement(unsigned int line,
-                                 const std::string &script,
-                                 AstExpression *pLValue,
-                                 AstExpression *pExp)
+				 const std::string &script,
+				 AstExpression *pLValue,
+				 AstExpression *pExp)
     :AstExpression(line,script),m_pLValue(pLValue),m_pExp(pExp)
 {
     
@@ -1571,104 +2077,125 @@ SteelType * AstArrayElement::lvalue(SteelInterpreter *pInterpreter)
     try
     {
     
-        SteelType * pArray = m_pLValue->lvalue(pInterpreter);
-        if(nullptr == pArray)
-        {
-            throw SteelException(SteelException::INVALID_LVALUE,
-                                 GetLine(),
-                                 GetScript(),
-                                 "Invalid lvalue before subscript.");
-        }
+	SteelType * pArray = m_pLValue->lvalue(pInterpreter);
+	if(nullptr == pArray)
+	{
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),
+				 GetScript(),
+				 "Invalid lvalue before subscript.");
+	}
 
-        if(!pArray->isArray() && !pArray->isHashMap())
-        {
-            throw SteelException(SteelException::TYPE_MISMATCH,
-                                 GetLine(),
-                                 GetScript(),
-                                 "Lvalue is not an array or hash map.");
-        }
+	if(!pArray->isArray() && !pArray->isHashMap())
+	{
+	    throw SteelException(SteelException::TYPE_MISMATCH,
+				 GetLine(),
+				 GetScript(),
+				 "Lvalue is not an array or hash map.");
+	}
 
 	if(pArray->isArray())
 	{
-	  int index = m_pExp->evaluate(pInterpreter);
-	  return pArray->getLValue(index);
+	    int index = m_pExp->evaluate(pInterpreter);
+	    return pArray->getLValue(index);
 	}
 	else if(pArray->isHashMap())
 	{
-	  std::string index = m_pExp->evaluate(pInterpreter);
-	  return pArray->getLValue(index);
+	    std::string index = m_pExp->evaluate(pInterpreter);
+	    return pArray->getLValue(index);
 	}
-        // It will throw out of bounds, or what not.
+	// It will throw out of bounds, or what not.
         
     }
     catch(UnknownIdentifier id)
     {
-        // TODO: Make these exceptions carry a god damn string.
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier in array or hashmap lvalue: '" + id.identifier + '\'');
+	// TODO: Make these exceptions carry a god damn string.
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier in array or hashmap lvalue: '" + id.identifier + '\'');
                  
     }
     catch(OutOfBounds)
     {
-        throw SteelException(SteelException::OUT_OF_BOUNDS,
-                             GetLine(),
-                             GetScript(),
-                             "lvalue subscript was out of bounds.");
+	throw SteelException(SteelException::OUT_OF_BOUNDS,
+			     GetLine(),
+			     GetScript(),
+			     "lvalue subscript was out of bounds.");
     }
 
     return nullptr;
 }
+
+
+void AstArrayElement::CompileAsLValue(Compilation& compilation){
+    //   compilation.PushScope();
+//    VariableIndex idx = compilation.TempVariable(Type::ARRAY);
+//    compilation.AddByte(ByteCode(ByteCode::Operation::SETL,idx)); // Put the new temporary array in the Lvalue register
+    m_pExp->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::SETIDX)); // Set index to TOS and pop
+    m_pLValue->CompileByteCode(compilation);   
+    compilation.AddCode(ByteCode(ByteCode::Operation::CELEML));
+	//compilation.PopScope();
+}
+
+void AstArrayElement::CompileByteCode(Compilation& compilation){
+    m_pExp->CompileByteCode(compilation); // Put the lvalue into the lvalue register
+    compilation.AddCode(ByteCode(ByteCode::Operation::SETIDX)); // Set index to TOS and pop
+    m_pLValue->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::CELEM)); // Pop array from TOS and push element at IDX
+}
+
+
 
 SteelType AstArrayElement::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
 
-            SteelType val = m_pLValue->evaluate(pInterpreter);
+	SteelType val = m_pLValue->evaluate(pInterpreter);
         
-            try
-            {
-              if(val.isArray())
-                return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
-              else if(val.isHashMap())
-                return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
-	      else throw TypeMismatch();
-            }
-            catch(TypeMismatch)
-            {
-                throw SteelException(SteelException::TYPE_MISMATCH,
-                                     GetLine(),
-                                     GetScript(),
-                                     "Left of array subscript (aka '[' ']') was not an array.");
-            }
+	try
+	{
+	    if(val.isArray())
+		return val.getElement((int)m_pExp->evaluate(pInterpreter)); 
+	    else if(val.isHashMap())
+		return val.getElement((const std::string&)m_pExp->evaluate(pInterpreter));
+	    else throw TypeMismatch();
+	}
+	catch(TypeMismatch)
+	{
+	    throw SteelException(SteelException::TYPE_MISMATCH,
+				 GetLine(),
+				 GetScript(),
+				 "Left of array subscript (aka '[' ']') was not an array.");
+	}
 
-            // The rest of the exceptions should be cought by the outer try.
-            // Such as out of bounds.. and anything that goes wrong inside the index expression
+	// The rest of the exceptions should be cought by the outer try.
+	// Such as out of bounds.. and anything that goes wrong inside the index expression
       
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier: '" + id.identifier + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier: '" + id.identifier + '\'');
     }
     catch(OutOfBounds)
     {
-        throw SteelException(SteelException::OUT_OF_BOUNDS,
-                             GetLine(),
-                             GetScript(),
-                             "Array index out of bounds.");
+	throw SteelException(SteelException::OUT_OF_BOUNDS,
+			     GetLine(),
+			     GetScript(),
+			     "Array index out of bounds.");
     }
-	return SteelType();
+    return SteelType();
 }
 
 
 void AstArrayElement::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pExp->FindIdentifiers(o_ids);
-	m_pLValue->FindIdentifiers(o_ids);
+    m_pExp->FindIdentifiers(o_ids);
+    m_pLValue->FindIdentifiers(o_ids);
 }
 
 ostream & AstArrayElement::print(std::ostream &out)
@@ -1679,28 +2206,35 @@ ostream & AstArrayElement::print(std::ostream &out)
 
 
 void AstIdentifier::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	o_ids.emplace_back(this);
+    o_ids.push_back(this);
 }
 
 
 AstPair::AstPair(unsigned int line, const std::string& script, AstExpression* pKey, AstExpression* pValue)
-  :AstBase(line,script),m_key(pKey),m_value(pValue){
+    :AstBase(line,script),m_key(pKey),m_value(pValue){
 }
 
 AstPair::~AstPair(){
 }
 
 std::string AstPair::GetKey(SteelInterpreter* pInterpreter){
-  return  m_key->evaluate(pInterpreter);
+    return  m_key->evaluate(pInterpreter);
 }
 
 SteelType AstPair::GetValue(SteelInterpreter* pInterpreter){
-  return m_value->evaluate(pInterpreter);
+    return m_value->evaluate(pInterpreter);
+}
+
+void AstPair::CompileByteCode(Compilation& compilation){
+    m_key->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::SETIDX));
+    m_value->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::HSET));
 }
 
 void AstPair::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_key->FindIdentifiers(o_ids);
-	m_value->FindIdentifiers(o_ids);
+    m_key->FindIdentifiers(o_ids);
+    m_value->FindIdentifiers(o_ids);
 }
 
 
@@ -1714,35 +2248,48 @@ AstPairList::~AstPairList()
 
 void AstPairList::add(AstPair* pair)
 {
-  m_list.emplace_back(std::unique_ptr<AstPair>(pair));
+     m_list.push_back(std::unique_ptr<AstPair>(pair));
 }
 
 SteelType AstPairList::evaluate(SteelInterpreter *pInterpreter)
 {
-  SteelType hashmap;
-  hashmap.set(SteelType::Map());
-  for(auto & it : m_list){
-    hashmap.setElement(it->GetKey(pInterpreter),it->GetValue(pInterpreter));
-  }
-  return hashmap;
+    SteelType hashmap;
+    hashmap.set(SteelType::Map());
+    for(auto& it: m_list){
+	hashmap.setElement(it->GetKey(pInterpreter),it->GetValue(pInterpreter));
+    }
+    return hashmap;
+}
+
+void AstPairList::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    VariableIndex idx = compilation.TempVariable(Type::HASH);
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL, idx)); // Put the temp hash in lvalue
+    for(auto& it: m_list){
+	it->CompileByteCode(compilation);
+    }
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD, idx)); // Put the temp hash on TOS
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL)); // Pop lvalue, right?
+    compilation.PopScope();
 }
 
 SteelType* AstPairList::lvalue(SteelInterpreter *pInterpreter)
 {
-  return nullptr;
+    return nullptr;
 }
 
 void AstPairList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
- for(auto & it : m_list){
-    it->FindIdentifiers(o_ids);
-  }	
+  for(auto& it: m_list){
+	it->FindIdentifiers(o_ids);
+    }	
 }
 
 
 AstVarAssignmentExpression::AstVarAssignmentExpression(unsigned int line,
-                                                       const std::string &script,
-                                                       AstExpression *pLValue,
-                                                       AstExpression *pExp)
+						       const std::string &script,
+						       AstExpression *pLValue,
+						       AstExpression *pExp)
     :AstExpression(line,script),m_pLValue(pLValue),m_pExpression(pExp)
 {
 
@@ -1764,36 +2311,53 @@ SteelType AstVarAssignmentExpression::evaluate(SteelInterpreter *pInterpreter)
     SteelType exp = m_pExpression->evaluate(pInterpreter);
     try
     {
-        SteelType *pL = m_pLValue->lvalue(pInterpreter);
-        if(pL == nullptr)
-            throw SteelException(SteelException::INVALID_LVALUE,
-                                 GetLine(),
-                                 GetScript(),
-                                 "Left of '=' is not a valid lvalue.");
+	SteelType *pL = m_pLValue->lvalue(pInterpreter);
+	if(pL == nullptr)
+	    throw SteelException(SteelException::INVALID_LVALUE,
+				 GetLine(),
+				 GetScript(),
+				 "Left of '=' is not a valid lvalue.");
 
-        pInterpreter->assign ( pL, exp );
+	pInterpreter->assign ( pL, exp );
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier: '" + id.identifier + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier: '" + id.identifier + '\'');
     }
     catch(TypeMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),
-                             GetScript(),
-                             "Illegal assignment due to type mismatch.");
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),
+			     GetScript(),
+			     "Illegal assignment due to type mismatch.");
     }
 
     return exp;
 }
 
+void AstVarAssignmentExpression::CompileByteCode(Compilation& compilation)
+{
+    m_pLValue->CompileAsLValue(compilation);
+    m_pExpression->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+}
+
+
+void AstVarAssignmentExpression::CompileAsLValue(Compilation& compilation)
+{
+    m_pLValue->CompileAsLValue(compilation);
+    m_pExpression->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+}
+
+
 void AstVarAssignmentExpression::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	m_pLValue->FindIdentifiers(o_ids);
-	m_pExpression->FindIdentifiers(o_ids);
+    m_pLValue->FindIdentifiers(o_ids);
+    m_pExpression->FindIdentifiers(o_ids);
 }
 
 
@@ -1806,74 +2370,79 @@ ostream & AstVarAssignmentExpression::print(std::ostream &out)
 
 
 AstParamList::AstParamList(unsigned int line,
-                           const std::string &script)
+			   const std::string &script)
     :AstBase(line,script)
 {
 }
 AstParamList::~AstParamList()
 {
-// 
+
 }
 
 SteelType::Container AstParamList::getParamList(SteelInterpreter *pInterpreter) const 
 {
     SteelType::Container params;
 
-    for(auto & i : m_params)
+    for(auto& it: m_params)
     {
     
-        SteelType var = i->evaluate(pInterpreter);
-        params.emplace_back ( var );
+	SteelType var = it->evaluate(pInterpreter);
+	params.push_back ( var );
     }
     
 
     return params;
 }
 
+void AstParamList::CompileByteCode(Compilation& compilation)
+{
+  for(auto& it: m_params){
+    it->CompileByteCode(compilation);
+  }
+}
+
+
+
 void AstParamList::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
- for(auto& i : m_params)
+  for(auto& it: m_params)
     {
-		i->FindIdentifiers(o_ids);
-      
+	it->FindIdentifiers(o_ids);
     }
 }
 
 
 void AstParamList::add(AstExpression *pExp)
 {
-    m_params.emplace_back(std::unique_ptr<AstExpression>(pExp));
+    m_params.push_back(std::unique_ptr<AstExpression>(pExp));
 }
 ostream & AstParamList::print(std::ostream &out)
 {
-    
 
     return out;
 }
 #if 1 
 SteelType * AstIdentifier::lvalue(SteelInterpreter *pInterpreter)
 {
-  // Note: Seems like it should be okay to cache but its not, due to closures (AuxVariables) 
-  // New note: In previous implementations of closures that may have been true, maybe its ok now?
-  //if(m_pLValue) return m_pLValue; 
+    //if(m_pLValue) return m_pLValue; // Note: Seems like it should be okay to cache but its not, due to closures (AuxVariables)
 
     try
     {
-        m_pLValue = pInterpreter->lookup_lvalue ( getValue() );
-        return m_pLValue; 
+	m_pLValue = pInterpreter->lookup_lvalue ( getValue() );
+	return m_pLValue; 
     }
     catch(ConstViolation)
     {
-        throw SteelException(SteelException::VALUE_IS_CONSTANT,
-                             GetLine(),
-                             GetScript(),
-                             "Cannot modify constant value '" + getValue() + '\'');
+	throw SteelException(SteelException::VALUE_IS_CONSTANT,
+			     GetLine(),
+			     GetScript(),
+			     "Cannot modify constant value '" + getValue() + '\'');
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier:'" + getValue() + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier:'" + getValue() + '\'');
     }
 
     return nullptr;
@@ -1885,31 +2454,44 @@ SteelType AstIdentifier::evaluate(SteelInterpreter *pInterpreter)
 {
     try
     {
-        return pInterpreter->lookup ( getValue() );
+	return pInterpreter->lookup ( getValue() );
     }
     catch(UnknownIdentifier)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier:'" + getValue() + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier:'" + getValue() + '\'');
     }
 }
+
+
+/*
+void AstIdentifier::CompileAsLValue(Compilation& compilation)
+{
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL, compilation.Variable(getValue()))); // Look up this variable and set it into lvalue register
+}
+
+
+void AstIdentifier::CompileByteCode(Compilation& compilation){
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,compilation.Variable(getValue())));
+}
+*/
 #endif
 
 AstDeclaration::AstDeclaration(unsigned int line,
-                                     const std::string &script,
-                                     AstIdentifier *pId,
-                                     AstExpression *pExp)
+			       const std::string &script,
+			       AstIdentifier *pId,
+			       AstExpression *pExp)
     :AstStatement(line,script),m_pId(pId),m_bConst(false),m_pExp(pExp)
 {
 }
 
 AstDeclaration::AstDeclaration(unsigned int line,
-                                     const std::string &script,
-                                     AstIdentifier *pId,
-                                     bool bConst,
-                                     AstExpression *pExp)
+			       const std::string &script,
+			       AstIdentifier *pId,
+			       bool bConst,
+			       AstExpression *pExp)
     :AstStatement(line,script),m_pId(pId),m_bConst(bConst),m_pExp(pExp)
 {
 }
@@ -1923,81 +2505,92 @@ AstDeclaration::~AstDeclaration()
 AstStatement::eStopType AstDeclaration::execute(SteelInterpreter *pInterpreter)
 {
     try{
-        if(m_bConst)
-        {
-            if(!m_pExp)
-                throw SteelException(SteelException::ASSIGNMENT_REQUIRED,
-                                     GetLine(),
-                                     GetScript(),
-                                     "Assignment missing from const declaration of " + m_pId->getValue());
+	if(m_bConst)
+	{
+	    if(!m_pExp)
+		throw SteelException(SteelException::ASSIGNMENT_REQUIRED,
+				     GetLine(),
+				     GetScript(),
+				     "Assignment missing from const declaration of " + m_pId->getValue());
 
-            pInterpreter->declare_const(m_pId->getValue(), m_pExp->evaluate(pInterpreter));
-        }
-        else
-        {
-            pInterpreter->declare(m_pId->getValue());
+	    pInterpreter->declare_const(m_pId->getValue(), m_pExp->evaluate(pInterpreter));
+	}
+	else
+	{
+	    pInterpreter->declare(m_pId->getValue());
         
-            SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
+	    SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
 	    
-            // If this is null, its crazy, because we JUST declared its ass.
-            assert ( nullptr != pVar);
+	    // If this is null, its crazy, because we JUST declared its ass.
+	    assert ( nullptr != pVar);
             
 	
 	    if(!pInterpreter->paramStackEmpty()){
-	      // If there is a value, it overrides whatever the expression was.
-	      pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
+		// If there is a value, it overrides whatever the expression was.
+		pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
 	    }else if(m_pExp) {
-	      pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+		pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
 	    }else{
-              const std::string id = m_pId->getValue();
-              SteelType val;
-              if(id[0] == '@'){
-                val.set(SteelType::Container());
-              }else if(id[0] == '#'){
-                val.set(SteelType::Map());
-              }
-              pInterpreter->assign( pVar, val );
+		const std::string id = m_pId->getValue();
+		SteelType val;
+		if(id[0] == '@'){
+		    val.set(SteelType::Container());
+		}else if(id[0] == '#'){
+		    val.set(SteelType::Map());
+		}
+		pInterpreter->assign( pVar, val );
 	    }
      
-        }
+	}
     }
     catch(TypeMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),
-                             GetScript(),
-                             "Type mismatch in assignment part of declaration of '" + m_pId->getValue() + '\'');
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),
+			     GetScript(),
+			     "Type mismatch in assignment part of declaration of '" + m_pId->getValue() + '\'');
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier: '" + m_pId->getValue() + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier: '" + m_pId->getValue() + '\'');
     }
     catch(AlreadyDefined)
     {
-        throw SteelException(SteelException::VARIABLE_DEFINED,
-                             GetLine(),
-                             GetScript(),
-                             "Variable: '" + m_pId->getValue() + "' is already defined.");
+	throw SteelException(SteelException::VARIABLE_DEFINED,
+			     GetLine(),
+			     GetScript(),
+			     "Variable: '" + m_pId->getValue() + "' is already defined.");
     }
 
     return COMPLETED;
 }
 
+void AstDeclaration::CompileByteCode(Compilation& compilation)
+{
+    m_idx = compilation.NewVariable(m_pId->getValue());
+    if(m_pExp){
+	m_pId->CompileAsLValue(compilation);
+	m_pExp->CompileByteCode(compilation);
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL));
+    }
+}
+
 void AstDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	//m_pId->FindIdentifiers(o_ids); // wait... no, this is local and we want nonlocal
-	if(m_pExp) m_pExp->FindIdentifiers(o_ids);
+    //m_pId->FindIdentifiers(o_ids); // wait... no, this is local and we want nonlocal
+    if(m_pExp) m_pExp->FindIdentifiers(o_ids);
 }
 
 
 ostream & AstDeclaration::print(std::ostream &out)
 {
     if(m_bConst)
-        out << "const " << *m_pId;
+	out << "const " << *m_pId;
     else
-        out << "var " << *m_pId;
+	out << "var " << *m_pId;
 
     if( m_pExp ) out << '=' << *m_pExp << ';' << std::endl;
     return out;
@@ -2005,16 +2598,17 @@ ostream & AstDeclaration::print(std::ostream &out)
 
 
 AstArrayDeclaration::AstArrayDeclaration(unsigned int line,
-                                         const std::string &script,
-                                         AstIdentifier *pId,
-                                         AstExpression *pInt)
-  :AstDeclaration(line,script,pId,pInt),m_pId(pId),m_pIndex(pInt),m_pExp(nullptr)
+					 const std::string &script,
+					 AstIdentifier *pId,
+					 AstExpression *pInt)
+    :AstDeclaration(line,script,pId,pInt),m_pId(pId),m_pIndex(pInt),m_pExp(nullptr)
 {
 }
 
 AstArrayDeclaration::~AstArrayDeclaration()
 {
-
+    //delete m_pId;
+    // delete m_pIndex;
 }
 
 void AstArrayDeclaration::assign(AstExpression *pExp)
@@ -2024,9 +2618,9 @@ void AstArrayDeclaration::assign(AstExpression *pExp)
 }
 
 void AstArrayDeclaration::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	// Don't include THIS identifier because we want non-locals only
-	if(m_pExp)
-		m_pExp->FindIdentifiers(o_ids);
+    // Don't include THIS identifier because we want non-locals only
+    if(m_pExp)
+	m_pExp->FindIdentifiers(o_ids);
 }
 
 
@@ -2035,45 +2629,68 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
 {
     try
     {
-        if(m_pIndex)
-            pInterpreter->declare_array( m_pId->getValue(), m_pIndex->evaluate(pInterpreter));
-        else pInterpreter->declare_array( m_pId->getValue(), 0);
+	if(m_pIndex)
+	    pInterpreter->declare_array( m_pId->getValue(), m_pIndex->evaluate(pInterpreter));
+	else pInterpreter->declare_array( m_pId->getValue(), 0);
     }
     catch(AlreadyDefined)
     {
-        throw SteelException(SteelException::VARIABLE_DEFINED,
-                             GetLine(),
-                             GetScript(),
-                             "Array: '" + m_pId->getValue() + "' was previously defined.");
+	throw SteelException(SteelException::VARIABLE_DEFINED,
+			     GetLine(),
+			     GetScript(),
+			     "Array: '" + m_pId->getValue() + "' was previously defined.");
     }
 
     try{
-        SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
-        // If this is null here, we're in a BAD way. Programming error.
-        assert ( nullptr != pVar);
+	SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
+	// If this is null here, we're in a BAD way. Programming error.
+	assert ( nullptr != pVar);
 	
 	if(!pInterpreter->paramStackEmpty()){
-	  pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
+	    pInterpreter->assign ( pVar, pInterpreter->popParamStack() );
 	}else if(m_pExp){
-	  pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
+	    pInterpreter->assign( pVar, m_pExp->evaluate(pInterpreter) );
 	}
     }
     catch(TypeMismatch)
     {
-        throw SteelException(SteelException::TYPE_MISMATCH,
-                             GetLine(),
-                             GetScript(),
-                             "Attempt to assign scalar to array in declaration of :'" + m_pId->getValue() + '\'');
+	throw SteelException(SteelException::TYPE_MISMATCH,
+			     GetLine(),
+			     GetScript(),
+			     "Attempt to assign scalar to array in declaration of :'" + m_pId->getValue() + '\'');
     }
     catch(UnknownIdentifier id)
     {
-        throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
-                             GetLine(),
-                             GetScript(),
-                             "Unknown identifier in assignment:" + id.identifier + '\'');
+	throw SteelException(SteelException::UNKNOWN_IDENTIFIER,
+			     GetLine(),
+			     GetScript(),
+			     "Unknown identifier in assignment:" + id.identifier + '\'');
     }
 
     return COMPLETED;
+}
+
+
+void AstArrayDeclaration::CompileByteCode(Compilation& compilation)
+{
+    compilation.PushScope();
+    m_idx = compilation.NewVariable(m_pId->getValue(),SteelInterpreter::kszGlobalNamespace,Type::ARRAY);
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,m_idx)); // Load our array as lvalue
+    if(m_pIndex)
+      m_pIndex->CompileByteCode(compilation); // Put number of values to reserve on stack
+    else
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)0));
+    compilation.AddCode(ByteCode(ByteCode::Operation::ARES)); // Reserves this many to lvalue and pops
+    m_pId->CompileAsLValue(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,m_idx));
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE));
+    compilation.PopScope();
+    if(m_pExp){
+      m_pExp->CompileByteCode(compilation);
+      compilation.AddCode(ByteCode(ByteCode::Operation::STORE));      
+    }
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL)); // Pop the array loaded as lvalue, 
+    compilation.AddCode(ByteCode(ByteCode::Operation::POPL)); 
 }
 
 ostream & AstArrayDeclaration::print(std::ostream &out)
@@ -2088,7 +2705,7 @@ ostream & AstArrayDeclaration::print(std::ostream &out)
 
 
 AstAnonymousFunctionDefinition::AstAnonymousFunctionDefinition(unsigned int line, const std::string &script, AstParamDefinitionList* params, AstStatementList * statements)
-  :AstExpression(line,script),m_pParamList(params),m_pStatements(statements)
+    :AstExpression(line,script),m_pParamList(params),m_pStatements(statements)
 {
 }
   
@@ -2098,9 +2715,9 @@ AstAnonymousFunctionDefinition::~AstAnonymousFunctionDefinition()
   
 SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterpreter)
 {
-  std::shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
+    std::shared_ptr<SteelFunctor> pFunctor(new SteelUserFunction(m_pParamList,m_pStatements));
 	
-  std::shared_ptr<SteelUserFunction> userFunc = std::dynamic_pointer_cast<SteelUserFunction>(pFunctor);
+    std::shared_ptr<SteelUserFunction> userFunc = std::dynamic_pointer_cast<SteelUserFunction>(pFunctor);
     if(userFunc) // should be!
 	userFunc->bindNonLocals(pInterpreter);
     pFunctor->setIdentifier("Anonymous");
@@ -2110,34 +2727,50 @@ SteelType AstAnonymousFunctionDefinition::evaluate(SteelInterpreter* pInterprete
     return functor;
 }
 
+void AstAnonymousFunctionDefinition::CompileByteCode(Compilation& compilation)
+{
+    FunctionIndex idx = compilation.FunctionStart(); // also pushes scope
+    // We have to do something special for parameters. 
+    // They will be pushed onto the stack for us from the call site.
+    // So what we need to do is execute the declarations, but provide 
+    // the values on the stack as their values (Unless they have defaults)
+
+    if(m_pParamList)
+	m_pParamList->CompileByteCode(compilation);
+    m_pStatements->CompileByteCode(compilation);
+
+    compilation.AddCode(ByteCode(ByteCode::Operation::RETURN)); // Add a return in case there isn't any. TODO: Check if theres already one
+    compilation.FunctionEnd(); // also pops scope
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHFN,idx)); // TODO: Fix this up with a code position instead of requiring a table
+}
+
 
 AstParamDefinitionList::AstParamDefinitionList(unsigned int line,
-                                               const std::string &script)
+					       const std::string &script)
     :AstBase(line,script),mnDefaults(0)
 {
 }
 
 AstParamDefinitionList::~AstParamDefinitionList()
 {
-
 }
 
 void AstParamDefinitionList::add(AstDeclaration *pDef)
 {
     if(pDef->hasInitializer())
     {
-        ++mnDefaults;
+	++mnDefaults;
     }
     else
     {
-        // Are there defaults already? If so... we can't have one without defaults now.
-        if(mnDefaults != 0)
-        {
-            throw SteelException(SteelException::DEFAULTS_MISMATCH, GetLine(), GetScript(), "Default parameter values may only be on the last parameters.");
-        }
+	// Are there defaults already? If so... we can't have one without defaults now.
+	if(mnDefaults != 0)
+	{
+	    throw SteelException(SteelException::DEFAULTS_MISMATCH, GetLine(), GetScript(), "Default parameter values may only be on the last parameters.");
+	}
     }
 
-    m_params.emplace_back( std::unique_ptr<AstDeclaration>(pDef) );
+    m_params.push_back( std::unique_ptr<AstDeclaration>(pDef) );
 }
 
 
@@ -2154,102 +2787,160 @@ int AstParamDefinitionList::defaultCount() const
 
 void AstParamDefinitionList::executeDeclarations(SteelInterpreter *pInterpreter)
 {
-  for(auto & i : m_params)
+    for(auto& i : m_params)
     {
-       i->execute(pInterpreter);
+	i->execute(pInterpreter);
     }
 }
 
 
-bool AstParamDefinitionList::containsName( const std::string& id ) const {
-	for(auto& i : m_params){
-		AstIdentifier * ident = i->getIdentifier();
-		if(ident->getValue() == id)
-			return true;
-	}
+void AstParamDefinitionList::CompileByteCode(Compilation& compilation)
+{
+    int c = m_params.size()-1;
+    CodePosition start = compilation.CurrentPosition();
+    
+    compilation.PushScope();
+    VariableIndex supplied_idx = compilation.TempVariable();
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,supplied_idx));
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE)); // Store TOS (Supplied count) to our temp variable
+    compilation.AddCode(ByteCode(ByteCode::Operation::POP)); // Pop supplied count off stack
+    // We go backwards because the TOS is the last parameter, etc.
+    for(auto i =m_params.rbegin(); i != m_params.rend(); i++){
+	// We have to check with the number of parameters (TOS)
+	// And create essentially if statements 
+	// if ( supplied > c )
+	//   declare variable ignoring it's exp if any (e.g. var f = 3.0), the 3.0 is exp
+	//   assign TOS to variable and pop
+	// else 
+	//   if param has exp
+	//    declare variable as normal
+	//  else
+	//   error, not enough params supplied
+	(*i)->CompileByteCode(compilation); // TODO: If this thing has expressions but we supplied a parameter, its a waste of time to execute those exps
+	compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,supplied_idx));
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHI,(uint32_t)c));
+	compilation.AddCode(ByteCode(ByteCode::Operation::GT));
+	CodePosition cond = compilation.CurrentPosition();
+	compilation.AddCode(ByteCode(ByteCode::Operation::BNZ));
+	compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,(*i)->getVariableIndex()));
+	compilation.AddCode(ByteCode(ByteCode::Operation::STORE)); // Right? Store TOS (the next supplied param) to the new variable that was created in the 'i' declaration. Pops TOS
+	compilation.AddCode(ByteCode(ByteCode::Operation::POPL)); 
+
+	compilation.SetParam32(cond,compilation.CurrentPosition()); // skip to here if there was no supplied param
 	
-	return false;
+	--c;
+    }
+    compilation.PopScope();
+}
+
+
+bool AstParamDefinitionList::containsName( const std::string& id ) const {
+    for(const auto &i: m_params){
+	AstIdentifier * ident = i->getIdentifier();
+	if(ident->getValue() == id)
+	    return true;
+    }
+	
+    return false;
 }
 
 
 
 ostream & AstParamDefinitionList::print (std::ostream &out)
 {
-
     return out;
 }    
 
 
 SteelType AstFuncIdentifier::evaluate(SteelInterpreter *pInterpreter)
 {
-  return pInterpreter->lookup_function(GetNamespace(),getValue());
+    return pInterpreter->lookup_function(GetNamespace(),getValue());
 }
 
 std::string AstFuncIdentifier::GetNamespace(void) const
 {
     if(m_ns.size())
     {
-        return m_ns;
+	return m_ns;
     }
     else
     {
-      return SteelInterpreter::kszUnspecifiedNamespace;
+	return SteelInterpreter::kszUnspecifiedNamespace;
     }
 }
 
 
+void AstFuncIdentifier::CompileByteCode(Compilation& compilation){
+  // TODO: Push the function to the stack?
+}
+
 
 AstFunctionDefinition::AstFunctionDefinition(unsigned int line,
-                                             const std::string &script,
-                                             AstIdentifier *pId,
-                                             AstParamDefinitionList *pParams,
-                                             AstStatementList * pStmts)
+					     const std::string &script,
+					     AstIdentifier *pId,
+					     AstParamDefinitionList *pParams,
+					     AstStatementList * pStmts)
     :AstStatement(line,script),m_pId(pId),m_pParams(pParams),m_pStatements(pStmts)
 {
 
 }
 AstFunctionDefinition::~AstFunctionDefinition()
 {
-
-  /*
-    delete m_pId;
-    delete m_pParams;
-    delete m_pStatements;
-    We use shared pointers here because
-    SteelUserFunction actually keeps these around
-    and can outlive the Ast. Though, sometimes the
-    Ast outlives the user function too. Hence, ref counting.
+    /*
+      delete m_pId;
+      delete m_pParams;
+      delete m_pStatements;
+      We use shared pointers here because
+      SteelUserFunction actually keeps these around
+      and can outlive the Ast. Though, sometimes the
+      Ast outlives the user function too. Hence, ref counting.
     */
 }
 
 AstStatement::eStopType AstFunctionDefinition::execute(SteelInterpreter *pInterpreter)
 {
-  std::string ns = SteelInterpreter::kszGlobalNamespace;
-  AstFuncIdentifier * fid = dynamic_cast<AstFuncIdentifier*>(m_pId.get());
-  if(fid){
-    ns = fid->GetNamespace();
-  }
+    std::string ns = SteelInterpreter::kszGlobalNamespace;
+    AstFuncIdentifier * fid = dynamic_cast<AstFuncIdentifier*>(m_pId.get());
+    if(fid){
+	ns = fid->GetNamespace();
+    }
     try{
 	// For user functions, if they don't specify a namespace, its global (Not unspecified, thats for calling..)
-      pInterpreter->registerFunction( m_pId->getValue(), ns , m_pParams , m_pStatements);
+	pInterpreter->registerFunction( m_pId->getValue(), ns , m_pParams , m_pStatements);
     }
     catch(AlreadyDefined)
     {
-        throw SteelException(SteelException::FUNCTION_DEFINED,
-                             GetLine(),
-                             GetScript(),
-                             "Function '" + m_pId->getValue() + "'already defined!");
+	throw SteelException(SteelException::FUNCTION_DEFINED,
+			     GetLine(),
+			     GetScript(),
+			     "Function '" + m_pId->getValue() + "'already defined!");
     }
 
     return COMPLETED;
 }
 
 void AstFunctionDefinition::FindIdentifiers( std::list< AstIdentifier* >& o_ids ) {
-	// Um... we don't look here, do we?
+    // Um... we don't look here, do we?
+}
+
+void AstFunctionDefinition::CompileByteCode(Compilation& compilation)
+{
+    VariableIndex idx = compilation.NewVariable(m_pId->getValue(),SteelInterpreter::kszGlobalNamespace,Type::FUNCTION);
+    FunctionIndex func_idx = compilation.FunctionStart();
+    if(m_pParams)
+	m_pParams->CompileByteCode(compilation);
+    m_pStatements->CompileByteCode(compilation);
+    compilation.AddCode(ByteCode(ByteCode::Operation::RETURN)); // Add a return in case there isn't any. TODO: Check if theres already one
+    compilation.FunctionEnd();
+   
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHFN,func_idx)); // Push the function to TOS
+    compilation.AddCode(ByteCode(ByteCode::Operation::PUSHL,idx)); // Push the variable as an lvalue
+    compilation.AddCode(ByteCode(ByteCode::Operation::STORE)); // Assign the function to the variable
+    compilation.AddCode(ByteCode(ByteCode::Operation::LOAD,idx)); // Load the function back on to the stack since STORE popped it.
 }
 
 
-ostream & AstFunctionDefinition::print (std::ostream &out)
+std::ostream & AstFunctionDefinition::print (std::ostream &out)
 {
     out << "function " << *m_pId  << '(' ;
     if(m_pParams) out << *m_pParams;
@@ -2258,11 +2949,13 @@ ostream & AstFunctionDefinition::print (std::ostream &out)
 }
 
 
-ostream & operator<<(ostream & out,AstBase & ast)
+namespace Steel { 
+
+std::ostream & operator<<(std::ostream & out, AstBase & ast)
 {
     return ast.print(out);
 }
 
 
-
 }
+
