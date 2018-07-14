@@ -23,9 +23,6 @@ endif()
 
 set(libsteel_HEADERS
   src/Ast.h
-  src/ByteCode.h
-  src/Compilation.h
-  src/CompilationTypes.h
   src/File.h
   src/Functor.h
   src/Mutex.h
@@ -39,8 +36,6 @@ set(libsteel_HEADERS
 
 set(libsteel_SOURCES
  src/Ast.cpp
- src/ByteCode.cpp
- src/Compilation.cpp
  src/File.cpp
  src/Mutex.cpp
  src/SteelException.cpp
