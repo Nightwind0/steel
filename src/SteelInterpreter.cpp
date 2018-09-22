@@ -527,7 +527,7 @@ void SteelInterpreter::free_file_handles()
 void SteelInterpreter::declare(const std::string &name)
 {
     AutoLock mutex(m_symbol_mutex);
-    assert(!m_symbols.empty());
+    assert(!m_scopes.empty());
     auto &scope = m_scopes.front();
 
     auto it = scope.find(name);
