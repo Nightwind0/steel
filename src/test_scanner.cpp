@@ -1,5 +1,5 @@
 #include <iostream>
-#include "SteelScanner.h"
+#include "SteelScanner.hpp"
 
 int main()
 {

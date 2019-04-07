@@ -10,7 +10,7 @@
 #include <deque>
 #include <fstream>
 #include <memory>
-#include "SteelParser.h"
+#include "SteelParser.hpp"
 #include "SteelFunctor.h"
 #include "Mutex.h"
 #include "File.h"

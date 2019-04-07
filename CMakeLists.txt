@@ -1,6 +1,14 @@
-cmake_minimum_required(VERSION 3.0) # I had problems if I only specified "VERSION 3".
+cmake_minimum_required(VERSION 3.10) # I had problems if I only specified "VERSION 3".
 project(steel CXX)
 
+# This defines rules for adding reflex and trison sources to produce C++ scanners and parsers.
+# It requires having installed the barf package; the find_package function looks for the file
+# barf-config.cmake in various locations to determine barf_DIR such that
+# ${barf_DIR}/barf-config.cmake is a valid path, and then includes that cmake script.
+find_package(barf REQUIRED)
+
+# This sets the DOXYGEN_EXECUTABLE and DOXYGEN_DOT_EXECUTABLE vars.
+find_package(Doxygen REQUIRED dot)
 
 add_definitions(-DVERSION="0.5")
 
@@ -19,7 +27,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # This is the correct way to detect Ma
     endif()
 endif()
 
-
+reflex_add_source(${PROJECT_SOURCE_DIR}/src/SteelScanner.reflex SteelScanner)
+trison_add_source(${PROJECT_SOURCE_DIR}/src/SteelParser.trison SteelParser)
 
 set(libsteel_HEADERS
   src/Ast.h
@@ -29,8 +38,8 @@ set(libsteel_HEADERS
   src/SteelException.h
   src/SteelFunctor.h
   src/SteelInterpreter.h
-  src/SteelParser.h
-  src/SteelScanner.h
+  src/SteelParser.hpp
+  src/SteelScanner.hpp
   src/SteelType.h
   )
 
@@ -42,7 +51,9 @@ set(libsteel_SOURCES
  src/SteelFunctor.cpp
  src/SteelInterpreter.cpp
  src/SteelParser.cpp
+ src/SteelParser.trison
  src/SteelScanner.cpp
+ src/SteelScanner.reflex
  src/SteelType.cpp
  )
 
@@ -62,3 +73,7 @@ target_include_directories(
     steel PUBLIC
     src
 )
+
+
+add_custom_target(test-all-scripts COMMAND find ${PROJECT_SOURCE_DIR}/test_scripts -name "*.steel" -exec ${PROJECT_SOURCE_DIR}/test.sh {} "\;")
+add_custom_target(test-all-scripts-with-valgrind COMMAND find ${PROJECT_SOURCE_DIR}/test_scripts -name "*.steel" -exec ${PROJECT_SOURCE_DIR}/test-with-valgrind.sh {} "\;")
