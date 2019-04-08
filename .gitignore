@@ -1,0 +1,8 @@
+.kdev4
+build
+src/SteelParser.npda.dot
+src/SteelParser.npda.states
+src/SteelScanner.dfa.dot
+src/SteelScanner.nfa.dot
+steel.kdev4
+test_scripts/*.log

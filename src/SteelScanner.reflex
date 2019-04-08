@@ -1,7 +1,9 @@
 %targets cpp
 %target.cpp.generate_debug_spew_code
 %target.cpp.generate_interactive_scanner
-%target.cpp.header_filename "SteelScanner.h"
+// NOTE: There is a temporary limitation in the BARF cmake-based build rules where it
+// expects the output filenames to have a certain form, hence the hpp.
+%target.cpp.header_filename "SteelScanner.hpp"
 %target.cpp.implementation_filename "SteelScanner.cpp"
 %target.cpp.top_of_header_file %{
 
@@ -10,7 +12,7 @@
 #ifndef _STEEL_SCANNER_H
 #define _STEEL_SCANNER_H
 
-#include "SteelParser.h"
+#include "SteelParser.hpp"
 namespace Steel { 
 class AstBase;
 %}
@@ -23,7 +25,7 @@ class AstBase;
 %target.cpp.top_of_implementation_file %{
 #include <iostream>
 #include <cassert>
-#include "SteelScanner.h"
+#include "SteelScanner.hpp"
 #include "Ast.h"
 #include "File.h"
 namespace Steel { 

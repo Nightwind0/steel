@@ -1,6 +1,6 @@
 #include "SteelInterpreter.h"
 #include "Ast.h"
-#include "SteelParser.h"
+#include "SteelParser.hpp"
 #include "SteelFunctor.h"
 #include "SteelException.h"
 #include <math.h>
@@ -259,7 +259,8 @@ AstScript * SteelInterpreter::prebuildAst(const std::string &script_name,
 
     AstBase *pBase;
 
-    parser.DebugSpew(debugparser);
+    if(debugparser)
+        parser.SetDebugSpewStream(&std::cerr);
     parser.SetScannerDebugSpew(debugscanner);
     
 
