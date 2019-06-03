@@ -27,8 +27,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") # This is the correct way to detect Ma
     endif()
 endif()
 
-reflex_add_source(${PROJECT_SOURCE_DIR}/src/SteelScanner.reflex SteelScanner)
-trison_add_source(${PROJECT_SOURCE_DIR}/src/SteelParser.trison SteelParser)
+reflex_add_source(${PROJECT_SOURCE_DIR}/src/SteelScanner.reflex ${PROJECT_SOURCE_DIR}/src SteelScanner ${PROJECT_BINARY_DIR})
+trison_add_source(${PROJECT_SOURCE_DIR}/src/SteelParser.trison ${PROJECT_SOURCE_DIR}/src SteelParser ${PROJECT_BINARY_DIR})
 
 set(libsteel_HEADERS
   src/Ast.h

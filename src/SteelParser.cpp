@@ -15,7 +15,7 @@
 #include <utility>
 
 
-#line 26 "SteelParser.trison"
+#line 26 "../src/SteelParser.trison"
 
 
 #include "SteelScanner.hpp"
@@ -35,38 +35,39 @@ std::string itos(int i)	// convert int to string
 
 namespace Steel {
 
-#line 39 "SteelParser.cpp"
+#line 39 "../src/SteelParser.cpp"
 
 SteelParser::SteelParser ()
 {
     m_max_allowable_lookahead_count = 1;
+    m_max_allowable_lookahead_queue_size = 2;
     m_max_allowable_parse_tree_depth = 64;
     m_realized_state_ = NULL;
     m_hypothetical_state_ = NULL;
     SetDebugSpewStream(NULL);
-    SetActiveDebugSpewFlags(DSF_ALL);
+    SetActiveDebugSpewFlags(DSF__ALL);
 
 
-#line 111 "SteelParser.trison"
+#line 111 "../src/SteelParser.trison"
 
     m_scanner = new SteelScanner();
 	m_file_provider = &m_default_file_provider;
 
-#line 56 "SteelParser.cpp"
+#line 57 "../src/SteelParser.cpp"
 }
 
 SteelParser::~SteelParser ()
 {
     // Perform all the internal cleanup needed.
     CleanUpAllInternals_();
-    TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing destructor actions\n")
+    TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing destructor actions\n")
 
 
-#line 116 "SteelParser.trison"
+#line 116 "../src/SteelParser.trison"
 
     delete m_scanner;
 
-#line 70 "SteelParser.cpp"
+#line 71 "../src/SteelParser.cpp"
 }
 
 bool SteelParser::IsAtEndOfInput ()
@@ -83,7 +84,7 @@ std::string SteelParser::DebugSpewPrefix () const
 
 void SteelParser::ResetForNewInput ()
 {
-    TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing reset-for-new-input actions\n")
+    TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing reset-for-new-input actions\n")
 
     // Perform all the internal cleanup needed.
     CleanUpAllInternals_();
@@ -92,12 +93,12 @@ void SteelParser::ResetForNewInput ()
 SteelParser::ParserReturnCode SteelParser::Parse (AstBase* *return_token, Nonterminal::Name nonterminal_to_parse)
 {
 
-#line 64 "SteelParser.trison"
+#line 64 "../src/SteelParser.trison"
 
 	mbErrorEncountered = false;
 	mErrors.clear();
 
-#line 101 "SteelParser.cpp"
+#line 102 "../src/SteelParser.cpp"
 
     return Parse_(return_token, nonterminal_to_parse);
 }
@@ -143,6 +144,7 @@ char const *const SteelParser::ms_parser_return_code_string_table_[] =
     "PRC_SUCCESS",
     "PRC_UNHANDLED_PARSE_ERROR",
     "PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_COUNT",
+    "PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_QUEUE_SIZE",
     "PRC_EXCEEDED_MAX_ALLOWABLE_PARSE_TREE_DEPTH",
     "PRC_INTERNAL_ERROR",
 };
@@ -470,35 +472,62 @@ std::size_t const SteelParser::ms_token_name_count_ = sizeof(SteelParser::ms_tok
 
 void SteelParser::ThrowAwayToken_ (Token const &token_) throw()
 {
-    TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing throw-away-token actions on token " << token_ << '\n')
+    TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing throw-away-token actions on token " << token_ << '\n')
     ThrowAwayTokenData_(token_.m_data);
 }
 
 void SteelParser::ThrowAwayTokenData_ (AstBase* const &token_data) throw()
 {
 
-#line 121 "SteelParser.trison"
+#line 121 "../src/SteelParser.trison"
 
     delete token_data;
 
-#line 485 "SteelParser.cpp"
+#line 487 "../src/SteelParser.cpp"
+}
+
+SteelParser::Token::Data SteelParser::InsertLookaheadErrorActions_ (Token const &noconsume_lookahead_token)
+{
+    return NULL;
+}
+
+SteelParser::Token::Data SteelParser::DiscardLookaheadActions_ (Token const &consume_stack_top_error_token, Token const &consume_lookahead_token)
+{
+    ThrowAwayToken_(consume_lookahead_token);
+    return consume_stack_top_error_token.m_data;
+}
+
+SteelParser::Token::Data SteelParser::PopStack1Actions_ (std::vector<Token> const &consume_stack_top_tokens, Token const &consume_lookahead_token)
+{
+    ThrowAwayToken_(consume_stack_top_tokens[0]);
+    return consume_lookahead_token.m_data;
+}
+
+SteelParser::Token::Data SteelParser::PopStack2Actions_ (std::vector<Token> const &consume_stack_top_tokens, Token const &noconsume_lookahead_token)
+{
+    ThrowAwayToken_(consume_stack_top_tokens[1]);
+    return consume_stack_top_tokens[0].m_data;
+}
+
+SteelParser::Token::Data SteelParser::RunNonassocErrorActions_ (Token const &noconsume_lookahead_token)
+{
+    return NULL;
 }
 
 SteelParser::Token SteelParser::Scan_ () throw()
 {
-    TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing scan actions\n")
+    TRISON_CPP_DEBUG_CODE_(DSF_SCANNER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing scan actions to retrieve next token...\n")
 
 
-#line 129 "SteelParser.trison"
+#line 129 "../src/SteelParser.trison"
 
     assert(m_scanner != NULL);
     return m_scanner->Scan();
 
-#line 498 "SteelParser.cpp"
-}
+#line 528 "../src/SteelParser.cpp"
 
-void SteelParser::RunNonassocErrorActions_ (Token const &lookahead)
-{
+    TRISON_CPP_DEBUG_CODE_(DSF_PROGRAMMER_ERROR, *DebugSpewStream() << "PROGRAMMER ERROR: No value returned from scan_actions code block\n")
+    assert(false && "no value returned from scan_actions code block");
 }
 
 template <typename T>
@@ -525,21 +554,21 @@ std::uint32_t SteelParser::NonterminalStartStateIndex_ (SteelParser::Nonterminal
 {
     switch (nonterminal)
     {
-        case Nonterminal::array_literal: return 249;
-        case Nonterminal::call: return 35;
-        case Nonterminal::case_list: return 486;
-        case Nonterminal::exp: return 30;
-        case Nonterminal::func_definition: return 295;
-        case Nonterminal::optionalexp: return 422;
-        case Nonterminal::pair: return 268;
-        case Nonterminal::pair_list: return 263;
-        case Nonterminal::param_definition: return 207;
-        case Nonterminal::param_list: return 42;
-        case Nonterminal::root: return 0;
-        case Nonterminal::statement: return 12;
-        case Nonterminal::statement_list: return 5;
-        case Nonterminal::value: return 61;
-        case Nonterminal::vardecl: return 213;
+        case Nonterminal::array_literal: return 250;
+        case Nonterminal::call: return 36;
+        case Nonterminal::case_list: return 487;
+        case Nonterminal::exp: return 31;
+        case Nonterminal::func_definition: return 296;
+        case Nonterminal::optionalexp: return 423;
+        case Nonterminal::pair: return 269;
+        case Nonterminal::pair_list: return 264;
+        case Nonterminal::param_definition: return 208;
+        case Nonterminal::param_list: return 43;
+        case Nonterminal::root: return 1;
+        case Nonterminal::statement: return 13;
+        case Nonterminal::statement_list: return 6;
+        case Nonterminal::value: return 62;
+        case Nonterminal::vardecl: return 214;
         default: assert(false && "invalid nonterminal"); return 0;
     }
 }
@@ -559,6 +588,16 @@ std::size_t SteelParser::MaxRealizedLookaheadCount () const
     return (m_realized_state_ == NULL) ? 0 : m_realized_state_->MaxRealizedLookaheadCount();
 }
 
+std::int64_t SteelParser::MaxAllowableLookaheadQueueSize () const
+{
+    return m_max_allowable_lookahead_queue_size;
+}
+
+std::size_t SteelParser::MaxRealizedLookaheadQueueSize () const
+{
+    return (m_realized_state_ == NULL) ? 0 : m_realized_state_->MaxRealizedLookaheadQueueSize();
+}
+
 std::int64_t SteelParser::MaxAllowableParseTreeDepth () const
 {
     return m_max_allowable_parse_tree_depth;
@@ -572,6 +611,11 @@ std::uint32_t SteelParser::MaxRealizedParseTreeDepth () const
 void SteelParser::SetMaxAllowableLookaheadCount (std::int64_t max_allowable_lookahead_count)
 {
     m_max_allowable_lookahead_count = max_allowable_lookahead_count;
+}
+
+void SteelParser::SetMaxAllowableLookaheadQueueSize (std::int64_t max_allowable_lookahead_queue_size)
+{
+    m_max_allowable_lookahead_queue_size = max_allowable_lookahead_queue_size;
 }
 
 void SteelParser::SetMaxAllowableParseTreeDepth (std::int64_t max_allowable_parse_tree_depth)
@@ -604,7 +648,16 @@ SteelParser::ParserReturnCode SteelParser::Parse_ (AstBase* *return_token, Nonte
     else // This happens when parsing for the first time.
         m_realized_state_ = new RealizedState_(start_state_index);
 
-    m_hypothetical_state_ = new HypotheticalState_(start_state_index);
+    assert(m_realized_state_->BranchVectorStack().size() == 2);
+    assert(m_realized_state_->BranchVectorStack().back().size() == 1);
+
+    m_hypothetical_state_ = new HypotheticalState_(m_realized_state_->BranchVectorStack().back()[0]);
+
+    TRISON_CPP_DEBUG_CODE_(DSF_STACK_AND_LOOKAHEADS,
+        *DebugSpewStream() << "SteelParser: " << "<stack> . <lookaheads>: ";
+        m_realized_state_->PrintStackAndLookaheads(*DebugSpewStream());
+        *DebugSpewStream() << '\n';
+    )
 
     bool should_return = false;
     std::size_t iteration_index = 0;
@@ -620,14 +673,21 @@ SteelParser::ParserReturnCode SteelParser::Parse_ (AstBase* *return_token, Nonte
 
         if (m_realized_state_->HasExceededMaxAllowableLookaheadCount(m_max_allowable_lookahead_count))
         {
-            TRISON_CPP_DEBUG_CODE_(DSF_REALIZED_LOOKAHEAD_QUEUE, *DebugSpewStream() << "SteelParser: " << "Max realized lookahead count (" << m_realized_state_->MaxRealizedLookaheadCount() << ") has exceeded max allowable lookahead token count (" << m_max_allowable_lookahead_count << "); modify this limit using the default_max_allowable_lookahead_count directive (see trison.cpp.targetspec), or using the SetMaxAllowableLookaheadCount method.  Returning with error.\n")
+            TRISON_CPP_DEBUG_CODE_(DSF_LIMIT_EXCEEDED, *DebugSpewStream() << "SteelParser: " << "Max realized lookahead count (" << m_realized_state_->MaxRealizedLookaheadCount() << ") has exceeded max allowable lookahead token count (" << m_max_allowable_lookahead_count << "); modify this limit using the default_max_allowable_lookahead_count directive (see trison.cpp.targetspec), or using the SetMaxAllowableLookaheadCount method.  Returning with error.\n")
             parser_return_code_ = PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_COUNT;
+            break;
+        }
+
+        if (m_realized_state_->HasExceededMaxAllowableLookaheadQueueSize(m_max_allowable_lookahead_queue_size))
+        {
+            TRISON_CPP_DEBUG_CODE_(DSF_LIMIT_EXCEEDED, *DebugSpewStream() << "SteelParser: " << "Max realized lookahead queue size (" << m_realized_state_->MaxRealizedLookaheadQueueSize() << ") has exceeded max allowable lookahead queue size (" << m_max_allowable_lookahead_queue_size << "); modify this limit using the default_max_allowable_lookahead_queue_size directive (see trison.cpp.targetspec), or using the SetMaxAllowableLookaheadQueueSize method.  Returning with error.\n")
+            parser_return_code_ = PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_QUEUE_SIZE;
             break;
         }
 
         if (m_hypothetical_state_->HasExceededMaxAllowableParseTreeDepth(m_max_allowable_parse_tree_depth))
         {
-            TRISON_CPP_DEBUG_CODE_(DSF_REALIZED_LOOKAHEAD_QUEUE, *DebugSpewStream() << "SteelParser: " << "Parse tree depth (" << m_hypothetical_state_->ParseTreeDepth() << ") has exceeded max allowable parse tree depth (" << m_max_allowable_parse_tree_depth << "); modify this limit using the default_max_allowable_parse_tree_depth directive (see trison.cpp.targetspec), or using the SetMaxAllowableParseTreeDepth method.  Returning with error.\n")
+            TRISON_CPP_DEBUG_CODE_(DSF_LIMIT_EXCEEDED, *DebugSpewStream() << "SteelParser: " << "Parse tree depth (" << m_hypothetical_state_->ParseTreeDepth() << ") has exceeded max allowable parse tree depth (" << m_max_allowable_parse_tree_depth << "); modify this limit using the default_max_allowable_parse_tree_depth directive (see trison.cpp.targetspec), or using the SetMaxAllowableParseTreeDepth method.  Returning with error.\n")
             parser_return_code_ = PRC_EXCEEDED_MAX_ALLOWABLE_PARSE_TREE_DEPTH;
             break;
         }
@@ -661,6 +721,8 @@ SteelParser::ParserReturnCode SteelParser::Parse_ (AstBase* *return_token, Nonte
 void SteelParser::ExecuteAndRemoveTrunkActions_ (bool &should_return, ParserReturnCode &parser_return_code_, AstBase* *&return_token)
 {
     TRISON_CPP_DEBUG_CODE_(DSF_PARSE_TREE_MESSAGE, *DebugSpewStream() << "SteelParser: " << "Parse stack tree has trunk; executing trunk actions.\n")
+    TRISON_CPP_DEBUG_CODE_(DSF_PARSE_TREE_MESSAGE, *DebugSpewStream() << "SteelParser: " << '\n')
+
     if (m_hypothetical_state_->m_root->HasTrunkChild())
     {
         // The trunk_child is popped and then will die by the end of this function.
@@ -675,8 +737,8 @@ void SteelParser::ExecuteAndRemoveTrunkActions_ (bool &should_return, ParserRetu
         switch (trunk_child->m_spec.m_type)
         {
             case ParseTreeNode_::RETURN: {
-                TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "    Executing trunk action RETURN.\n")
-                assert(m_realized_state_->TokenStack().size() == 2);
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action RETURN.\n")
+                assert(m_realized_state_->TokenStack().size() == 3);
                 parser_return_code_ = PRC_SUCCESS;
                 // This doesn't change the structure of the stack but does take ownership of the top stack token.
                 // This must be done so that the return token isn't destroyed with the parser.
@@ -684,12 +746,25 @@ void SteelParser::ExecuteAndRemoveTrunkActions_ (bool &should_return, ParserRetu
                 should_return = true;
                 break;
             }
+            case ParseTreeNode_::ABORT: {
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action ABORT.\n")
+                assert(m_realized_state_->TokenStack().size() == 1);
+                parser_return_code_ = PRC_UNHANDLED_PARSE_ERROR;
+                should_return = true;
+                break;
+            }
             case ParseTreeNode_::REDUCE: {
                 // Execute the appropriate rule on the top tokens in the stack
                 std::uint32_t const &rule_index = trunk_child->m_spec.m_single_data;
-                TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "    Executing trunk action REDUCE rule " << rule_index << "; " << Grammar_::ms_rule_table_[rule_index].m_description << '\n')
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action REDUCE rule " << rule_index << "; " << Grammar_::ms_rule_table_[rule_index].m_description << '\n')
                 Grammar_::Rule_ const &rule = Grammar_::ms_rule_table_[rule_index];
-                Token::Data reduced_nonterminal_token_data = ExecuteReductionRule_(rule_index, m_realized_state_->TokenStack());
+                Token const *lookahead = NULL;
+                if (rule.m_has_lookahead_directive)
+                {
+                    assert(!m_realized_state_->LookaheadQueue().empty());
+                    lookahead = &m_realized_state_->LookaheadQueue().front();
+                }
+                Token::Data reduced_nonterminal_token_data = ExecuteReductionRule_(rule_index, m_realized_state_->TokenStack(), lookahead);
                 m_realized_state_->ExecuteActionReduce(rule, reduced_nonterminal_token_data, m_hypothetical_state_->m_hps_queue);
                 // This is done essentially so that m_realized_lookahead_cursor can be reset.
                 destroy_and_recreate_parse_tree = true;
@@ -697,39 +772,178 @@ void SteelParser::ExecuteAndRemoveTrunkActions_ (bool &should_return, ParserRetu
             }
             case ParseTreeNode_::SHIFT: {
                 std::uint32_t const &shifted_token_id = trunk_child->m_spec.m_single_data;
-                TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "    Executing trunk action SHIFT " << Token(shifted_token_id) << '\n')
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action SHIFT " << Token(shifted_token_id) << '\n')
                 m_realized_state_->ExecuteActionShift(trunk_child->m_child_branch_vector, m_hypothetical_state_->m_hps_queue);
                 break;
             }
             case ParseTreeNode_::INSERT_LOOKAHEAD_ERROR: {
-                TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "    Executing trunk action INSERT_LOOKAHEAD_ERROR, and setting has-encountered-error-state flag.\n")
-                m_realized_state_->ExecuteActionInsertLookaheadError(m_hypothetical_state_->m_hps_queue);
+                // INSERT_LOOKAHEAD_ERROR -- this should have access to the lookahead that
+                // caused the error to be generated, and it should return a token that will
+                // be used as the %error token.
+                //
+                // Start:  <realized-stack-tokens> . <lookahead>
+                //                                 ^~~~~~~~~~^
+                //                                 input to handler code
+                //
+                // Result: <realized-stack-tokens> . <%error> <lookahead>
+                //                                   ^~~~~~~^
+                //                                   output from handler code
+
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action INSERT_LOOKAHEAD_ERROR, and setting has-encountered-error-state flag.\n")
+                Token lookahead = Lookahead_(0);
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "HIPPO 2 lookahead retrieved from Lookahead_(0) for INSERT_LOOKAHEAD_ERROR action is " << ms_token_name_table_[lookahead.m_id] << '\n')
+                Token resulting_error_token(Terminal::ERROR_, InsertLookaheadErrorActions_(lookahead));
+                m_realized_state_->PushFrontLookahead(resulting_error_token, m_hypothetical_state_->m_hps_queue);
+                m_realized_state_->SetHasEncounteredErrorState();
+                //m_realized_state_->ExecuteActionInsertLookaheadError(m_hypothetical_state_->m_hps_queue);
                 break;
             }
             case ParseTreeNode_::DISCARD_LOOKAHEAD: {
-                TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "    Executing trunk action DISCARD_LOOKAHEAD.\n")
-                m_realized_state_->ExecuteActionDiscardLookahead(m_hypothetical_state_->m_hps_queue);
+                // DISCARD_LOOKAHEAD -- this can only happen if the top of the realized stack
+                // is %error; it should have access to the %error token and the lookahead
+                // token, and it should return a token that will be used as the resulting
+                // %error token (e.g. combining the file locations of the two input tokens).
+                //
+                // Start:  <realized-stack-tokens> <%error> . <lookahead0> <rest-of-lookaheads>
+                //                                 ^~~~~~~~~~~~~~~~~~~~~~^
+                //                                 inputs to handler code
+                //
+                // Result: <realized-stack-tokens> <%error> . <rest-of-lookaheads>
+                //                                 ^~~~~~~^
+                //                                 output from handler code (old stack top is replaced)
+
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action DISCARD_LOOKAHEAD.\n")
+                Token stack_top_error_token = m_realized_state_->TokenStack().back();
+                assert(stack_top_error_token.m_id == Terminal::ERROR_);
+                Token lookahead(m_realized_state_->PopFrontLookahead(m_hypothetical_state_->m_hps_queue));
+                Token resulting_error_token = Token(Terminal::ERROR_, DiscardLookaheadActions_(stack_top_error_token, lookahead));
+                m_realized_state_->ReplaceTokenStackTopWith(resulting_error_token);
+                //m_realized_state_->ExecuteActionDiscardLookahead(m_hypothetical_state_->m_hps_queue);
                 break;
             }
             case ParseTreeNode_::POP_STACK: {
-                std::uint32_t const &pop_count = trunk_child->m_spec.m_single_data;
-                TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "    Executing trunk action POP_STACK " << pop_count << ".\n")
+                // POP_STACK 1 -- this can only happen when the lookahead is %error (and in
+                // this case, the top of the realized stack is not %error); it should have
+                // access to the token about to be popped and the lookahead %error token, and
+                // it should return a token that will be used as the resulting %error token
+                // (e.g. combining the file locations of the two input tokens).
+                //
+                // Start:  <realized-stack-tokens> <token0> . <%error> <rest-of-lookaheads>
+                //                                 ^~~~~~~~~~~~~~~~~~^
+                //                                 inputs to handler code
+                //
+                // Result: <realized-stack-tokens> . <%error> <rest-of-lookaheads>
+                //                                   ^~~~~~~^
+                //                                   output from handler code
+                //
+                // POP_STACK 2 -- this can only happen when the lookahead is %end; it should
+                // have access to the 2 tokens about to be popped and the lookahead %end token,
+                // and it should return a token that will be used as the resulting %error token
+                // (e.g. combining the file locations of the three input tokens).
+                //
+                // Start:  <realized-stack-tokens> <token1> <token0> . <%end>
+                //                                 ^~~~~~~~~~~~~~~~~~~~~~~~~^
+                //                                 inputs to handler code
+                //
+                // Result: <realized-stack-tokens> . <%error> <%end>
+                //                                   ^~~~~~~^
+                //                                   output from handler code
+                //
+                // NOTE: The semantics for POP_STACK 1 and POP_STACK 2 are different; the handler
+                // code is expected to consume (e.g. delete, aggregate, etc) all inputs for
+                // POP_STACK 1, and is expected to only consume the popped stack tokens for
+                // POP_STACK 2 (and only read from the lookahead).
 
-                // This one is tricky to implement within RealizedState_ alone, mainly because
-                // of the ThrowAwayToken_ call.
-                if (m_realized_state_->TokenStack().size() > pop_count)
+                std::uint32_t const &pop_count = trunk_child->m_spec.m_single_data;
+                TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing trunk action POP_STACK " << pop_count << ".\n")
+                assert(pop_count == 1 || pop_count == 2);
+                assert(m_realized_state_->TokenStack().size() > pop_count);
+
+                if (pop_count == 1)
                 {
-                    for (std::uint32_t i = 0; i < pop_count; ++i)
-                    {
-                        // TODO: Could print the m_realized_state_ m_branch_vector_stack element being popped.
-                        ThrowAwayToken_(m_realized_state_->PopStack());
-                    }
+                    std::vector<Token> popped_tokens{m_realized_state_->PopStack()};
+                    assert(popped_tokens.size() == pop_count);
+                    TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "HIPPO lookahead for POP_STACK action is " << ms_token_name_table_[Lookahead_(0).m_id] << '\n')
+
+                    Token lookahead(m_realized_state_->PopFrontLookahead(m_hypothetical_state_->m_hps_queue));
+                    TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "lookahead for POP_STACK " << pop_count << " action is " << ms_token_name_table_[lookahead.m_id] << '\n')
+                    Token resulting_error_token(Terminal::ERROR_);
+
+                    assert(lookahead.m_id == Terminal::ERROR_);
+                    resulting_error_token.m_data = PopStack1Actions_(popped_tokens, lookahead);
+                    m_realized_state_->PushFrontLookahead(resulting_error_token, m_hypothetical_state_->m_hps_queue);
                 }
                 else
                 {
-                    // We're popping more than the whole stack, which is an error
-                    parser_return_code_ = PRC_UNHANDLED_PARSE_ERROR;
-                    should_return = true;
+                    assert(pop_count == 2);
+
+                    if (false)
+                    {
+                        // plain ol' pop stack 2 times -- this is the old behavior
+
+                        std::vector<Token> popped_tokens(pop_count, Token(Nonterminal::none_));
+                        popped_tokens[1] = m_realized_state_->PopStack();
+                        popped_tokens[0] = m_realized_state_->PopStack();
+                        assert(popped_tokens.size() == pop_count);
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "HIPPO lookahead for POP_STACK action is " << ms_token_name_table_[Lookahead_(0).m_id] << '\n')
+
+                        Token lookahead(Lookahead_(0));
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "lookahead for POP_STACK " << pop_count << " action is " << ms_token_name_table_[lookahead.m_id] << '\n')
+                        PopStack2Actions_(popped_tokens, lookahead);
+                    }
+                    else if (true)
+                    {
+                        // pop stack 2 times, then push the result onto the front of the lookahead queue.
+
+                        std::vector<Token> popped_tokens(pop_count, Token(Nonterminal::none_));
+                        popped_tokens[1] = m_realized_state_->PopStack();
+                        popped_tokens[0] = m_realized_state_->PopStack();
+                        assert(popped_tokens.size() == pop_count);
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "HIPPO lookahead for POP_STACK action is " << ms_token_name_table_[Lookahead_(0).m_id] << '\n')
+
+                        Token lookahead(Lookahead_(0));
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "lookahead for POP_STACK " << pop_count << " action is " << ms_token_name_table_[lookahead.m_id] << '\n')
+                        Token resulting_error_token(Terminal::ERROR_, PopStack2Actions_(popped_tokens, lookahead));
+                        m_realized_state_->PushFrontLookahead(resulting_error_token, m_hypothetical_state_->m_hps_queue);
+                    }
+                    else if (false)
+                    {
+                        // pop stack 2 times and push resulting error token onto stack -- this is new behavior
+
+                        std::vector<Token> popped_tokens(pop_count, Token(Nonterminal::none_));
+                        popped_tokens[1] = m_realized_state_->PopStack();
+                        popped_tokens[0] = m_realized_state_->TokenStack().back(); // Don't pop this one; will replace.
+                        assert(popped_tokens.size() == pop_count);
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "HIPPO lookahead for POP_STACK action is " << ms_token_name_table_[Lookahead_(0).m_id] << '\n')
+
+                        Token lookahead(Lookahead_(0));
+                        //assert(lookahead.m_id == Terminal::END_);
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "lookahead for POP_STACK " << pop_count << " action is " << ms_token_name_table_[lookahead.m_id] << '\n')
+                        Token resulting_error_token(Terminal::ERROR_, PopStack2Actions_(popped_tokens, lookahead));
+                        m_realized_state_->ReplaceTokenStackTopWith(resulting_error_token);
+                    }
+                    else
+                    {
+                        // TEMP: pop 3 times
+
+                        // pop stack 2 times and push resulting error token onto stack -- this is new behavior
+
+                        std::uint32_t pop_count = 3; // shadowing earlier one
+                        assert(m_realized_state_->TokenStack().size() >= pop_count);
+
+                        std::vector<Token> popped_tokens(pop_count, Token(Nonterminal::none_));
+                        popped_tokens[2] = m_realized_state_->PopStack();
+                        popped_tokens[1] = m_realized_state_->PopStack();
+                        popped_tokens[0] = m_realized_state_->TokenStack().back(); // Don't pop this one; will replace.
+                        assert(popped_tokens.size() == pop_count);
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "HIPPO lookahead for POP_STACK action is " << ms_token_name_table_[Lookahead_(0).m_id] << '\n')
+
+                        Token lookahead(Lookahead_(0));
+                        //assert(lookahead.m_id == Terminal::END_);
+                        TRISON_CPP_DEBUG_CODE_(DSF_PARSER_ACTION, *DebugSpewStream() << "SteelParser: " << "lookahead for POP_STACK " << pop_count << " action is " << ms_token_name_table_[lookahead.m_id] << '\n')
+                        Token resulting_error_token(Terminal::ERROR_, PopStack2Actions_(popped_tokens, lookahead));
+                        m_realized_state_->ReplaceTokenStackTopWith(resulting_error_token);
+                    }
                 }
 
                 // Because POP_STACK involves popping the stack, the parse tree should be destroyed and
@@ -746,6 +960,12 @@ void SteelParser::ExecuteAndRemoveTrunkActions_ (bool &should_return, ParserRetu
                 assert(false && "this should not happen");
                 break;
         }
+
+        TRISON_CPP_DEBUG_CODE_(DSF_STACK_AND_LOOKAHEADS,
+            *DebugSpewStream() << "SteelParser: " << "<stack> . <lookaheads>: ";
+            m_realized_state_->PrintStackAndLookaheads(*DebugSpewStream());
+            *DebugSpewStream() << '\n';
+        )
 
         if (destroy_and_recreate_parse_tree)
         {
@@ -881,15 +1101,22 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
                         break;
 
                     case Grammar_::ASSOC_NONASSOC:
+                    {
                         TRISON_CPP_DEBUG_CODE_(DSF_SHIFT_REDUCE_CONFLICT, *DebugSpewStream() << "SteelParser: " << "        Composition of nonassoc rules with the same precedence is an error.  Pruning both SHIFT and REDUCE.  Recreating parse tree under INSERT_LOOKAHEAD_ERROR action.\n")
-                        // Neither SHIFT nor REDUCE should survive.  Instead, create an INSERT_LOOKAHEAD_ERROR
-                        // action to initiate error panic.  This works only because the shift and reduce nodes
-                        // are children of the parse tree root.
-                        assert(shift->m_parent_node == m_hypothetical_state_->m_root);
-                        assert(reduce->m_parent_node == m_hypothetical_state_->m_root);
+                        // Neither SHIFT nor REDUCE should survive.  Instead, invoke the nonassoc error actions
+                        // on the lookahead, and insert an %error token using the returned Token::Data value.
+                        //
+                        // Start:  <realized-stack-tokens> . <lookahead>
+                        //                                 ^~~~~~~~~~^
+                        //                                 input to handler code
+                        //
+                        // Result: <realized-stack-tokens> . <%error> <lookahead>
+                        //                                   ^~~~~~~^
+                        //                                   output from handler code
 
-                        // Lookahead_(0) is the token that would be SHIFT'ed.
-                        RunNonassocErrorActions_(Lookahead_(0));
+                        Token resulting_error_token(Terminal::ERROR_, RunNonassocErrorActions_(Lookahead_(0)));
+                        m_realized_state_->PushFrontLookahead(resulting_error_token, m_hypothetical_state_->m_hps_queue);
+                        m_realized_state_->SetHasEncounteredErrorState();
 
                         m_hypothetical_state_->DeleteBranch(shift);
                         m_hypothetical_state_->DeleteBranch(reduce);
@@ -904,36 +1131,16 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
 
                         // Create fresh HPSes at the root from the realized state.
                         CreateParseTreeFromRealizedState_();
-                        // TODO: This operation could be optimized due to the fact that each HPS will
-                        // take exactly one action; INSERT_LOOKAHEAD_ERROR.  But for now, just do the
-                        // easy thing.
-                        for (HPSQueue_::iterator hps_it = m_hypothetical_state_->m_hps_queue.begin(), hps_it_end = m_hypothetical_state_->m_hps_queue.end(); hps_it != hps_it_end; ++hps_it)
-                        {
-                            ParseTreeNode_ *hps = *hps_it;
-                            assert(hps != NULL);
-                            ParseTreeNode_ *new_hps = TakeHypotheticalActionOnHPS_(*hps, ParseTreeNode_::INSERT_LOOKAHEAD_ERROR, ParseTreeNode_::UNUSED_DATA);
-                            m_hypothetical_state_->m_new_hps_queue.push_back(new_hps);
-                            // Note that DeleteBranch only nullifies elements in m_hps_queue, it doesn't
-                            // alter the container itself.
-                            m_hypothetical_state_->DeleteBranch(hps);
-                        }
-                        for (HPSQueue_::iterator hps_it = m_hypothetical_state_->m_hps_queue.begin(), hps_it_end = m_hypothetical_state_->m_hps_queue.end(); hps_it != hps_it_end; ++hps_it)
-                        {
-                            assert(*hps_it == NULL);
-                        }
-                        m_hypothetical_state_->m_hps_queue.clear();
 
-                        // Now that all the INSERT_LOOKAHEAD_ERROR HPSes have been created and put into
-                        // m_new_hps_queue, the existing HPSes have been deleted, and the processing later
-                        // in this function (see `if (conflict_resolved)` block) is expecting the HPSes to
-                        // be in m_hps_queue, swap the queues.
-                        assert(m_hypothetical_state_->m_hps_queue.empty());
-                        assert(!m_hypothetical_state_->m_new_hps_queue.empty());
-                        std::swap(m_hypothetical_state_->m_hps_queue, m_hypothetical_state_->m_new_hps_queue);
+                        // The processing later in this function (see `if (conflict_resolved)` block)
+                        // is expecting the HPSes to be in m_hps_queue, and m_new_hps_queue to be empty.
+                        assert(!m_hypothetical_state_->m_hps_queue.empty());
+                        assert(m_hypothetical_state_->m_new_hps_queue.empty());
 
                         // Mark the conflict as resolved.
                         conflict_resolved = true;
                         break;
+                    }
 
                     case Grammar_::ASSOC_RIGHT:
                         TRISON_CPP_DEBUG_CODE_(DSF_SHIFT_REDUCE_CONFLICT, *DebugSpewStream() << "SteelParser: " << "        Pruning REDUCE (because it is right-associative) and continuing.\n")
@@ -1010,7 +1217,7 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
 
     // Process transitions in order of their SortedTypeIndex.  Only process HPSes that are at min_realized_lookahead_cursor.
     assert(m_hypothetical_state_->m_new_hps_queue.empty()); // This is the starting condition
-    for (std::uint32_t current_sorted_type_index = 0; current_sorted_type_index <= 3; ++current_sorted_type_index)
+    for (std::uint32_t current_sorted_type_index = Npda_::Transition_::Order::MIN_SORTED_TYPE_INDEX; current_sorted_type_index <= Npda_::Transition_::Order::MAX_SORTED_TYPE_INDEX; ++current_sorted_type_index)
     {
         TRISON_CPP_DEBUG_CODE_(DSF_TRANSITION_PROCESSING, *DebugSpewStream() << "SteelParser: " << "    Processing transitions having SortedTypeIndex equal to " << current_sorted_type_index << " and m_realized_lookahead_cursor equal to " << min_realized_lookahead_cursor << ".\n")
 
@@ -1068,9 +1275,9 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
                 Npda_::Transition_ const &transition = *transition_it;
                 assert(transition.m_type >= Npda_::Transition_::RETURN);
                 assert(transition.m_type <= Npda_::Transition_::POP_STACK);
-                assert(Npda_::Transition_::Order::SortedTypeIndex(Npda_::Transition_::Type(transition.m_type)) == current_sorted_type_index);
+                assert(Npda_::Transition_::Order::SortedTypeIndex(transition) == current_sorted_type_index);
 
-/*
+
                 TRISON_CPP_DEBUG_CODE_(
                     DSF_TRANSITION_PROCESSING,
                     *DebugSpewStream() << "SteelParser: " << "            Processing transition " << ParseTreeNode_::AsString(ParseTreeNode_::Type(transition.m_type)) << " with transition token " << Token(transition.m_token_index) << " and data ";
@@ -1078,9 +1285,9 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
                         *DebugSpewStream() << "<N/A>";
                     else
                         *DebugSpewStream() << transition.m_data_index;
-                    *DebugSpewStream() << " and sorted type index " << Npda_::Transition_::Order::SortedTypeIndex(Npda_::Transition_::Type(transition.m_type)) << '\n';
+                    *DebugSpewStream() << " and sorted type index " << Npda_::Transition_::Order::SortedTypeIndex(transition) << '\n';
                 )
-*/
+
 
                 ParseTreeNode_ *resulting_hps = NULL;
                 // If it's a default transition, there's no need to access the lookahead (except in
@@ -1096,6 +1303,7 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
                     // that nonterminal but the HPS has no parent because the trunk action was executed and then popped,
                     // meaning that the parent of this HPS would be the parse tree root.
                     bool take_action = true;
+
                     assert(hps.m_parent_node != NULL);
                     if (transition.m_type == Npda_::Transition_::REDUCE)
                     {
@@ -1159,11 +1367,9 @@ void SteelParser::ContinueNPDAParse_ (bool &should_return)
     assert(m_hypothetical_state_->m_new_hps_queue.empty());
 }
 
-SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const rule_index_, TokenStack_ const &token_stack) throw()
+SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const rule_index_, TokenStack_ const &token_stack_, Token const *lookahead_) throw()
 {
     assert(rule_index_ < Grammar_::ms_rule_count_);
-    Grammar_::Rule_ const &rule_ = Grammar_::ms_rule_table_[rule_index_];
-    TRISON_CPP_DEBUG_CODE_(DSF_ACTION, *DebugSpewStream() << "SteelParser: " << "Executing reduction rule " << rule_index_ << "; " << rule_.m_description << '\n')
     switch (rule_index_)
     {
         default:
@@ -1172,10 +1378,10 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 
         case 0:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatementList* list(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatementList* list(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 214 "SteelParser.trison"
+#line 214 "../src/SteelParser.trison"
 
 				AstScript * pScript =   new AstScript(
 							list->GetLine(),
@@ -1183,18 +1389,18 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 		        pScript->SetList(list);
 				return pScript;
 			
-#line 1187 "SteelParser.cpp"
+#line 1393 "../src/SteelParser.cpp"
             break;
         }
 
         case 1:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-7].m_data));
-            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-5].m_data));
-            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-7].m_data));
+            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-5].m_data));
+            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 226 "SteelParser.trison"
+#line 226 "../src/SteelParser.trison"
 
 					return new AstFunctionDefinition(id->GetLine(),
 									id->GetScript(),
@@ -1202,19 +1408,19 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 									params,
 									stmts);
 				
-#line 1206 "SteelParser.cpp"
+#line 1412 "../src/SteelParser.cpp"
             break;
         }
 
         case 2:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* ns(static_cast<AstIdentifier*>(token_stack[token_stack.size()-9].m_data));
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-7].m_data));
-            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-5].m_data));
-            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* ns(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-9].m_data));
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-7].m_data));
+            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-5].m_data));
+            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 235 "SteelParser.trison"
+#line 235 "../src/SteelParser.trison"
 
                                   AstFuncIdentifier * func_id =  new AstFuncIdentifier(ns->GetLine(),ns->GetScript(),ns->getValue(),id->getValue());   
 					return new AstFunctionDefinition(ns->GetLine(),
@@ -1223,17 +1429,17 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 									params,
 									stmts);
                  
-#line 1227 "SteelParser.cpp"
+#line 1433 "../src/SteelParser.cpp"
             break;
         }
 
         case 3:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-7].m_data));
-            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-7].m_data));
+            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 245 "SteelParser.trison"
+#line 245 "../src/SteelParser.trison"
 
 					//AstFuncIdentifier *pId = static_cast<AstFuncIdentifier*>(id);
 					addError(id->GetLine(),"parser error in parameter list for function '" + id->getValue() + '\'');
@@ -1243,16 +1449,16 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 									NULL,
 									stmts);
 				
-#line 1247 "SteelParser.cpp"
+#line 1453 "../src/SteelParser.cpp"
             break;
         }
 
         case 4:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-4].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-4].m_data));
 
-#line 256 "SteelParser.trison"
+#line 256 "../src/SteelParser.trison"
 
 					addError(GET_LINE(),"parser error after 'function' keyword.");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -1261,18 +1467,18 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 									params,
 									new AstStatementList(GET_LINE(),GET_SCRIPT()));
 				
-#line 1265 "SteelParser.cpp"
+#line 1471 "../src/SteelParser.cpp"
             break;
         }
 
         case 5:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-7].m_data));
-            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-5].m_data));
-            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-7].m_data));
+            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-5].m_data));
+            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 266 "SteelParser.trison"
+#line 266 "../src/SteelParser.trison"
 
 				    	addError(GET_LINE(),"parse error in function definition. expected '}'");
 					return new AstFunctionDefinition(GET_LINE(),
@@ -1281,190 +1487,190 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 									params,
 									stmts);
 				    
-#line 1285 "SteelParser.cpp"
+#line 1491 "../src/SteelParser.cpp"
             break;
         }
 
         case 6:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 283 "SteelParser.trison"
+#line 283 "../src/SteelParser.trison"
 
 		 return new AstParamDefinitionList(GET_LINE(), GET_SCRIPT());
 	
-#line 1297 "SteelParser.cpp"
+#line 1503 "../src/SteelParser.cpp"
             break;
         }
 
         case 7:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 288 "SteelParser.trison"
+#line 288 "../src/SteelParser.trison"
 
 				AstParamDefinitionList * pList = new AstParamDefinitionList(decl->GetLine(),decl->GetScript());
 				pList->add(static_cast<AstDeclaration*>(decl));
 				return pList;
 			
-#line 1312 "SteelParser.cpp"
+#line 1518 "../src/SteelParser.cpp"
             break;
         }
 
         case 8:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstParamDefinitionList* list(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-3].m_data));
-            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstParamDefinitionList* list(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-3].m_data));
+            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 295 "SteelParser.trison"
+#line 295 "../src/SteelParser.trison"
 
 				list->add(static_cast<AstDeclaration*>(decl));
 				return list;
 			
-#line 1327 "SteelParser.cpp"
+#line 1533 "../src/SteelParser.cpp"
             break;
         }
 
         case 9:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstParamDefinitionList* list(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstParamDefinitionList* list(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 301 "SteelParser.trison"
+#line 301 "../src/SteelParser.trison"
 
 				addError(list->GetLine(),"expected parameter definition");
 				return list;
 			
-#line 1341 "SteelParser.cpp"
+#line 1547 "../src/SteelParser.cpp"
             break;
         }
 
         case 10:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 311 "SteelParser.trison"
+#line 311 "../src/SteelParser.trison"
 
 				AstStatementList *pList =
 					new AstStatementList(m_scanner->getCurrentLine(),
 										m_scanner->getScriptName());
 				return pList;
 			
-#line 1356 "SteelParser.cpp"
+#line 1562 "../src/SteelParser.cpp"
             break;
         }
 
         case 11:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatementList* list(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatementList* list(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 319 "SteelParser.trison"
+#line 319 "../src/SteelParser.trison"
 
 					list->add( stmt );
 					return list;
 				
-#line 1371 "SteelParser.cpp"
+#line 1577 "../src/SteelParser.cpp"
             break;
         }
 
         case 12:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 328 "SteelParser.trison"
+#line 328 "../src/SteelParser.trison"
 
 				AstArrayLiteral * array = new AstArrayLiteral(GET_LINE(),GET_SCRIPT());
 				return array;
 				
-#line 1384 "SteelParser.cpp"
+#line 1590 "../src/SteelParser.cpp"
             break;
         }
 
         case 13:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 334 "SteelParser.trison"
+#line 334 "../src/SteelParser.trison"
 
 			    AstArrayLiteral * array = new AstArrayLiteral(exp->GetLine(),exp->GetScript());
 			    array->add(exp);
 			    return array;
 		
-#line 1399 "SteelParser.cpp"
+#line 1605 "../src/SteelParser.cpp"
             break;
         }
 
         case 14:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstArrayLiteral* array(static_cast<AstArrayLiteral*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstArrayLiteral* array(static_cast<AstArrayLiteral*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 341 "SteelParser.trison"
+#line 341 "../src/SteelParser.trison"
 
 			    	array->add ( exp );
 				return array; 
 			    
-#line 1414 "SteelParser.cpp"
+#line 1620 "../src/SteelParser.cpp"
             break;
         }
 
         case 15:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstPair* pair(static_cast<AstPair*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstPair* pair(static_cast<AstPair*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 349 "SteelParser.trison"
+#line 349 "../src/SteelParser.trison"
 
 			    AstPairList * pList =  new AstPairList(m_scanner->getCurrentLine(), m_scanner->getScriptName());
 			    pList->add(pair);
 			    return pList;
 		
-#line 1429 "SteelParser.cpp"
+#line 1635 "../src/SteelParser.cpp"
             break;
         }
 
         case 16:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstPairList* list(static_cast<AstPairList*>(token_stack[token_stack.size()-3].m_data));
-            AstPair* pair(static_cast<AstPair*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstPairList* list(static_cast<AstPairList*>(token_stack_[token_stack_.size()-3].m_data));
+            AstPair* pair(static_cast<AstPair*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 356 "SteelParser.trison"
+#line 356 "../src/SteelParser.trison"
 
 		            list->add ( pair ) ;
 			    return list;
 		       
-#line 1444 "SteelParser.cpp"
+#line 1650 "../src/SteelParser.cpp"
             break;
         }
 
         case 17:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* key(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* value(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* key(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* value(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 365 "SteelParser.trison"
+#line 365 "../src/SteelParser.trison"
 
 			    return new AstPair(key->GetLine(),key->GetScript(),key,value);
 		
-#line 1458 "SteelParser.cpp"
+#line 1664 "../src/SteelParser.cpp"
             break;
         }
 
         case 18:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstBase* inc(token_stack[token_stack.size()-3].m_data);
-            AstString* str(static_cast<AstString*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstBase* inc(token_stack_[token_stack_.size()-3].m_data);
+            AstString* str(static_cast<AstString*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 372 "SteelParser.trison"
+#line 372 "../src/SteelParser.trison"
 
 		    const std::string filename = str->getString();
 		    IFile * file = m_file_provider->create();
@@ -1515,599 +1721,599 @@ SteelParser::Token::Data SteelParser::ExecuteReductionRule_ (std::uint32_t const
 
 		    return pScript;
 	
-#line 1519 "SteelParser.cpp"
+#line 1725 "../src/SteelParser.cpp"
             break;
         }
 
         case 19:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstBase* imp(token_stack[token_stack.size()-3].m_data);
-            AstString* str(static_cast<AstString*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstBase* imp(token_stack_[token_stack_.size()-3].m_data);
+            AstString* str(static_cast<AstString*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 423 "SteelParser.trison"
+#line 423 "../src/SteelParser.trison"
  return new AstImport(GET_LINE(),GET_SCRIPT(),str); 
-#line 1531 "SteelParser.cpp"
+#line 1737 "../src/SteelParser.cpp"
             break;
         }
 
         case 20:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 425 "SteelParser.trison"
+#line 425 "../src/SteelParser.trison"
  return new AstExpressionStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT())); 
-#line 1541 "SteelParser.cpp"
+#line 1747 "../src/SteelParser.cpp"
             break;
         }
 
         case 21:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 427 "SteelParser.trison"
+#line 427 "../src/SteelParser.trison"
 
 	       	   addError(GET_LINE(),"error before ;");
 		   return new AstExpressionStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()));
 		   
-#line 1554 "SteelParser.cpp"
+#line 1760 "../src/SteelParser.cpp"
             break;
         }
 
         case 22:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 432 "SteelParser.trison"
+#line 432 "../src/SteelParser.trison"
 
 		addError(GET_LINE(),"missing semi-colon after expression?");
 		return new AstExpressionStatement(exp->GetLine(),exp->GetScript(),exp);
 	
-#line 1568 "SteelParser.cpp"
+#line 1774 "../src/SteelParser.cpp"
             break;
         }
 
         case 23:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 437 "SteelParser.trison"
+#line 437 "../src/SteelParser.trison"
  return new AstExpressionStatement(exp->GetLine(),exp->GetScript(), exp); 
-#line 1579 "SteelParser.cpp"
+#line 1785 "../src/SteelParser.cpp"
             break;
         }
 
         case 24:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 440 "SteelParser.trison"
+#line 440 "../src/SteelParser.trison"
 
 	    addError(GET_LINE(),"expected expression between '(' and ')'");
 	    return new AstStatement(GET_LINE(),GET_SCRIPT());
 	
-#line 1592 "SteelParser.cpp"
+#line 1798 "../src/SteelParser.cpp"
             break;
         }
 
         case 25:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 446 "SteelParser.trison"
+#line 446 "../src/SteelParser.trison"
 
 	    addError(GET_LINE(),"unmatched ')'");
 	    return new AstStatement(GET_LINE(),GET_SCRIPT());
 	    
-#line 1605 "SteelParser.cpp"
+#line 1811 "../src/SteelParser.cpp"
             break;
         }
 
         case 26:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstFunctionDefinition* func(static_cast<AstFunctionDefinition*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstFunctionDefinition* func(static_cast<AstFunctionDefinition*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 452 "SteelParser.trison"
+#line 452 "../src/SteelParser.trison"
  return func; 
-#line 1616 "SteelParser.cpp"
+#line 1822 "../src/SteelParser.cpp"
             break;
         }
 
         case 27:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatementList* list(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatementList* list(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 461 "SteelParser.trison"
+#line 461 "../src/SteelParser.trison"
  return list; 
-#line 1627 "SteelParser.cpp"
+#line 1833 "../src/SteelParser.cpp"
             break;
         }
 
         case 28:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatementList* list(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatementList* list(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 463 "SteelParser.trison"
+#line 463 "../src/SteelParser.trison"
 
 	addError(GET_LINE(),"'{' without matching '}'");
 	return new AstStatement(GET_LINE(),GET_SCRIPT());
 	
-#line 1641 "SteelParser.cpp"
+#line 1847 "../src/SteelParser.cpp"
             break;
         }
 
         case 29:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstDeclaration* vardecl(static_cast<AstDeclaration*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstDeclaration* vardecl(static_cast<AstDeclaration*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 468 "SteelParser.trison"
+#line 468 "../src/SteelParser.trison"
  return vardecl; 
-#line 1652 "SteelParser.cpp"
+#line 1858 "../src/SteelParser.cpp"
             break;
         }
 
         case 30:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack[token_stack.size()-3].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack_[token_stack_.size()-3].m_data));
 
-#line 471 "SteelParser.trison"
+#line 471 "../src/SteelParser.trison"
 
 			addError(decl->GetLine(),"expected ';' after variable declaration.");
 			return decl;
 		
-#line 1666 "SteelParser.cpp"
+#line 1872 "../src/SteelParser.cpp"
             break;
         }
 
         case 31:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 476 "SteelParser.trison"
+#line 476 "../src/SteelParser.trison"
  return new AstWhileStatement(exp->GetLine(), exp->GetScript(),exp,stmt); 
-#line 1678 "SteelParser.cpp"
+#line 1884 "../src/SteelParser.cpp"
             break;
         }
 
         case 32:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 480 "SteelParser.trison"
+#line 480 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"expected ')'");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1692 "SteelParser.cpp"
+#line 1898 "../src/SteelParser.cpp"
             break;
         }
 
         case 33:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 487 "SteelParser.trison"
+#line 487 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"missing loop condition.");
 				return new AstWhileStatement(GET_LINE(), GET_SCRIPT(),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1706 "SteelParser.cpp"
+#line 1912 "../src/SteelParser.cpp"
             break;
         }
 
         case 34:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-5].m_data));
-            AstExpression* condition(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-5].m_data));
+            AstExpression* condition(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 502 "SteelParser.trison"
+#line 502 "../src/SteelParser.trison"
 
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), condition, stmt);
 	   
-#line 1720 "SteelParser.cpp"
+#line 1926 "../src/SteelParser.cpp"
             break;
         }
 
         case 35:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 514 "SteelParser.trison"
+#line 514 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"error. do loop missing proper while condition.");
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, stmt);
 	   
-#line 1734 "SteelParser.cpp"
+#line 1940 "../src/SteelParser.cpp"
             break;
         }
 
         case 36:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-4].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-4].m_data));
 
-#line 521 "SteelParser.trison"
+#line 521 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"error, missing condition or no closing ')' found after while.");
 				return new AstDoStatement(GET_LINE(), GET_SCRIPT(), NULL, NULL);
 	   
-#line 1748 "SteelParser.cpp"
+#line 1954 "../src/SteelParser.cpp"
             break;
         }
 
         case 37:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-5].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-3].m_data));
-            AstStatement* elses(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-5].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatement* elses(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 528 "SteelParser.trison"
+#line 528 "../src/SteelParser.trison"
  return new AstIfStatement(exp->GetLine(), exp->GetScript(),exp,stmt,elses);
-#line 1761 "SteelParser.cpp"
+#line 1967 "../src/SteelParser.cpp"
             break;
         }
 
         case 38:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 530 "SteelParser.trison"
+#line 530 "../src/SteelParser.trison"
  return new AstIfStatement(exp->GetLine(),exp->GetScript(),exp,stmt); 
-#line 1773 "SteelParser.cpp"
+#line 1979 "../src/SteelParser.cpp"
             break;
         }
 
         case 39:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 546 "SteelParser.trison"
+#line 546 "../src/SteelParser.trison"
 
 			addError(GET_LINE(),"expected ')' after if condition.");
 			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
 				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 		
-#line 1787 "SteelParser.cpp"
+#line 1993 "../src/SteelParser.cpp"
             break;
         }
 
         case 40:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 553 "SteelParser.trison"
+#line 553 "../src/SteelParser.trison"
 
 			addError(GET_LINE(),"expected opening '(' after 'if'");
 			return new AstIfStatement(GET_LINE(),GET_SCRIPT(),
 				new AstExpression(GET_LINE(),GET_SCRIPT()), new AstStatement(GET_LINE(),GET_SCRIPT()));
 
 		
-#line 1802 "SteelParser.cpp"
+#line 2008 "../src/SteelParser.cpp"
             break;
         }
 
         case 41:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 561 "SteelParser.trison"
+#line 561 "../src/SteelParser.trison"
  return new AstReturnStatement(exp->GetLine(),exp->GetScript(),exp);
-#line 1813 "SteelParser.cpp"
+#line 2019 "../src/SteelParser.cpp"
             break;
         }
 
         case 42:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 564 "SteelParser.trison"
+#line 564 "../src/SteelParser.trison"
 
 				return new AstReturnStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1825 "SteelParser.cpp"
+#line 2031 "../src/SteelParser.cpp"
             break;
         }
 
         case 43:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack[token_stack.size()-7].m_data));
-            AstExpression* condition(static_cast<AstExpression*>(token_stack[token_stack.size()-5].m_data));
-            AstExpression* iteration(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack_[token_stack_.size()-7].m_data));
+            AstExpression* condition(static_cast<AstExpression*>(token_stack_[token_stack_.size()-5].m_data));
+            AstExpression* iteration(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 569 "SteelParser.trison"
+#line 569 "../src/SteelParser.trison"
 
 				return new AstLoopStatement(decl->GetLine(),decl->GetScript(),decl,condition,iteration,stmt);
 			
-#line 1841 "SteelParser.cpp"
+#line 2047 "../src/SteelParser.cpp"
             break;
         }
 
         case 44:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* start(static_cast<AstExpression*>(token_stack[token_stack.size()-7].m_data));
-            AstExpression* condition(static_cast<AstExpression*>(token_stack[token_stack.size()-5].m_data));
-            AstExpression* iteration(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* start(static_cast<AstExpression*>(token_stack_[token_stack_.size()-7].m_data));
+            AstExpression* condition(static_cast<AstExpression*>(token_stack_[token_stack_.size()-5].m_data));
+            AstExpression* iteration(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 574 "SteelParser.trison"
+#line 574 "../src/SteelParser.trison"
 
 				return new AstLoopStatement(start->GetLine(),start->GetScript(),start,condition,iteration,stmt);
 			
-#line 1857 "SteelParser.cpp"
+#line 2063 "../src/SteelParser.cpp"
             break;
         }
 
         case 45:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 579 "SteelParser.trison"
+#line 579 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"malformed for loop.");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1872 "SteelParser.cpp"
+#line 2078 "../src/SteelParser.cpp"
             break;
         }
 
         case 46:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 611 "SteelParser.trison"
+#line 611 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"malformed for loop. Expected opening '('");
 				return new AstLoopStatement(GET_LINE(),GET_SCRIPT(), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstExpression(GET_LINE(),GET_SCRIPT()), new AstExpression(GET_LINE(),GET_SCRIPT()),
 						new AstStatement(GET_LINE(),GET_SCRIPT()));
 			
-#line 1887 "SteelParser.cpp"
+#line 2093 "../src/SteelParser.cpp"
             break;
         }
 
         case 47:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack[token_stack.size()-5].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstDeclaration* decl(static_cast<AstDeclaration*>(token_stack_[token_stack_.size()-5].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 619 "SteelParser.trison"
+#line 619 "../src/SteelParser.trison"
 
 				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), decl, exp, stmt);
 			     
-#line 1902 "SteelParser.cpp"
+#line 2108 "../src/SteelParser.cpp"
             break;
         }
 
         case 48:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-4].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
-            AstStatement* stmt(static_cast<AstStatement*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-4].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
+            AstStatement* stmt(static_cast<AstStatement*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 624 "SteelParser.trison"
+#line 624 "../src/SteelParser.trison"
 
 				return new AstForEachStatement(GET_LINE(),GET_SCRIPT(), id, exp, stmt);
 			    
-#line 1917 "SteelParser.cpp"
+#line 2123 "../src/SteelParser.cpp"
             break;
         }
 
         case 49:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 630 "SteelParser.trison"
+#line 630 "../src/SteelParser.trison"
 
 				return new AstBreakStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1929 "SteelParser.cpp"
+#line 2135 "../src/SteelParser.cpp"
             break;
         }
 
         case 50:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 635 "SteelParser.trison"
+#line 635 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"expected ';' after 'break'");
 				return new AstBreakStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1942 "SteelParser.cpp"
+#line 2148 "../src/SteelParser.cpp"
             break;
         }
 
         case 51:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 641 "SteelParser.trison"
+#line 641 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"expected ';' after 'break'");
 				return new AstBreakStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1955 "SteelParser.cpp"
+#line 2161 "../src/SteelParser.cpp"
             break;
         }
 
         case 52:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 649 "SteelParser.trison"
+#line 649 "../src/SteelParser.trison"
 
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1967 "SteelParser.cpp"
+#line 2173 "../src/SteelParser.cpp"
             break;
         }
 
         case 53:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 654 "SteelParser.trison"
+#line 654 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"expected ';' after 'continue'");
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1980 "SteelParser.cpp"
+#line 2186 "../src/SteelParser.cpp"
             break;
         }
 
         case 54:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 660 "SteelParser.trison"
+#line 660 "../src/SteelParser.trison"
 
 				addError(GET_LINE(),"expected ';' after 'continue'");
 				return new AstContinueStatement(GET_LINE(),GET_SCRIPT());
 			
-#line 1993 "SteelParser.cpp"
+#line 2199 "../src/SteelParser.cpp"
             break;
         }
 
         case 55:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-5].m_data));
-            AstCaseStatementList* case_list(static_cast<AstCaseStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-5].m_data));
+            AstCaseStatementList* case_list(static_cast<AstCaseStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 665 "SteelParser.trison"
+#line 665 "../src/SteelParser.trison"
 
 	       	   	   return new AstSwitchStatement(GET_LINE(),GET_SCRIPT(),exp,case_list);
 	
-#line 2007 "SteelParser.cpp"
+#line 2213 "../src/SteelParser.cpp"
             break;
         }
 
         case 56:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 675 "SteelParser.trison"
+#line 675 "../src/SteelParser.trison"
 
 		    return new AstExpression(GET_LINE(),GET_SCRIPT());
 	
-#line 2019 "SteelParser.cpp"
+#line 2225 "../src/SteelParser.cpp"
             break;
         }
 
         case 57:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 679 "SteelParser.trison"
+#line 679 "../src/SteelParser.trison"
 
 		return exp;
 	
-#line 2032 "SteelParser.cpp"
+#line 2238 "../src/SteelParser.cpp"
             break;
         }
 
         case 58:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* l(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* l(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 687 "SteelParser.trison"
+#line 687 "../src/SteelParser.trison"
  return l; 
-#line 2043 "SteelParser.cpp"
+#line 2249 "../src/SteelParser.cpp"
             break;
         }
 
         case 59:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstString* s(static_cast<AstString*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstString* s(static_cast<AstString*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 689 "SteelParser.trison"
+#line 689 "../src/SteelParser.trison"
  return s; 
-#line 2054 "SteelParser.cpp"
+#line 2260 "../src/SteelParser.cpp"
             break;
         }
 
         case 60:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* i(static_cast<AstIdentifier*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* i(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 691 "SteelParser.trison"
+#line 691 "../src/SteelParser.trison"
  return i; 
-#line 2065 "SteelParser.cpp"
+#line 2271 "../src/SteelParser.cpp"
             break;
         }
 
         case 61:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstCaseStatementList* list(static_cast<AstCaseStatementList*>(token_stack[token_stack.size()-5].m_data));
-            AstExpression* option(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstCaseStatementList* list(static_cast<AstCaseStatementList*>(token_stack_[token_stack_.size()-5].m_data));
+            AstExpression* option(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 697 "SteelParser.trison"
+#line 697 "../src/SteelParser.trison"
  list->add(option,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; 
-#line 2078 "SteelParser.cpp"
+#line 2284 "../src/SteelParser.cpp"
             break;
         }
 
         case 62:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* option(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* option(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 699 "SteelParser.trison"
+#line 699 "../src/SteelParser.trison"
  AstCaseStatementList *list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->add(option,new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; 
-#line 2090 "SteelParser.cpp"
+#line 2296 "../src/SteelParser.cpp"
             break;
         }
 
         case 63:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 701 "SteelParser.trison"
+#line 701 "../src/SteelParser.trison"
 AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT()); list->setDefault(new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt)); return list; 
-#line 2101 "SteelParser.cpp"
+#line 2307 "../src/SteelParser.cpp"
             break;
         }
 
         case 64:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstCaseStatementList* list(static_cast<AstCaseStatementList*>(token_stack[token_stack.size()-4].m_data));
-            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstCaseStatementList* list(static_cast<AstCaseStatementList*>(token_stack_[token_stack_.size()-4].m_data));
+            AstStatementList* stmt(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 703 "SteelParser.trison"
+#line 703 "../src/SteelParser.trison"
 
 										AstCaseStatement* case_stmt = new AstCaseStatement(GET_LINE(),GET_SCRIPT(),stmt);
 										if(!list->setDefault(case_stmt)){
@@ -2117,662 +2323,662 @@ AstCaseStatementList * list = new AstCaseStatementList(GET_LINE(),GET_SCRIPT());
 											     }
 											     return list;
 								  
-#line 2121 "SteelParser.cpp"
+#line 2327 "../src/SteelParser.cpp"
             break;
         }
 
         case 65:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstCallExpression* call(static_cast<AstCallExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstCallExpression* call(static_cast<AstCallExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 717 "SteelParser.trison"
+#line 717 "../src/SteelParser.trison"
  return call; 
-#line 2132 "SteelParser.cpp"
+#line 2338 "../src/SteelParser.cpp"
             break;
         }
 
         case 66:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* option(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* option(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 719 "SteelParser.trison"
+#line 719 "../src/SteelParser.trison"
  return option; 
-#line 2143 "SteelParser.cpp"
+#line 2349 "../src/SteelParser.cpp"
             break;
         }
 
         case 67:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* ns(static_cast<AstIdentifier*>(token_stack[token_stack.size()-3].m_data));
-            AstIdentifier* func(static_cast<AstIdentifier*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* ns(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-3].m_data));
+            AstIdentifier* func(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 721 "SteelParser.trison"
+#line 721 "../src/SteelParser.trison"
  return new AstFuncIdentifier(ns->GetLine(),ns->GetScript(),ns->getValue(),func->getValue()); 
-#line 2155 "SteelParser.cpp"
+#line 2361 "../src/SteelParser.cpp"
             break;
         }
 
         case 68:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 723 "SteelParser.trison"
+#line 723 "../src/SteelParser.trison"
  
 	      AstBinOp* op = new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ADD,a,b);
 	      return op;
 	      
-#line 2170 "SteelParser.cpp"
+#line 2376 "../src/SteelParser.cpp"
             break;
         }
 
         case 69:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 728 "SteelParser.trison"
+#line 728 "../src/SteelParser.trison"
  
 	      AstBinOp* op = new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::SUB,a,b);
 	      return op;
 	      
-#line 2185 "SteelParser.cpp"
+#line 2391 "../src/SteelParser.cpp"
             break;
         }
 
         case 70:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstBinOp* op(static_cast<AstBinOp*>(token_stack[token_stack.size()-2].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstBinOp* op(static_cast<AstBinOp*>(token_stack_[token_stack_.size()-2].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 733 "SteelParser.trison"
+#line 733 "../src/SteelParser.trison"
  
 	      op->setLeft(a); 
 	      op->setRight(b);
 	      return op;
 	
-#line 2202 "SteelParser.cpp"
+#line 2408 "../src/SteelParser.cpp"
             break;
         }
 
         case 71:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 739 "SteelParser.trison"
+#line 739 "../src/SteelParser.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::D,a,b); 
-#line 2214 "SteelParser.cpp"
+#line 2420 "../src/SteelParser.cpp"
             break;
         }
 
         case 72:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 741 "SteelParser.trison"
+#line 741 "../src/SteelParser.trison"
 
 	      return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::ASSIGN,a,b);
 	
-#line 2228 "SteelParser.cpp"
+#line 2434 "../src/SteelParser.cpp"
             break;
         }
 
         case 73:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstBinOp* op(static_cast<AstBinOp*>(token_stack[token_stack.size()-2].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstBinOp* op(static_cast<AstBinOp*>(token_stack_[token_stack_.size()-2].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 745 "SteelParser.trison"
+#line 745 "../src/SteelParser.trison"
  
 		   op->setLeft(a);
 		   op->setRight(b);
 		   return op;
 	
-#line 2245 "SteelParser.cpp"
+#line 2451 "../src/SteelParser.cpp"
             break;
         }
 
         case 74:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 751 "SteelParser.trison"
+#line 751 "../src/SteelParser.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::POW,a,b); 
-#line 2257 "SteelParser.cpp"
+#line 2463 "../src/SteelParser.cpp"
             break;
         }
 
         case 75:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 753 "SteelParser.trison"
+#line 753 "../src/SteelParser.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::OR,a,b); 
-#line 2269 "SteelParser.cpp"
+#line 2475 "../src/SteelParser.cpp"
             break;
         }
 
         case 76:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 755 "SteelParser.trison"
+#line 755 "../src/SteelParser.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::AND,a,b); 
-#line 2281 "SteelParser.cpp"
+#line 2487 "../src/SteelParser.cpp"
             break;
         }
 
         case 77:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstBinOp* op(static_cast<AstBinOp*>(token_stack[token_stack.size()-2].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstBinOp* op(static_cast<AstBinOp*>(token_stack_[token_stack_.size()-2].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 757 "SteelParser.trison"
+#line 757 "../src/SteelParser.trison"
 
 	op->setLeft(a);
 	op->setRight(b);
 	return op; 
 	 
-#line 2298 "SteelParser.cpp"
+#line 2504 "../src/SteelParser.cpp"
             break;
         }
 
         case 78:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 763 "SteelParser.trison"
+#line 763 "../src/SteelParser.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::BIN_OR,a,b); 
-#line 2310 "SteelParser.cpp"
+#line 2516 "../src/SteelParser.cpp"
             break;
         }
 
         case 79:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* a(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* b(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* a(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* b(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 765 "SteelParser.trison"
+#line 765 "../src/SteelParser.trison"
  return new AstBinOp(a->GetLine(),a->GetScript(),AstBinOp::BIN_AND,a,b); 
-#line 2322 "SteelParser.cpp"
+#line 2528 "../src/SteelParser.cpp"
             break;
         }
 
         case 80:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 767 "SteelParser.trison"
+#line 767 "../src/SteelParser.trison"
  return new AstUnaryOp(exp->GetLine(),exp->GetScript(),AstUnaryOp::BIN_NOT,exp); 
-#line 2333 "SteelParser.cpp"
+#line 2539 "../src/SteelParser.cpp"
             break;
         }
 
         case 81:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 769 "SteelParser.trison"
+#line 769 "../src/SteelParser.trison"
 
 	    addError(GET_LINE(),"expected expression between '(' and ')'");
 	    return new AstExpression(GET_LINE(),GET_SCRIPT());
 	    
-#line 2346 "SteelParser.cpp"
+#line 2552 "../src/SteelParser.cpp"
             break;
         }
 
         case 82:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 775 "SteelParser.trison"
+#line 775 "../src/SteelParser.trison"
  return exp; 
-#line 2357 "SteelParser.cpp"
+#line 2563 "../src/SteelParser.cpp"
             break;
         }
 
         case 83:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 777 "SteelParser.trison"
+#line 777 "../src/SteelParser.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::MINUS,exp); 
-#line 2368 "SteelParser.cpp"
+#line 2574 "../src/SteelParser.cpp"
             break;
         }
 
         case 84:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 779 "SteelParser.trison"
+#line 779 "../src/SteelParser.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::PLUS,exp); 
-#line 2379 "SteelParser.cpp"
+#line 2585 "../src/SteelParser.cpp"
             break;
         }
 
         case 85:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 781 "SteelParser.trison"
+#line 781 "../src/SteelParser.trison"
 
 						addError(GET_LINE(),"expected expression after unary minus.");
 						return new AstUnaryOp(GET_LINE(),GET_SCRIPT(),AstUnaryOp::NOT,new AstExpression(GET_LINE(),GET_SCRIPT()));
 								  
-#line 2392 "SteelParser.cpp"
+#line 2598 "../src/SteelParser.cpp"
             break;
         }
 
         case 86:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 788 "SteelParser.trison"
+#line 788 "../src/SteelParser.trison"
  return new AstUnaryOp(exp->GetLine(), exp->GetScript(), AstUnaryOp::NOT,exp); 
-#line 2403 "SteelParser.cpp"
+#line 2609 "../src/SteelParser.cpp"
             break;
         }
 
         case 87:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-4].m_data));
-            AstExpression* index(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-4].m_data));
+            AstExpression* index(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 791 "SteelParser.trison"
+#line 791 "../src/SteelParser.trison"
  return new AstArrayElement(lvalue->GetLine(),lvalue->GetScript(),lvalue,index); 
-#line 2415 "SteelParser.cpp"
+#line 2621 "../src/SteelParser.cpp"
             break;
         }
 
         case 88:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 793 "SteelParser.trison"
+#line 793 "../src/SteelParser.trison"
  return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::PRE);
-#line 2426 "SteelParser.cpp"
+#line 2632 "../src/SteelParser.cpp"
             break;
         }
 
         case 89:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 795 "SteelParser.trison"
+#line 795 "../src/SteelParser.trison"
 
 										addError(GET_LINE(),"expected lvalue after '++'");
 										return new AstIncrement(GET_LINE(),GET_SCRIPT(),
 												new AstExpression(GET_LINE(),GET_SCRIPT()),AstIncrement::PRE);
 										
-#line 2440 "SteelParser.cpp"
+#line 2646 "../src/SteelParser.cpp"
             break;
         }
 
         case 90:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 801 "SteelParser.trison"
+#line 801 "../src/SteelParser.trison"
  return new AstIncrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstIncrement::POST);
-#line 2451 "SteelParser.cpp"
+#line 2657 "../src/SteelParser.cpp"
             break;
         }
 
         case 91:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 803 "SteelParser.trison"
+#line 803 "../src/SteelParser.trison"
  return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::PRE);
-#line 2462 "SteelParser.cpp"
+#line 2668 "../src/SteelParser.cpp"
             break;
         }
 
         case 92:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 805 "SteelParser.trison"
+#line 805 "../src/SteelParser.trison"
 
 										addError(GET_LINE(),"expected lvalue after '--'");
 										return new AstDecrement(GET_LINE(),GET_SCRIPT(),
 												new AstExpression(GET_LINE(),GET_SCRIPT()),AstDecrement::PRE);
 										
-#line 2476 "SteelParser.cpp"
+#line 2682 "../src/SteelParser.cpp"
             break;
         }
 
         case 93:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 812 "SteelParser.trison"
+#line 812 "../src/SteelParser.trison"
 
 									return new AstDecrement(lvalue->GetLine(),lvalue->GetScript(),lvalue, AstDecrement::POST);
 
 									
-#line 2490 "SteelParser.cpp"
+#line 2696 "../src/SteelParser.cpp"
             break;
         }
 
         case 94:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-4].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-4].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 817 "SteelParser.trison"
+#line 817 "../src/SteelParser.trison"
  return new AstRemove(lvalue->GetLine(),lvalue->GetScript(),lvalue,exp); 
-#line 2502 "SteelParser.cpp"
+#line 2708 "../src/SteelParser.cpp"
             break;
         }
 
         case 95:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 819 "SteelParser.trison"
+#line 819 "../src/SteelParser.trison"
  return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue); 
-#line 2513 "SteelParser.cpp"
+#line 2719 "../src/SteelParser.cpp"
             break;
         }
 
         case 96:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 821 "SteelParser.trison"
+#line 821 "../src/SteelParser.trison"
 
 						addError(GET_LINE(),"expected expression after 'pop'.");
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()));
 							  
-#line 2526 "SteelParser.cpp"
+#line 2732 "../src/SteelParser.cpp"
             break;
         }
 
         case 97:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 826 "SteelParser.trison"
+#line 826 "../src/SteelParser.trison"
  return new AstPop(lvalue->GetLine(),lvalue->GetScript(),lvalue,true); 
-#line 2537 "SteelParser.cpp"
+#line 2743 "../src/SteelParser.cpp"
             break;
         }
 
         case 98:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 828 "SteelParser.trison"
+#line 828 "../src/SteelParser.trison"
 
 						addError(GET_LINE(),"expected expression after 'pop'.");
 						return new AstPop(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
 							  
-#line 2550 "SteelParser.cpp"
+#line 2756 "../src/SteelParser.cpp"
             break;
         }
 
         case 99:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* rvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* rvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 833 "SteelParser.trison"
+#line 833 "../src/SteelParser.trison"
  return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,true); 
-#line 2562 "SteelParser.cpp"
+#line 2768 "../src/SteelParser.cpp"
             break;
         }
 
         case 100:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 835 "SteelParser.trison"
+#line 835 "../src/SteelParser.trison"
 
 						addError(GET_LINE(),"expected expression after 'push'.");
 						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),new AstExpression(GET_LINE(),GET_SCRIPT()),true);
 							  
-#line 2575 "SteelParser.cpp"
+#line 2781 "../src/SteelParser.cpp"
             break;
         }
 
         case 101:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* lvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* rvalue(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* lvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* rvalue(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 840 "SteelParser.trison"
+#line 840 "../src/SteelParser.trison"
  return new AstPush(lvalue->GetLine(),lvalue->GetScript(),lvalue,rvalue,false); 
-#line 2587 "SteelParser.cpp"
+#line 2793 "../src/SteelParser.cpp"
             break;
         }
 
         case 102:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 842 "SteelParser.trison"
+#line 842 "../src/SteelParser.trison"
 
 						addError(GET_LINE(),"expected expression after 'pushb'.");
 						return new AstPush(GET_LINE(),GET_SCRIPT(),new AstExpression(GET_LINE(),GET_SCRIPT()),NULL);
 							  
-#line 2600 "SteelParser.cpp"
+#line 2806 "../src/SteelParser.cpp"
             break;
         }
 
         case 103:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack[token_stack.size()-5].m_data));
-            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstParamDefinitionList* params(static_cast<AstParamDefinitionList*>(token_stack_[token_stack_.size()-5].m_data));
+            AstStatementList* stmts(static_cast<AstStatementList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 848 "SteelParser.trison"
+#line 848 "../src/SteelParser.trison"
 
 					    return new AstAnonymousFunctionDefinition (GET_LINE(),GET_SCRIPT(), params,stmts);
 				
-#line 2614 "SteelParser.cpp"
+#line 2820 "../src/SteelParser.cpp"
             break;
         }
 
         case 104:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstArrayLiteral* array(static_cast<AstArrayLiteral*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstArrayLiteral* array(static_cast<AstArrayLiteral*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 852 "SteelParser.trison"
+#line 852 "../src/SteelParser.trison"
 
 	    return array;
 	
-#line 2627 "SteelParser.cpp"
+#line 2833 "../src/SteelParser.cpp"
             break;
         }
 
         case 105:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstPairList* list(static_cast<AstPairList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstPairList* list(static_cast<AstPairList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 856 "SteelParser.trison"
+#line 856 "../src/SteelParser.trison"
 
 		       return list; 
 	
-#line 2640 "SteelParser.cpp"
+#line 2846 "../src/SteelParser.cpp"
             break;
         }
 
         case 106:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 860 "SteelParser.trison"
+#line 860 "../src/SteelParser.trison"
 
 	       addError(GET_LINE(),"bad expression");
 	       return new AstExpression(GET_LINE(),GET_SCRIPT());
 	       
-#line 2653 "SteelParser.cpp"
+#line 2859 "../src/SteelParser.cpp"
             break;
         }
 
         case 107:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-4].m_data));
-            AstParamList* params(static_cast<AstParamList*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-4].m_data));
+            AstParamList* params(static_cast<AstParamList*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 871 "SteelParser.trison"
+#line 871 "../src/SteelParser.trison"
 
 				return new AstCallExpression(exp->GetLine(),exp->GetScript(),exp,params);
 			
-#line 2667 "SteelParser.cpp"
+#line 2873 "../src/SteelParser.cpp"
             break;
         }
 
         case 108:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 876 "SteelParser.trison"
+#line 876 "../src/SteelParser.trison"
 
 				    addError(GET_LINE(),"Invalid call. Unmatched '('?");
 				    return new AstExpression(GET_LINE(),GET_SCRIPT());
 			
-#line 2680 "SteelParser.cpp"
+#line 2886 "../src/SteelParser.cpp"
             break;
         }
 
         case 109:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 884 "SteelParser.trison"
+#line 884 "../src/SteelParser.trison"
  return new AstDeclaration(id->GetLine(),id->GetScript(),id);
-#line 2691 "SteelParser.cpp"
+#line 2897 "../src/SteelParser.cpp"
             break;
         }
 
         case 110:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 886 "SteelParser.trison"
+#line 886 "../src/SteelParser.trison"
  return new AstDeclaration(id->GetLine(),id->GetScript(),id,exp); 
-#line 2703 "SteelParser.cpp"
+#line 2909 "../src/SteelParser.cpp"
             break;
         }
 
         case 111:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 888 "SteelParser.trison"
+#line 888 "../src/SteelParser.trison"
  return new AstDeclaration(id->GetLine(),id->GetScript(),id,true,exp); 
-#line 2715 "SteelParser.cpp"
+#line 2921 "../src/SteelParser.cpp"
             break;
         }
 
         case 112:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack[token_stack.size()-4].m_data));
-            AstExpression* i(static_cast<AstExpression*>(token_stack[token_stack.size()-2].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstIdentifier* id(static_cast<AstIdentifier*>(token_stack_[token_stack_.size()-4].m_data));
+            AstExpression* i(static_cast<AstExpression*>(token_stack_[token_stack_.size()-2].m_data));
 
-#line 890 "SteelParser.trison"
+#line 890 "../src/SteelParser.trison"
  return new AstArrayDeclaration(id->GetLine(),id->GetScript(),id,i); 
-#line 2727 "SteelParser.cpp"
+#line 2933 "../src/SteelParser.cpp"
             break;
         }
 
         case 113:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 895 "SteelParser.trison"
+#line 895 "../src/SteelParser.trison"
  AstParamList * pList = new AstParamList ( exp->GetLine(), exp->GetScript() );
 		  pList->add(exp);
 		  return pList;
 		
-#line 2741 "SteelParser.cpp"
+#line 2947 "../src/SteelParser.cpp"
             break;
         }
 
         case 114:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
-            AstParamList* list(static_cast<AstParamList*>(token_stack[token_stack.size()-3].m_data));
-            AstExpression* exp(static_cast<AstExpression*>(token_stack[token_stack.size()-1].m_data));
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
+            AstParamList* list(static_cast<AstParamList*>(token_stack_[token_stack_.size()-3].m_data));
+            AstExpression* exp(static_cast<AstExpression*>(token_stack_[token_stack_.size()-1].m_data));
 
-#line 900 "SteelParser.trison"
+#line 900 "../src/SteelParser.trison"
  list->add(exp); return list;
-#line 2753 "SteelParser.cpp"
+#line 2959 "../src/SteelParser.cpp"
             break;
         }
 
         case 115:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 903 "SteelParser.trison"
+#line 903 "../src/SteelParser.trison"
  return new AstParamList(GET_LINE(), GET_SCRIPT()); 
-#line 2763 "SteelParser.cpp"
+#line 2969 "../src/SteelParser.cpp"
             break;
         }
 
         case 116:
         {
-            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack.size());
+            assert(Grammar_::ms_rule_table_[rule_index_].m_token_count < token_stack_.size());
 
-#line 906 "SteelParser.trison"
+#line 906 "../src/SteelParser.trison"
 
 	       		   addError(GET_LINE(),"bad parameter");
 			   return new AstParamList( GET_LINE(), GET_SCRIPT() );
 	       
-#line 2776 "SteelParser.cpp"
+#line 2982 "../src/SteelParser.cpp"
             break;
         }
 
@@ -2796,7 +3002,7 @@ void SteelParser::PrintParserStatus_ (std::ostream &out) const
     {
         Branch_ const &branch = *it;
         out << "SteelParser: " << "    (";
-        branch.StatePtr()->PrintRootToLeaf(out, IdentityTransform_<Npda_::StateIndex_>); // no need for delimiter here
+        branch.StatePtr()->PrintRootToLeaf(out, IdentityTransform_<Npda_::StateIndex_>);
         out << ")\n";
     }
 
@@ -2806,6 +3012,12 @@ void SteelParser::PrintParserStatus_ (std::ostream &out) const
         out << " (max allowable lookahead count is " << m_max_allowable_lookahead_count << ")\n";
     else
         out << " (allowable lookahead count is unlimited)\n";
+    out << "SteelParser: " << "Max realized lookahead queue size (so far) is:\n";
+    out << "SteelParser: " << "    " << m_realized_state_->MaxRealizedLookaheadQueueSize();
+    if (m_max_allowable_lookahead_queue_size >= 0)
+        out << " (max allowable lookahead queue size is " << m_max_allowable_lookahead_queue_size << ")\n";
+    else
+        out << " (allowable lookahead queue size is unlimited)\n";
     out << "SteelParser: " << "Max realized parse tree depth (so far) is:\n";
     out << "SteelParser: " << "    " << m_hypothetical_state_->MaxRealizedParseTreeDepth();
     if (m_max_allowable_parse_tree_depth >= 0)
@@ -2844,8 +3056,9 @@ void SteelParser::PrintParserStatus_ (std::ostream &out) const
     for (HPSQueue_::const_iterator it = m_hypothetical_state_->m_hps_queue.begin(), it_end = m_hypothetical_state_->m_hps_queue.end(); it != it_end; ++it)
     {
         ParseTreeNode_ *hps = *it;
-        assert(hps != NULL);
-        hps->Print(out, this, DebugSpewPrefix(), 1);
+        //assert(hps != NULL);
+        if (hps != NULL)
+            hps->Print(out, this, DebugSpewPrefix(), 1);
     }
 }
 
@@ -2855,6 +3068,7 @@ void SteelParser::PrintParserStatus_ (std::ostream &out) const
 
 SteelParser::RealizedState_::RealizedState_ (Npda_::StateIndex_ initial_state)
     :   m_max_realized_lookahead_count(0)
+    ,   m_max_realized_lookahead_queue_size(0)
     ,   m_has_encountered_error_state(false)
 {
     Initialize(initial_state);
@@ -2886,6 +3100,14 @@ SteelParser::Token SteelParser::RealizedState_::PopStack ()
     return popped_token;
 }
 
+void SteelParser::RealizedState_::ReplaceTokenStackTopWith (Token const &replacement)
+{
+    assert(!m_token_stack.empty());
+//    m_token_stack.back() = replacement;
+    m_token_stack.pop_back();
+    m_token_stack.push_back(replacement);
+}
+
 SteelParser::Token SteelParser::RealizedState_::PopFrontLookahead (HPSQueue_ &hps_queue)
 {
     // NOTE: For now, during this RealizedState_ and HypotheticalState_ refactor,
@@ -2899,9 +3121,10 @@ SteelParser::Token SteelParser::RealizedState_::PopFrontLookahead (HPSQueue_ &hp
     for (HPSQueue_::iterator hps_it = hps_queue.begin(), hps_it_end = hps_queue.end(); hps_it != hps_it_end; ++hps_it)
     {
         ParseTreeNode_ &hps = **hps_it;
-        --hps.m_realized_lookahead_cursor;
+        if (hps.m_realized_lookahead_cursor > 0)
+            --hps.m_realized_lookahead_cursor;
     }
-    Token retval(m_lookahead_queue.back());
+    Token retval(m_lookahead_queue.front());
     m_lookahead_queue.pop_front();
     return retval;
 }
@@ -2961,6 +3184,21 @@ void SteelParser::RealizedState_::ExecuteActionDiscardLookahead (HPSQueue_ &hps_
     PopFrontLookahead(hps_queue);
 }
 
+void SteelParser::RealizedState_::PrintStackAndLookaheads (std::ostream &out) const
+{
+    for (TokenStack_::const_iterator it = TokenStack().begin(), it_end = TokenStack().end(); it != it_end; ++it)
+    {
+        Token const &token = *it;
+        out << token << ' ';
+    }
+    out << '.';
+    for (TokenQueue_::const_iterator it = LookaheadQueue().begin(), it_end = LookaheadQueue().end(); it != it_end; ++it)
+    {
+        Token const &token = *it;
+        out << ' ' << token;
+    }
+}
+
 void SteelParser::RealizedState_::ClearStack ()
 {
     m_branch_vector_stack.clear();
@@ -2972,7 +3210,7 @@ void SteelParser::RealizedState_::Reinitialize (Npda_::StateIndex_ initial_state
     // Clear the stack(s) and reset the error state.
     ClearStack();
     m_has_encountered_error_state = false;
-    // But preserve m_lookahead_queue and m_max_realized_lookahead_count.
+    // But preserve m_lookahead_queue, m_max_realized_lookahead_count, and m_max_realized_lookahead_queue_size
 
     Initialize(initial_state);
 }
@@ -2982,14 +3220,38 @@ void SteelParser::RealizedState_::Initialize (Npda_::StateIndex_ initial_state)
     assert(m_branch_vector_stack.empty());
     assert(m_token_stack.empty());
 
+    BranchVector_ fallback_branch_vector;
+    // State 0 is the fallback state which always results in action ABORT.
+    BranchStatePtr_ fallback_state_ptr = BranchState_::CreateOrphan(0);
+    // The Nonterminal::none_ is just a dummy Token::Id to go along with fallback_state_ptr.
+    BranchTokenIdPtr_ fallback_token_id_ptr = BranchTokenId_::CreateOrphan(Nonterminal::none_);
+    fallback_branch_vector.emplace_back(Branch_(fallback_state_ptr, fallback_token_id_ptr));
+    // TODO: This probably should be emplace_back
+    m_branch_vector_stack.push_back(fallback_branch_vector);
+
+    // Put a dummy token in to correspond with the fallback state.
+    m_token_stack.push_back(Token(Nonterminal::none_));
+
+    assert(m_branch_vector_stack.size() == m_token_stack.size());
+
     BranchVector_ initial_branch_vector;
     // The Nonterminal::none_ is just a dummy Token::Id to go along with initial_state.
-    initial_branch_vector.emplace_back(Branch_(BranchState_::CreateOrphan(initial_state), BranchTokenId_::CreateOrphan(Nonterminal::none_)));
+    initial_branch_vector.emplace_back(Branch_(BranchState_::CreateWithParent(fallback_state_ptr, initial_state), BranchTokenId_::CreateWithParent(fallback_token_id_ptr, Nonterminal::none_)));
     // TODO: This probably should be emplace_back
     m_branch_vector_stack.push_back(initial_branch_vector);
 
     // Put a dummy token in to correspond with the start state.
     m_token_stack.push_back(Token(Nonterminal::none_));
+
+    assert(m_branch_vector_stack.size() == m_token_stack.size());
+
+    // Ensure the parent/child relationships actually hold within m_branch_vector_stack.
+    assert(m_branch_vector_stack.size() == 2);
+    // Ensure that the stack is actually consistent with regard to the parent/child relationships.
+    for (BranchVector_::const_iterator it = m_branch_vector_stack[1].begin(), it_end = m_branch_vector_stack[1].end(); it != it_end; ++it)
+    {
+        assert(std::any_of(m_branch_vector_stack[0].begin(), m_branch_vector_stack[0].end(), [it](Branch_ const &branch){ return branch == it->Parent(); }));
+    }
 }
 
 void SteelParser::RealizedState_::PushFrontLookahead (Token const &lookahead, HPSQueue_ &hps_queue)
@@ -3021,18 +3283,20 @@ void SteelParser::RealizedState_::UpdateMaxRealizedLookaheadCount ()
             break;
     }
     m_max_realized_lookahead_count = std::max(m_max_realized_lookahead_count, m_lookahead_queue.size() - parser_generated_token_count);
+
+    m_max_realized_lookahead_queue_size = std::max(m_max_realized_lookahead_queue_size, m_lookahead_queue.size());
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 // SteelParser::HypotheticalState_
 // ////////////////////////////////////////////////////////////////////////////
 
-SteelParser::HypotheticalState_::HypotheticalState_ (std::uint32_t initial_state)
+SteelParser::HypotheticalState_::HypotheticalState_ (Branch_ const &initial_branch)
 {
     m_root = new ParseTreeNode_(ParseTreeNode_::Spec(ParseTreeNode_::ROOT));
 
     ParseTreeNode_ *hps             = new ParseTreeNode_(ParseTreeNode_::Spec(ParseTreeNode_::HPS));
-    hps->m_hypothetical_head        = Branch_(BranchState_::CreateOrphan(initial_state), BranchTokenId_::CreateOrphan(Nonterminal::none_));
+    hps->m_hypothetical_head        = initial_branch;
 
     m_root->AddChild(hps);
     m_hps_queue.push_back(hps);
@@ -3142,6 +3406,7 @@ char const *SteelParser::ParseTreeNode_::AsString (Type type)
     {
         "ROOT",
         "RETURN",
+        "ABORT",
         "REDUCE",
         "SHIFT",
         "INSERT_LOOKAHEAD_ERROR",
@@ -3283,6 +3548,7 @@ bool SteelParser::ParseTreeNode_::IsBlockedHPS () const
     {
         // Nothing can happen after returning, so this has to be blocking.
         case RETURN:
+        case ABORT:
         case POP_STACK: return true;
 
         default:        return false;
@@ -3322,7 +3588,7 @@ SteelParser::ParseTreeNode_::PrecedenceLevelRange SteelParser::ParseTreeNode_::C
             Grammar_::Precedence_ const &rule_precedence = Grammar_::ms_precedence_table_[associated_rule.m_precedence_index];
             return PrecedenceLevelRange(rule_precedence.m_level, rule_precedence.m_level);
         }
-        // Otherwise (e.g. a RETURN state), return default precedence.
+        // Otherwise (e.g. a RETURN or ABORT state), return default precedence.
         else
         {
             Grammar_::Precedence_ const &default_precedence = Grammar_::ms_precedence_table_[0]; // 0 is default precedence.
@@ -3529,7 +3795,7 @@ SteelParser::Token const &SteelParser::Lookahead_ (TokenQueue_::size_type index)
         // This does not require updating the hps-es' m_realized_lookahead_cursor.
         m_realized_state_->PushBackLookahead(Scan_(), m_hypothetical_state_->m_hps_queue);
 
-        TRISON_CPP_DEBUG_CODE_(DSF_REALIZED_LOOKAHEAD_QUEUE, *DebugSpewStream() << "SteelParser: " << "Pushed " << m_realized_state_->LookaheadQueue().back() << " onto back of lookahead queue\n")
+        TRISON_CPP_DEBUG_CODE_(DSF_SCANNER_ACTION, *DebugSpewStream() << "SteelParser: " << "Retrieved token " << m_realized_state_->LookaheadQueue().back() << " from scan actions; pushing token onto back of lookahead queue\n")
     }
     return m_realized_state_->LookaheadQueue()[index];
 }
@@ -3552,6 +3818,10 @@ SteelParser::ParseTreeNode_ *SteelParser::TakeHypotheticalActionOnHPS_ (ParseTre
             new_hps = hps.CloneLeafNode();
             break;
         }
+        case ParseTreeNode_::ABORT: {
+            new_hps = hps.CloneLeafNode();
+            break;
+        }
         case ParseTreeNode_::REDUCE: {
             // Execute the appropriate rule on the top tokens in the stack
             std::uint32_t const &rule_index = action_data;
@@ -3570,6 +3840,14 @@ SteelParser::ParseTreeNode_ *SteelParser::TakeHypotheticalActionOnHPS_ (ParseTre
                 existing_reduce_action_node = *reduce_node_set.begin();
                 assert(existing_reduce_action_node != NULL);
                 assert(existing_reduce_action_node->m_spec.m_type == ParseTreeNode_::REDUCE);
+
+                if (false)
+                {
+                    // TEMP
+                    TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, *DebugSpewStream() << "\n\nHIPPO existing_reduce_action_node child nodes:\n\n")
+                    TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, PrintParserStatus_(*DebugSpewStream()))
+                    TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, *DebugSpewStream() << "\n\n")
+                }
 
                 // If the hypothetical action is identical to the existing one, then there's no problem,
                 // just add it as a child to the existing one.
@@ -3593,7 +3871,7 @@ SteelParser::ParseTreeNode_ *SteelParser::TakeHypotheticalActionOnHPS_ (ParseTre
                     assert((*existing_reduce_action_node->m_child_nodes.begin()->second.begin())->m_spec.m_type == ParseTreeNode_::HPS);
                     if (Grammar_::CompareRuleByPrecedence_(action_data, existing_reduce_action_node->m_spec.m_single_data))
                     {
-                        TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, *DebugSpewStream() << "resolving in favor of new hps.\n")
+                        TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, *DebugSpewStream() << "resolving in favor of new hps.")
 
                         reduce_hps = *existing_reduce_action_node->m_child_nodes.begin()->second.begin();
                         assert(reduce_hps != NULL);
@@ -3611,8 +3889,9 @@ SteelParser::ParseTreeNode_ *SteelParser::TakeHypotheticalActionOnHPS_ (ParseTre
                     }
                     else
                     {
-                        TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, *DebugSpewStream() << "resolving in favor of existing hps.\n")
+                        TRISON_CPP_DEBUG_CODE_(DSF_REDUCE_REDUCE_CONFLICT, *DebugSpewStream() << "resolving in favor of existing hps.")
                     }
+                    assert(existing_reduce_action_node->m_child_nodes.begin()->second.size() == 1);
                 }
             }
             else
@@ -3672,13 +3951,15 @@ SteelParser::ParseTreeNode_ *SteelParser::TakeHypotheticalActionOnHPS_ (ParseTre
             // since for example two branches may agree on popping at least once, even if
             // one of them is killed later.
             std::uint32_t const &pop_count = action_data;
-            // Check if there are actually enough stack elements to pop successfully.
-            // If not, then don't create an HPS, and break early.
-            if (pop_count >= hps.m_hypothetical_head.StatePtr()->BranchLength())
-            {
-                new_hps = NULL;
-                break;
-            }
+            assert(pop_count == 1 || pop_count == 2);
+            assert(pop_count < hps.m_hypothetical_head.StatePtr()->BranchLength());
+            // // Check if there are actually enough stack elements to pop successfully.
+            // // If not, then don't create an HPS, and break early.
+            // if (pop_count >= hps.m_hypothetical_head.StatePtr()->BranchLength())
+            // {
+            //     new_hps = NULL;
+            //     break;
+            // }
 
             new_hps = hps.CloneLeafNode();
             for (std::uint32_t i = 0; i < pop_count; ++i)
@@ -3686,6 +3967,8 @@ SteelParser::ParseTreeNode_ *SteelParser::TakeHypotheticalActionOnHPS_ (ParseTre
                 assert(new_hps->m_hypothetical_head.HasParent());
                 new_hps->m_hypothetical_head = new_hps->m_hypothetical_head.Parent();
             }
+            if (pop_count == 2)
+                new_hps->m_hypothetical_lookahead_token_id_queue.push_front(Terminal::ERROR_);
             TRISON_CPP_DEBUG_CODE_(DSF_HPS_NODE_CREATION_DELETION, *DebugSpewStream() << "creating HPS to be child of POP_STACK node... ")
             break;
         }
@@ -3844,123 +4127,123 @@ std::size_t const SteelParser::Grammar_::ms_precedence_count_ = sizeof(SteelPars
 
 SteelParser::Grammar_::Rule_ const SteelParser::Grammar_::ms_rule_table_[] =
 {
-    { SteelParser::Nonterminal::root, 2, 0, "root <- statement_list END_" },
-    { SteelParser::Nonterminal::func_definition, 8, 0, "func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { SteelParser::Nonterminal::func_definition, 10, 0, "func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { SteelParser::Nonterminal::func_definition, 8, 0, "func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list '}'" },
-    { SteelParser::Nonterminal::func_definition, 6, 0, "func_definition <- FUNCTION '(' param_definition ')' '{' ERROR_" },
-    { SteelParser::Nonterminal::func_definition, 8, 0, "func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_" },
-    { SteelParser::Nonterminal::param_definition, 0, 0, "param_definition <-" },
-    { SteelParser::Nonterminal::param_definition, 1, 0, "param_definition <- vardecl" },
-    { SteelParser::Nonterminal::param_definition, 3, 0, "param_definition <- param_definition ',' vardecl" },
-    { SteelParser::Nonterminal::param_definition, 2, 0, "param_definition <- param_definition ERROR_" },
-    { SteelParser::Nonterminal::statement_list, 0, 0, "statement_list <-" },
-    { SteelParser::Nonterminal::statement_list, 2, 0, "statement_list <- statement_list statement" },
-    { SteelParser::Nonterminal::array_literal, 0, 0, "array_literal <-" },
-    { SteelParser::Nonterminal::array_literal, 1, 0, "array_literal <- exp" },
-    { SteelParser::Nonterminal::array_literal, 3, 0, "array_literal <- array_literal ',' exp" },
-    { SteelParser::Nonterminal::pair_list, 1, 0, "pair_list <- pair" },
-    { SteelParser::Nonterminal::pair_list, 3, 0, "pair_list <- pair_list ',' pair" },
-    { SteelParser::Nonterminal::pair, 3, 0, "pair <- exp MAKE_PAIR exp" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- INCLUDE STRING ';'" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- IMPORT STRING ';'" },
-    { SteelParser::Nonterminal::statement, 1, 0, "statement <- ';'" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- ERROR_ ';'" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- exp ERROR_" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- exp ';'" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- '(' ERROR_ ')'" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- '(' ERROR_" },
-    { SteelParser::Nonterminal::statement, 1, 0, "statement <- func_definition" },
-    { SteelParser::Nonterminal::statement, 3, 1, "statement <- '{' statement_list '}'" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- '{' statement_list ERROR_" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- vardecl ';'" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- vardecl ERROR_ ';'" },
-    { SteelParser::Nonterminal::statement, 5, 1, "statement <- WHILE '(' exp ')' statement" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- WHILE '(' ERROR_" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- WHILE ERROR_" },
-    { SteelParser::Nonterminal::statement, 6, 1, "statement <- DO statement WHILE '(' exp ')'" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- DO statement ERROR_" },
-    { SteelParser::Nonterminal::statement, 5, 0, "statement <- DO statement WHILE '(' ERROR_" },
-    { SteelParser::Nonterminal::statement, 7, 6, "statement <- IF '(' exp ')' statement ELSE statement" },
-    { SteelParser::Nonterminal::statement, 5, 5, "statement <- IF '(' exp ')' statement" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- IF '(' ERROR_" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- IF ERROR_" },
-    { SteelParser::Nonterminal::statement, 3, 1, "statement <- RETURN exp ';'" },
-    { SteelParser::Nonterminal::statement, 2, 1, "statement <- RETURN ';'" },
-    { SteelParser::Nonterminal::statement, 9, 1, "statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp ')' statement" },
-    { SteelParser::Nonterminal::statement, 9, 1, "statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' statement" },
-    { SteelParser::Nonterminal::statement, 3, 0, "statement <- FOR '(' ERROR_" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- FOR ERROR_" },
-    { SteelParser::Nonterminal::statement, 7, 0, "statement <- FOREACH '(' vardecl ')' WITHIN exp statement" },
-    { SteelParser::Nonterminal::statement, 5, 0, "statement <- FOREACH IDENTIFIER WITHIN exp statement" },
-    { SteelParser::Nonterminal::statement, 2, 1, "statement <- BREAK ';'" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- BREAK ERROR_" },
-    { SteelParser::Nonterminal::statement, 1, 0, "statement <- BREAK" },
-    { SteelParser::Nonterminal::statement, 2, 1, "statement <- CONTINUE ';'" },
-    { SteelParser::Nonterminal::statement, 2, 0, "statement <- CONTINUE ERROR_" },
-    { SteelParser::Nonterminal::statement, 1, 0, "statement <- CONTINUE" },
-    { SteelParser::Nonterminal::statement, 7, 0, "statement <- SWITCH '(' exp ')' '{' case_list '}'" },
-    { SteelParser::Nonterminal::optionalexp, 0, 0, "optionalexp <-" },
-    { SteelParser::Nonterminal::optionalexp, 1, 0, "optionalexp <- exp" },
-    { SteelParser::Nonterminal::value, 1, 0, "value <- LITERAL" },
-    { SteelParser::Nonterminal::value, 1, 0, "value <- STRING" },
-    { SteelParser::Nonterminal::value, 1, 0, "value <- IDENTIFIER" },
-    { SteelParser::Nonterminal::case_list, 5, 0, "case_list <- case_list CASE value CASE_DELIM statement_list" },
-    { SteelParser::Nonterminal::case_list, 4, 0, "case_list <- CASE value CASE_DELIM statement_list" },
-    { SteelParser::Nonterminal::case_list, 3, 0, "case_list <- DEFAULT CASE_DELIM statement_list" },
-    { SteelParser::Nonterminal::case_list, 4, 0, "case_list <- case_list DEFAULT CASE_DELIM statement_list" },
-    { SteelParser::Nonterminal::exp, 1, 0, "exp <- call" },
-    { SteelParser::Nonterminal::exp, 1, 0, "exp <- value" },
-    { SteelParser::Nonterminal::exp, 3, 0, "exp <- IDENTIFIER SCOPE IDENTIFIER" },
-    { SteelParser::Nonterminal::exp, 3, 13, "exp <- exp '+' exp" },
-    { SteelParser::Nonterminal::exp, 3, 13, "exp <- exp '-' exp" },
-    { SteelParser::Nonterminal::exp, 3, 14, "exp <- exp BINOP_MULT_DIV_MOD exp" },
-    { SteelParser::Nonterminal::exp, 3, 15, "exp <- exp D exp" },
-    { SteelParser::Nonterminal::exp, 3, 4, "exp <- exp '=' exp" },
-    { SteelParser::Nonterminal::exp, 3, 4, "exp <- exp BINOP_ASSIGNMENT exp" },
-    { SteelParser::Nonterminal::exp, 3, 15, "exp <- exp '^' exp" },
-    { SteelParser::Nonterminal::exp, 3, 7, "exp <- exp OR exp" },
-    { SteelParser::Nonterminal::exp, 3, 8, "exp <- exp AND exp" },
-    { SteelParser::Nonterminal::exp, 3, 11, "exp <- exp BINOP_COMPARE exp" },
-    { SteelParser::Nonterminal::exp, 3, 9, "exp <- exp BIN_OR exp" },
-    { SteelParser::Nonterminal::exp, 3, 10, "exp <- exp BIN_AND exp" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- BIN_NOT exp" },
-    { SteelParser::Nonterminal::exp, 3, 0, "exp <- '(' ERROR_ ')'" },
-    { SteelParser::Nonterminal::exp, 3, 0, "exp <- '(' exp ')'" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- '-' exp" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- '+' exp" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- NOT ERROR_" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- NOT exp" },
-    { SteelParser::Nonterminal::exp, 4, 19, "exp <- exp '[' exp ']'" },
-    { SteelParser::Nonterminal::exp, 2, 18, "exp <- INCREMENT exp" },
-    { SteelParser::Nonterminal::exp, 2, 18, "exp <- INCREMENT ERROR_" },
-    { SteelParser::Nonterminal::exp, 2, 18, "exp <- exp INCREMENT" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- DECREMENT exp" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- DECREMENT ERROR_" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- exp DECREMENT" },
-    { SteelParser::Nonterminal::exp, 6, 16, "exp <- REMOVE '(' exp ',' exp ')'" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- POP exp" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- POP ERROR_" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- POPB exp" },
-    { SteelParser::Nonterminal::exp, 2, 16, "exp <- POPB ERROR_" },
-    { SteelParser::Nonterminal::exp, 4, 16, "exp <- PUSH exp ',' exp" },
-    { SteelParser::Nonterminal::exp, 2, 0, "exp <- PUSH ERROR_" },
-    { SteelParser::Nonterminal::exp, 4, 16, "exp <- PUSHB exp ',' exp" },
-    { SteelParser::Nonterminal::exp, 2, 0, "exp <- PUSHB ERROR_" },
-    { SteelParser::Nonterminal::exp, 7, 0, "exp <- FUNCTION '(' param_definition ')' '{' statement_list '}'" },
-    { SteelParser::Nonterminal::exp, 3, 0, "exp <- '[' array_literal ']'" },
-    { SteelParser::Nonterminal::exp, 3, 0, "exp <- '[' pair_list ']'" },
-    { SteelParser::Nonterminal::exp, 1, 0, "exp <- ERROR_" },
-    { SteelParser::Nonterminal::call, 4, 17, "call <- exp '(' param_list ')'" },
-    { SteelParser::Nonterminal::call, 3, 0, "call <- exp '(' ERROR_" },
-    { SteelParser::Nonterminal::vardecl, 2, 0, "vardecl <- VAR IDENTIFIER" },
-    { SteelParser::Nonterminal::vardecl, 4, 0, "vardecl <- VAR IDENTIFIER '=' exp" },
-    { SteelParser::Nonterminal::vardecl, 4, 0, "vardecl <- CONSTANT IDENTIFIER '=' exp" },
-    { SteelParser::Nonterminal::vardecl, 5, 0, "vardecl <- VAR IDENTIFIER '[' exp ']'" },
-    { SteelParser::Nonterminal::param_list, 1, 0, "param_list <- exp" },
-    { SteelParser::Nonterminal::param_list, 3, 0, "param_list <- param_list ',' exp" },
-    { SteelParser::Nonterminal::param_list, 0, 0, "param_list <-" },
-    { SteelParser::Nonterminal::param_list, 1, 0, "param_list <- ERROR_" }
+    { SteelParser::Nonterminal::root, 2, false, 0, "root <- statement_list END_" },
+    { SteelParser::Nonterminal::func_definition, 8, false, 0, "func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { SteelParser::Nonterminal::func_definition, 10, false, 0, "func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { SteelParser::Nonterminal::func_definition, 8, false, 0, "func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list '}'" },
+    { SteelParser::Nonterminal::func_definition, 6, false, 0, "func_definition <- FUNCTION '(' param_definition ')' '{' ERROR_" },
+    { SteelParser::Nonterminal::func_definition, 8, false, 0, "func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_" },
+    { SteelParser::Nonterminal::param_definition, 0, false, 0, "param_definition <-" },
+    { SteelParser::Nonterminal::param_definition, 1, false, 0, "param_definition <- vardecl" },
+    { SteelParser::Nonterminal::param_definition, 3, false, 0, "param_definition <- param_definition ',' vardecl" },
+    { SteelParser::Nonterminal::param_definition, 2, false, 0, "param_definition <- param_definition ERROR_" },
+    { SteelParser::Nonterminal::statement_list, 0, false, 0, "statement_list <-" },
+    { SteelParser::Nonterminal::statement_list, 2, false, 0, "statement_list <- statement_list statement" },
+    { SteelParser::Nonterminal::array_literal, 0, false, 0, "array_literal <-" },
+    { SteelParser::Nonterminal::array_literal, 1, false, 0, "array_literal <- exp" },
+    { SteelParser::Nonterminal::array_literal, 3, false, 0, "array_literal <- array_literal ',' exp" },
+    { SteelParser::Nonterminal::pair_list, 1, false, 0, "pair_list <- pair" },
+    { SteelParser::Nonterminal::pair_list, 3, false, 0, "pair_list <- pair_list ',' pair" },
+    { SteelParser::Nonterminal::pair, 3, false, 0, "pair <- exp MAKE_PAIR exp" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- INCLUDE STRING ';'" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- IMPORT STRING ';'" },
+    { SteelParser::Nonterminal::statement, 1, false, 0, "statement <- ';'" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- ERROR_ ';'" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- exp ERROR_" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- exp ';'" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- '(' ERROR_ ')'" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- '(' ERROR_" },
+    { SteelParser::Nonterminal::statement, 1, false, 0, "statement <- func_definition" },
+    { SteelParser::Nonterminal::statement, 3, false, 1, "statement <- '{' statement_list '}'" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- '{' statement_list ERROR_" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- vardecl ';'" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- vardecl ERROR_ ';'" },
+    { SteelParser::Nonterminal::statement, 5, false, 1, "statement <- WHILE '(' exp ')' statement" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- WHILE '(' ERROR_" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- WHILE ERROR_" },
+    { SteelParser::Nonterminal::statement, 6, false, 1, "statement <- DO statement WHILE '(' exp ')'" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- DO statement ERROR_" },
+    { SteelParser::Nonterminal::statement, 5, false, 0, "statement <- DO statement WHILE '(' ERROR_" },
+    { SteelParser::Nonterminal::statement, 7, false, 6, "statement <- IF '(' exp ')' statement ELSE statement" },
+    { SteelParser::Nonterminal::statement, 5, false, 5, "statement <- IF '(' exp ')' statement" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- IF '(' ERROR_" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- IF ERROR_" },
+    { SteelParser::Nonterminal::statement, 3, false, 1, "statement <- RETURN exp ';'" },
+    { SteelParser::Nonterminal::statement, 2, false, 1, "statement <- RETURN ';'" },
+    { SteelParser::Nonterminal::statement, 9, false, 1, "statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp ')' statement" },
+    { SteelParser::Nonterminal::statement, 9, false, 1, "statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' statement" },
+    { SteelParser::Nonterminal::statement, 3, false, 0, "statement <- FOR '(' ERROR_" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- FOR ERROR_" },
+    { SteelParser::Nonterminal::statement, 7, false, 0, "statement <- FOREACH '(' vardecl ')' WITHIN exp statement" },
+    { SteelParser::Nonterminal::statement, 5, false, 0, "statement <- FOREACH IDENTIFIER WITHIN exp statement" },
+    { SteelParser::Nonterminal::statement, 2, false, 1, "statement <- BREAK ';'" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- BREAK ERROR_" },
+    { SteelParser::Nonterminal::statement, 1, false, 0, "statement <- BREAK" },
+    { SteelParser::Nonterminal::statement, 2, false, 1, "statement <- CONTINUE ';'" },
+    { SteelParser::Nonterminal::statement, 2, false, 0, "statement <- CONTINUE ERROR_" },
+    { SteelParser::Nonterminal::statement, 1, false, 0, "statement <- CONTINUE" },
+    { SteelParser::Nonterminal::statement, 7, false, 0, "statement <- SWITCH '(' exp ')' '{' case_list '}'" },
+    { SteelParser::Nonterminal::optionalexp, 0, false, 0, "optionalexp <-" },
+    { SteelParser::Nonterminal::optionalexp, 1, false, 0, "optionalexp <- exp" },
+    { SteelParser::Nonterminal::value, 1, false, 0, "value <- LITERAL" },
+    { SteelParser::Nonterminal::value, 1, false, 0, "value <- STRING" },
+    { SteelParser::Nonterminal::value, 1, false, 0, "value <- IDENTIFIER" },
+    { SteelParser::Nonterminal::case_list, 5, false, 0, "case_list <- case_list CASE value CASE_DELIM statement_list" },
+    { SteelParser::Nonterminal::case_list, 4, false, 0, "case_list <- CASE value CASE_DELIM statement_list" },
+    { SteelParser::Nonterminal::case_list, 3, false, 0, "case_list <- DEFAULT CASE_DELIM statement_list" },
+    { SteelParser::Nonterminal::case_list, 4, false, 0, "case_list <- case_list DEFAULT CASE_DELIM statement_list" },
+    { SteelParser::Nonterminal::exp, 1, false, 0, "exp <- call" },
+    { SteelParser::Nonterminal::exp, 1, false, 0, "exp <- value" },
+    { SteelParser::Nonterminal::exp, 3, false, 0, "exp <- IDENTIFIER SCOPE IDENTIFIER" },
+    { SteelParser::Nonterminal::exp, 3, false, 13, "exp <- exp '+' exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 13, "exp <- exp '-' exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 14, "exp <- exp BINOP_MULT_DIV_MOD exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 15, "exp <- exp D exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 4, "exp <- exp '=' exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 4, "exp <- exp BINOP_ASSIGNMENT exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 15, "exp <- exp '^' exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 7, "exp <- exp OR exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 8, "exp <- exp AND exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 11, "exp <- exp BINOP_COMPARE exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 9, "exp <- exp BIN_OR exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 10, "exp <- exp BIN_AND exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- BIN_NOT exp" },
+    { SteelParser::Nonterminal::exp, 3, false, 0, "exp <- '(' ERROR_ ')'" },
+    { SteelParser::Nonterminal::exp, 3, false, 0, "exp <- '(' exp ')'" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- '-' exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- '+' exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- NOT ERROR_" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- NOT exp" },
+    { SteelParser::Nonterminal::exp, 4, false, 19, "exp <- exp '[' exp ']'" },
+    { SteelParser::Nonterminal::exp, 2, false, 18, "exp <- INCREMENT exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 18, "exp <- INCREMENT ERROR_" },
+    { SteelParser::Nonterminal::exp, 2, false, 18, "exp <- exp INCREMENT" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- DECREMENT exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- DECREMENT ERROR_" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- exp DECREMENT" },
+    { SteelParser::Nonterminal::exp, 6, false, 16, "exp <- REMOVE '(' exp ',' exp ')'" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- POP exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- POP ERROR_" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- POPB exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 16, "exp <- POPB ERROR_" },
+    { SteelParser::Nonterminal::exp, 4, false, 16, "exp <- PUSH exp ',' exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 0, "exp <- PUSH ERROR_" },
+    { SteelParser::Nonterminal::exp, 4, false, 16, "exp <- PUSHB exp ',' exp" },
+    { SteelParser::Nonterminal::exp, 2, false, 0, "exp <- PUSHB ERROR_" },
+    { SteelParser::Nonterminal::exp, 7, false, 0, "exp <- FUNCTION '(' param_definition ')' '{' statement_list '}'" },
+    { SteelParser::Nonterminal::exp, 3, false, 0, "exp <- '[' array_literal ']'" },
+    { SteelParser::Nonterminal::exp, 3, false, 0, "exp <- '[' pair_list ']'" },
+    { SteelParser::Nonterminal::exp, 1, false, 0, "exp <- ERROR_" },
+    { SteelParser::Nonterminal::call, 4, false, 17, "call <- exp '(' param_list ')'" },
+    { SteelParser::Nonterminal::call, 3, false, 0, "call <- exp '(' ERROR_" },
+    { SteelParser::Nonterminal::vardecl, 2, false, 0, "vardecl <- VAR IDENTIFIER" },
+    { SteelParser::Nonterminal::vardecl, 4, false, 0, "vardecl <- VAR IDENTIFIER '=' exp" },
+    { SteelParser::Nonterminal::vardecl, 4, false, 0, "vardecl <- CONSTANT IDENTIFIER '=' exp" },
+    { SteelParser::Nonterminal::vardecl, 5, false, 0, "vardecl <- VAR IDENTIFIER '[' exp ']'" },
+    { SteelParser::Nonterminal::param_list, 1, false, 0, "param_list <- exp" },
+    { SteelParser::Nonterminal::param_list, 3, false, 0, "param_list <- param_list ',' exp" },
+    { SteelParser::Nonterminal::param_list, 0, false, 0, "param_list <-" },
+    { SteelParser::Nonterminal::param_list, 1, false, 0, "param_list <- ERROR_" }
 };
 std::size_t const SteelParser::Grammar_::ms_rule_count_ = sizeof(SteelParser::Grammar_::ms_rule_table_) / sizeof(*SteelParser::Grammar_::ms_rule_table_);
 
@@ -4024,7 +4307,7 @@ void SteelParser::Npda_::ComputeEpsilonClosureOfState_ (StateIndex_ state_index,
 
 SteelParser::Npda_::TransitionVector_ const &SteelParser::Npda_::NonEpsilonTransitionsOfState_ (StateIndex_ state_index, std::uint32_t sorted_type_index)
 {
-    assert(0 <= sorted_type_index && sorted_type_index <= 3);
+    assert(Transition_::Order::MIN_SORTED_TYPE_INDEX <= sorted_type_index && sorted_type_index <= Transition_::Order::MAX_SORTED_TYPE_INDEX);
 
     // Memoize this function, because it will be called so many times and is somewhat intensive.
     typedef std::pair<StateIndex_,std::uint32_t> KeyType;
@@ -4044,7 +4327,7 @@ SteelParser::Npda_::TransitionVector_ const &SteelParser::Npda_::NonEpsilonTrans
         State_ const &state = ms_state_table_[*it];
         for (Transition_ const *transition = state.m_transition_table, *transition_end = state.m_transition_table+state.m_transition_count; transition != transition_end; ++transition)
         {
-            std::uint32_t transition_sorted_type_index = Transition_::Order::SortedTypeIndex(Transition_::Type(transition->m_type));
+            std::uint32_t transition_sorted_type_index = Transition_::Order::SortedTypeIndex(*transition);
             if (transition->m_type != Transition_::EPSILON && transition_sorted_type_index == sorted_type_index)
                 non_epsilon_transition_set.insert(*transition);
         }
@@ -4059,1941 +4342,1948 @@ SteelParser::Npda_::TransitionVector_ const &SteelParser::Npda_::NonEpsilonTrans
 
 SteelParser::Npda_::State_ const SteelParser::Npda_::ms_state_table_[] =
 {
-    { 2, ms_transition_table_+0, 117, "START root" },
-    { 1, ms_transition_table_+2, 117, "RETURN root" },
-    { 1, ms_transition_table_+3, 117, "head of: root" },
-    { 4, ms_transition_table_+4, 0, "rule 0: root <- . statement_list END_" },
-    { 3, ms_transition_table_+8, 0, "rule 0: root <- statement_list . END_" },
-    { 2, ms_transition_table_+11, 117, "START statement_list" },
-    { 1, ms_transition_table_+13, 117, "RETURN statement_list" },
-    { 2, ms_transition_table_+14, 117, "head of: statement_list" },
-    { 1, ms_transition_table_+16, 10, "rule 10: statement_list <- ." },
-    { 3, ms_transition_table_+17, 11, "rule 11: statement_list <- . statement_list statement" },
-    { 4, ms_transition_table_+20, 11, "rule 11: statement_list <- statement_list . statement" },
-    { 1, ms_transition_table_+24, 11, "rule 11: statement_list <- statement_list statement ." },
-    { 2, ms_transition_table_+25, 117, "START statement" },
-    { 1, ms_transition_table_+27, 117, "RETURN statement" },
-    { 38, ms_transition_table_+28, 117, "head of: statement" },
-    { 3, ms_transition_table_+66, 18, "rule 18: statement <- . INCLUDE STRING ';'" },
-    { 3, ms_transition_table_+69, 18, "rule 18: statement <- INCLUDE . STRING ';'" },
-    { 3, ms_transition_table_+72, 18, "rule 18: statement <- INCLUDE STRING . ';'" },
-    { 1, ms_transition_table_+75, 18, "rule 18: statement <- INCLUDE STRING ';' ." },
-    { 3, ms_transition_table_+76, 19, "rule 19: statement <- . IMPORT STRING ';'" },
-    { 3, ms_transition_table_+79, 19, "rule 19: statement <- IMPORT . STRING ';'" },
-    { 3, ms_transition_table_+82, 19, "rule 19: statement <- IMPORT STRING . ';'" },
-    { 1, ms_transition_table_+85, 19, "rule 19: statement <- IMPORT STRING ';' ." },
-    { 3, ms_transition_table_+86, 20, "rule 20: statement <- . ';'" },
-    { 1, ms_transition_table_+89, 20, "rule 20: statement <- ';' ." },
-    { 2, ms_transition_table_+90, 21, "rule 21: statement <- . ERROR_ ';'" },
-    { 3, ms_transition_table_+92, 21, "rule 21: statement <- ERROR_ . ';'" },
-    { 1, ms_transition_table_+95, 21, "rule 21: statement <- ERROR_ ';' ." },
-    { 4, ms_transition_table_+96, 22, "rule 22: statement <- . exp ERROR_" },
-    { 2, ms_transition_table_+100, 22, "rule 22: statement <- exp . ERROR_" },
-    { 2, ms_transition_table_+102, 117, "START exp" },
-    { 1, ms_transition_table_+104, 117, "RETURN exp" },
-    { 42, ms_transition_table_+105, 117, "head of: exp" },
-    { 4, ms_transition_table_+147, 65, "rule 65: exp <- . call" },
-    { 1, ms_transition_table_+151, 65, "rule 65: exp <- call ." },
-    { 2, ms_transition_table_+152, 117, "START call" },
-    { 1, ms_transition_table_+154, 117, "RETURN call" },
-    { 2, ms_transition_table_+155, 117, "head of: call" },
-    { 4, ms_transition_table_+157, 107, "rule 107: call <- . exp '(' param_list ')'" },
-    { 3, ms_transition_table_+161, 107, "rule 107: call <- exp . '(' param_list ')'" },
-    { 4, ms_transition_table_+164, 107, "rule 107: call <- exp '(' . param_list ')'" },
-    { 3, ms_transition_table_+168, 107, "rule 107: call <- exp '(' param_list . ')'" },
-    { 2, ms_transition_table_+171, 117, "START param_list" },
-    { 1, ms_transition_table_+173, 117, "RETURN param_list" },
-    { 4, ms_transition_table_+174, 117, "head of: param_list" },
-    { 4, ms_transition_table_+178, 113, "rule 113: param_list <- . exp" },
-    { 1, ms_transition_table_+182, 113, "rule 113: param_list <- exp ." },
-    { 3, ms_transition_table_+183, 114, "rule 114: param_list <- . param_list ',' exp" },
-    { 3, ms_transition_table_+186, 114, "rule 114: param_list <- param_list . ',' exp" },
-    { 4, ms_transition_table_+189, 114, "rule 114: param_list <- param_list ',' . exp" },
-    { 1, ms_transition_table_+193, 114, "rule 114: param_list <- param_list ',' exp ." },
-    { 1, ms_transition_table_+194, 115, "rule 115: param_list <- ." },
-    { 2, ms_transition_table_+195, 116, "rule 116: param_list <- . ERROR_" },
-    { 2, ms_transition_table_+197, 116, "rule 116: param_list <- ERROR_ ." },
-    { 1, ms_transition_table_+199, 107, "rule 107: call <- exp '(' param_list ')' ." },
-    { 4, ms_transition_table_+200, 108, "rule 108: call <- . exp '(' ERROR_" },
-    { 3, ms_transition_table_+204, 108, "rule 108: call <- exp . '(' ERROR_" },
-    { 2, ms_transition_table_+207, 108, "rule 108: call <- exp '(' . ERROR_" },
-    { 2, ms_transition_table_+209, 108, "rule 108: call <- exp '(' ERROR_ ." },
-    { 4, ms_transition_table_+211, 66, "rule 66: exp <- . value" },
-    { 1, ms_transition_table_+215, 66, "rule 66: exp <- value ." },
-    { 2, ms_transition_table_+216, 117, "START value" },
-    { 1, ms_transition_table_+218, 117, "RETURN value" },
-    { 3, ms_transition_table_+219, 117, "head of: value" },
-    { 3, ms_transition_table_+222, 58, "rule 58: value <- . LITERAL" },
-    { 1, ms_transition_table_+225, 58, "rule 58: value <- LITERAL ." },
-    { 3, ms_transition_table_+226, 59, "rule 59: value <- . STRING" },
-    { 1, ms_transition_table_+229, 59, "rule 59: value <- STRING ." },
-    { 3, ms_transition_table_+230, 60, "rule 60: value <- . IDENTIFIER" },
-    { 1, ms_transition_table_+233, 60, "rule 60: value <- IDENTIFIER ." },
-    { 3, ms_transition_table_+234, 67, "rule 67: exp <- . IDENTIFIER SCOPE IDENTIFIER" },
-    { 3, ms_transition_table_+237, 67, "rule 67: exp <- IDENTIFIER . SCOPE IDENTIFIER" },
-    { 3, ms_transition_table_+240, 67, "rule 67: exp <- IDENTIFIER SCOPE . IDENTIFIER" },
-    { 1, ms_transition_table_+243, 67, "rule 67: exp <- IDENTIFIER SCOPE IDENTIFIER ." },
-    { 3, ms_transition_table_+244, 68, "rule 68: exp <- . exp '+' exp" },
-    { 3, ms_transition_table_+247, 68, "rule 68: exp <- exp . '+' exp" },
-    { 4, ms_transition_table_+250, 68, "rule 68: exp <- exp '+' . exp" },
-    { 1, ms_transition_table_+254, 68, "rule 68: exp <- exp '+' exp ." },
-    { 3, ms_transition_table_+255, 69, "rule 69: exp <- . exp '-' exp" },
-    { 3, ms_transition_table_+258, 69, "rule 69: exp <- exp . '-' exp" },
-    { 4, ms_transition_table_+261, 69, "rule 69: exp <- exp '-' . exp" },
-    { 1, ms_transition_table_+265, 69, "rule 69: exp <- exp '-' exp ." },
-    { 3, ms_transition_table_+266, 70, "rule 70: exp <- . exp BINOP_MULT_DIV_MOD exp" },
-    { 3, ms_transition_table_+269, 70, "rule 70: exp <- exp . BINOP_MULT_DIV_MOD exp" },
-    { 4, ms_transition_table_+272, 70, "rule 70: exp <- exp BINOP_MULT_DIV_MOD . exp" },
-    { 1, ms_transition_table_+276, 70, "rule 70: exp <- exp BINOP_MULT_DIV_MOD exp ." },
-    { 3, ms_transition_table_+277, 71, "rule 71: exp <- . exp D exp" },
-    { 3, ms_transition_table_+280, 71, "rule 71: exp <- exp . D exp" },
-    { 4, ms_transition_table_+283, 71, "rule 71: exp <- exp D . exp" },
-    { 1, ms_transition_table_+287, 71, "rule 71: exp <- exp D exp ." },
-    { 3, ms_transition_table_+288, 72, "rule 72: exp <- . exp '=' exp" },
-    { 3, ms_transition_table_+291, 72, "rule 72: exp <- exp . '=' exp" },
-    { 4, ms_transition_table_+294, 72, "rule 72: exp <- exp '=' . exp" },
-    { 1, ms_transition_table_+298, 72, "rule 72: exp <- exp '=' exp ." },
-    { 3, ms_transition_table_+299, 73, "rule 73: exp <- . exp BINOP_ASSIGNMENT exp" },
-    { 3, ms_transition_table_+302, 73, "rule 73: exp <- exp . BINOP_ASSIGNMENT exp" },
-    { 4, ms_transition_table_+305, 73, "rule 73: exp <- exp BINOP_ASSIGNMENT . exp" },
-    { 1, ms_transition_table_+309, 73, "rule 73: exp <- exp BINOP_ASSIGNMENT exp ." },
-    { 3, ms_transition_table_+310, 74, "rule 74: exp <- . exp '^' exp" },
-    { 3, ms_transition_table_+313, 74, "rule 74: exp <- exp . '^' exp" },
-    { 4, ms_transition_table_+316, 74, "rule 74: exp <- exp '^' . exp" },
-    { 1, ms_transition_table_+320, 74, "rule 74: exp <- exp '^' exp ." },
-    { 3, ms_transition_table_+321, 75, "rule 75: exp <- . exp OR exp" },
-    { 3, ms_transition_table_+324, 75, "rule 75: exp <- exp . OR exp" },
-    { 4, ms_transition_table_+327, 75, "rule 75: exp <- exp OR . exp" },
-    { 1, ms_transition_table_+331, 75, "rule 75: exp <- exp OR exp ." },
-    { 3, ms_transition_table_+332, 76, "rule 76: exp <- . exp AND exp" },
-    { 3, ms_transition_table_+335, 76, "rule 76: exp <- exp . AND exp" },
-    { 4, ms_transition_table_+338, 76, "rule 76: exp <- exp AND . exp" },
-    { 1, ms_transition_table_+342, 76, "rule 76: exp <- exp AND exp ." },
-    { 3, ms_transition_table_+343, 77, "rule 77: exp <- . exp BINOP_COMPARE exp" },
-    { 3, ms_transition_table_+346, 77, "rule 77: exp <- exp . BINOP_COMPARE exp" },
-    { 4, ms_transition_table_+349, 77, "rule 77: exp <- exp BINOP_COMPARE . exp" },
-    { 1, ms_transition_table_+353, 77, "rule 77: exp <- exp BINOP_COMPARE exp ." },
-    { 3, ms_transition_table_+354, 78, "rule 78: exp <- . exp BIN_OR exp" },
-    { 3, ms_transition_table_+357, 78, "rule 78: exp <- exp . BIN_OR exp" },
-    { 4, ms_transition_table_+360, 78, "rule 78: exp <- exp BIN_OR . exp" },
-    { 1, ms_transition_table_+364, 78, "rule 78: exp <- exp BIN_OR exp ." },
-    { 3, ms_transition_table_+365, 79, "rule 79: exp <- . exp BIN_AND exp" },
-    { 3, ms_transition_table_+368, 79, "rule 79: exp <- exp . BIN_AND exp" },
-    { 4, ms_transition_table_+371, 79, "rule 79: exp <- exp BIN_AND . exp" },
-    { 1, ms_transition_table_+375, 79, "rule 79: exp <- exp BIN_AND exp ." },
-    { 3, ms_transition_table_+376, 80, "rule 80: exp <- . BIN_NOT exp" },
-    { 4, ms_transition_table_+379, 80, "rule 80: exp <- BIN_NOT . exp" },
-    { 1, ms_transition_table_+383, 80, "rule 80: exp <- BIN_NOT exp ." },
-    { 3, ms_transition_table_+384, 81, "rule 81: exp <- . '(' ERROR_ ')'" },
-    { 2, ms_transition_table_+387, 81, "rule 81: exp <- '(' . ERROR_ ')'" },
-    { 3, ms_transition_table_+389, 81, "rule 81: exp <- '(' ERROR_ . ')'" },
-    { 1, ms_transition_table_+392, 81, "rule 81: exp <- '(' ERROR_ ')' ." },
-    { 3, ms_transition_table_+393, 82, "rule 82: exp <- . '(' exp ')'" },
-    { 4, ms_transition_table_+396, 82, "rule 82: exp <- '(' . exp ')'" },
-    { 3, ms_transition_table_+400, 82, "rule 82: exp <- '(' exp . ')'" },
-    { 1, ms_transition_table_+403, 82, "rule 82: exp <- '(' exp ')' ." },
-    { 3, ms_transition_table_+404, 83, "rule 83: exp <- . '-' exp" },
-    { 4, ms_transition_table_+407, 83, "rule 83: exp <- '-' . exp" },
-    { 1, ms_transition_table_+411, 83, "rule 83: exp <- '-' exp ." },
-    { 3, ms_transition_table_+412, 84, "rule 84: exp <- . '+' exp" },
-    { 4, ms_transition_table_+415, 84, "rule 84: exp <- '+' . exp" },
-    { 1, ms_transition_table_+419, 84, "rule 84: exp <- '+' exp ." },
-    { 3, ms_transition_table_+420, 85, "rule 85: exp <- . NOT ERROR_" },
-    { 2, ms_transition_table_+423, 85, "rule 85: exp <- NOT . ERROR_" },
-    { 2, ms_transition_table_+425, 85, "rule 85: exp <- NOT ERROR_ ." },
-    { 3, ms_transition_table_+427, 86, "rule 86: exp <- . NOT exp" },
-    { 4, ms_transition_table_+430, 86, "rule 86: exp <- NOT . exp" },
-    { 1, ms_transition_table_+434, 86, "rule 86: exp <- NOT exp ." },
-    { 3, ms_transition_table_+435, 87, "rule 87: exp <- . exp '[' exp ']'" },
-    { 3, ms_transition_table_+438, 87, "rule 87: exp <- exp . '[' exp ']'" },
-    { 4, ms_transition_table_+441, 87, "rule 87: exp <- exp '[' . exp ']'" },
-    { 3, ms_transition_table_+445, 87, "rule 87: exp <- exp '[' exp . ']'" },
-    { 1, ms_transition_table_+448, 87, "rule 87: exp <- exp '[' exp ']' ." },
-    { 3, ms_transition_table_+449, 88, "rule 88: exp <- . INCREMENT exp" },
-    { 4, ms_transition_table_+452, 88, "rule 88: exp <- INCREMENT . exp" },
-    { 1, ms_transition_table_+456, 88, "rule 88: exp <- INCREMENT exp ." },
-    { 3, ms_transition_table_+457, 89, "rule 89: exp <- . INCREMENT ERROR_" },
-    { 2, ms_transition_table_+460, 89, "rule 89: exp <- INCREMENT . ERROR_" },
-    { 2, ms_transition_table_+462, 89, "rule 89: exp <- INCREMENT ERROR_ ." },
-    { 3, ms_transition_table_+464, 90, "rule 90: exp <- . exp INCREMENT" },
-    { 3, ms_transition_table_+467, 90, "rule 90: exp <- exp . INCREMENT" },
-    { 1, ms_transition_table_+470, 90, "rule 90: exp <- exp INCREMENT ." },
-    { 3, ms_transition_table_+471, 91, "rule 91: exp <- . DECREMENT exp" },
-    { 4, ms_transition_table_+474, 91, "rule 91: exp <- DECREMENT . exp" },
-    { 1, ms_transition_table_+478, 91, "rule 91: exp <- DECREMENT exp ." },
-    { 3, ms_transition_table_+479, 92, "rule 92: exp <- . DECREMENT ERROR_" },
-    { 2, ms_transition_table_+482, 92, "rule 92: exp <- DECREMENT . ERROR_" },
-    { 2, ms_transition_table_+484, 92, "rule 92: exp <- DECREMENT ERROR_ ." },
-    { 3, ms_transition_table_+486, 93, "rule 93: exp <- . exp DECREMENT" },
-    { 3, ms_transition_table_+489, 93, "rule 93: exp <- exp . DECREMENT" },
-    { 1, ms_transition_table_+492, 93, "rule 93: exp <- exp DECREMENT ." },
-    { 3, ms_transition_table_+493, 94, "rule 94: exp <- . REMOVE '(' exp ',' exp ')'" },
-    { 3, ms_transition_table_+496, 94, "rule 94: exp <- REMOVE . '(' exp ',' exp ')'" },
-    { 4, ms_transition_table_+499, 94, "rule 94: exp <- REMOVE '(' . exp ',' exp ')'" },
-    { 3, ms_transition_table_+503, 94, "rule 94: exp <- REMOVE '(' exp . ',' exp ')'" },
-    { 4, ms_transition_table_+506, 94, "rule 94: exp <- REMOVE '(' exp ',' . exp ')'" },
-    { 3, ms_transition_table_+510, 94, "rule 94: exp <- REMOVE '(' exp ',' exp . ')'" },
-    { 1, ms_transition_table_+513, 94, "rule 94: exp <- REMOVE '(' exp ',' exp ')' ." },
-    { 3, ms_transition_table_+514, 95, "rule 95: exp <- . POP exp" },
-    { 4, ms_transition_table_+517, 95, "rule 95: exp <- POP . exp" },
-    { 1, ms_transition_table_+521, 95, "rule 95: exp <- POP exp ." },
-    { 3, ms_transition_table_+522, 96, "rule 96: exp <- . POP ERROR_" },
-    { 2, ms_transition_table_+525, 96, "rule 96: exp <- POP . ERROR_" },
-    { 2, ms_transition_table_+527, 96, "rule 96: exp <- POP ERROR_ ." },
-    { 3, ms_transition_table_+529, 97, "rule 97: exp <- . POPB exp" },
-    { 4, ms_transition_table_+532, 97, "rule 97: exp <- POPB . exp" },
-    { 1, ms_transition_table_+536, 97, "rule 97: exp <- POPB exp ." },
-    { 3, ms_transition_table_+537, 98, "rule 98: exp <- . POPB ERROR_" },
-    { 2, ms_transition_table_+540, 98, "rule 98: exp <- POPB . ERROR_" },
-    { 2, ms_transition_table_+542, 98, "rule 98: exp <- POPB ERROR_ ." },
-    { 3, ms_transition_table_+544, 99, "rule 99: exp <- . PUSH exp ',' exp" },
-    { 4, ms_transition_table_+547, 99, "rule 99: exp <- PUSH . exp ',' exp" },
-    { 3, ms_transition_table_+551, 99, "rule 99: exp <- PUSH exp . ',' exp" },
-    { 4, ms_transition_table_+554, 99, "rule 99: exp <- PUSH exp ',' . exp" },
-    { 1, ms_transition_table_+558, 99, "rule 99: exp <- PUSH exp ',' exp ." },
-    { 3, ms_transition_table_+559, 100, "rule 100: exp <- . PUSH ERROR_" },
-    { 2, ms_transition_table_+562, 100, "rule 100: exp <- PUSH . ERROR_" },
-    { 2, ms_transition_table_+564, 100, "rule 100: exp <- PUSH ERROR_ ." },
-    { 3, ms_transition_table_+566, 101, "rule 101: exp <- . PUSHB exp ',' exp" },
-    { 4, ms_transition_table_+569, 101, "rule 101: exp <- PUSHB . exp ',' exp" },
-    { 3, ms_transition_table_+573, 101, "rule 101: exp <- PUSHB exp . ',' exp" },
-    { 4, ms_transition_table_+576, 101, "rule 101: exp <- PUSHB exp ',' . exp" },
-    { 1, ms_transition_table_+580, 101, "rule 101: exp <- PUSHB exp ',' exp ." },
-    { 3, ms_transition_table_+581, 102, "rule 102: exp <- . PUSHB ERROR_" },
-    { 2, ms_transition_table_+584, 102, "rule 102: exp <- PUSHB . ERROR_" },
-    { 2, ms_transition_table_+586, 102, "rule 102: exp <- PUSHB ERROR_ ." },
-    { 3, ms_transition_table_+588, 103, "rule 103: exp <- . FUNCTION '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+591, 103, "rule 103: exp <- FUNCTION . '(' param_definition ')' '{' statement_list '}'" },
-    { 4, ms_transition_table_+594, 103, "rule 103: exp <- FUNCTION '(' . param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+598, 103, "rule 103: exp <- FUNCTION '(' param_definition . ')' '{' statement_list '}'" },
-    { 2, ms_transition_table_+601, 117, "START param_definition" },
-    { 1, ms_transition_table_+603, 117, "RETURN param_definition" },
-    { 4, ms_transition_table_+604, 117, "head of: param_definition" },
-    { 1, ms_transition_table_+608, 6, "rule 6: param_definition <- ." },
-    { 4, ms_transition_table_+609, 7, "rule 7: param_definition <- . vardecl" },
-    { 1, ms_transition_table_+613, 7, "rule 7: param_definition <- vardecl ." },
-    { 2, ms_transition_table_+614, 117, "START vardecl" },
-    { 1, ms_transition_table_+616, 117, "RETURN vardecl" },
-    { 4, ms_transition_table_+617, 117, "head of: vardecl" },
-    { 3, ms_transition_table_+621, 109, "rule 109: vardecl <- . VAR IDENTIFIER" },
-    { 3, ms_transition_table_+624, 109, "rule 109: vardecl <- VAR . IDENTIFIER" },
-    { 1, ms_transition_table_+627, 109, "rule 109: vardecl <- VAR IDENTIFIER ." },
-    { 3, ms_transition_table_+628, 110, "rule 110: vardecl <- . VAR IDENTIFIER '=' exp" },
-    { 3, ms_transition_table_+631, 110, "rule 110: vardecl <- VAR . IDENTIFIER '=' exp" },
-    { 3, ms_transition_table_+634, 110, "rule 110: vardecl <- VAR IDENTIFIER . '=' exp" },
-    { 4, ms_transition_table_+637, 110, "rule 110: vardecl <- VAR IDENTIFIER '=' . exp" },
-    { 1, ms_transition_table_+641, 110, "rule 110: vardecl <- VAR IDENTIFIER '=' exp ." },
-    { 3, ms_transition_table_+642, 111, "rule 111: vardecl <- . CONSTANT IDENTIFIER '=' exp" },
-    { 3, ms_transition_table_+645, 111, "rule 111: vardecl <- CONSTANT . IDENTIFIER '=' exp" },
-    { 3, ms_transition_table_+648, 111, "rule 111: vardecl <- CONSTANT IDENTIFIER . '=' exp" },
-    { 4, ms_transition_table_+651, 111, "rule 111: vardecl <- CONSTANT IDENTIFIER '=' . exp" },
-    { 1, ms_transition_table_+655, 111, "rule 111: vardecl <- CONSTANT IDENTIFIER '=' exp ." },
-    { 3, ms_transition_table_+656, 112, "rule 112: vardecl <- . VAR IDENTIFIER '[' exp ']'" },
-    { 3, ms_transition_table_+659, 112, "rule 112: vardecl <- VAR . IDENTIFIER '[' exp ']'" },
-    { 3, ms_transition_table_+662, 112, "rule 112: vardecl <- VAR IDENTIFIER . '[' exp ']'" },
-    { 4, ms_transition_table_+665, 112, "rule 112: vardecl <- VAR IDENTIFIER '[' . exp ']'" },
-    { 3, ms_transition_table_+669, 112, "rule 112: vardecl <- VAR IDENTIFIER '[' exp . ']'" },
-    { 1, ms_transition_table_+672, 112, "rule 112: vardecl <- VAR IDENTIFIER '[' exp ']' ." },
-    { 3, ms_transition_table_+673, 8, "rule 8: param_definition <- . param_definition ',' vardecl" },
-    { 3, ms_transition_table_+676, 8, "rule 8: param_definition <- param_definition . ',' vardecl" },
-    { 4, ms_transition_table_+679, 8, "rule 8: param_definition <- param_definition ',' . vardecl" },
-    { 1, ms_transition_table_+683, 8, "rule 8: param_definition <- param_definition ',' vardecl ." },
-    { 3, ms_transition_table_+684, 9, "rule 9: param_definition <- . param_definition ERROR_" },
-    { 2, ms_transition_table_+687, 9, "rule 9: param_definition <- param_definition . ERROR_" },
-    { 2, ms_transition_table_+689, 9, "rule 9: param_definition <- param_definition ERROR_ ." },
-    { 3, ms_transition_table_+691, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' . '{' statement_list '}'" },
-    { 4, ms_transition_table_+694, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' '{' . statement_list '}'" },
-    { 3, ms_transition_table_+698, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' '{' statement_list . '}'" },
-    { 1, ms_transition_table_+701, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' '{' statement_list '}' ." },
-    { 3, ms_transition_table_+702, 104, "rule 104: exp <- . '[' array_literal ']'" },
-    { 4, ms_transition_table_+705, 104, "rule 104: exp <- '[' . array_literal ']'" },
-    { 3, ms_transition_table_+709, 104, "rule 104: exp <- '[' array_literal . ']'" },
-    { 2, ms_transition_table_+712, 117, "START array_literal" },
-    { 1, ms_transition_table_+714, 117, "RETURN array_literal" },
-    { 3, ms_transition_table_+715, 117, "head of: array_literal" },
-    { 1, ms_transition_table_+718, 12, "rule 12: array_literal <- ." },
-    { 4, ms_transition_table_+719, 13, "rule 13: array_literal <- . exp" },
-    { 1, ms_transition_table_+723, 13, "rule 13: array_literal <- exp ." },
-    { 3, ms_transition_table_+724, 14, "rule 14: array_literal <- . array_literal ',' exp" },
-    { 3, ms_transition_table_+727, 14, "rule 14: array_literal <- array_literal . ',' exp" },
-    { 4, ms_transition_table_+730, 14, "rule 14: array_literal <- array_literal ',' . exp" },
-    { 1, ms_transition_table_+734, 14, "rule 14: array_literal <- array_literal ',' exp ." },
-    { 1, ms_transition_table_+735, 104, "rule 104: exp <- '[' array_literal ']' ." },
-    { 3, ms_transition_table_+736, 105, "rule 105: exp <- . '[' pair_list ']'" },
-    { 4, ms_transition_table_+739, 105, "rule 105: exp <- '[' . pair_list ']'" },
-    { 3, ms_transition_table_+743, 105, "rule 105: exp <- '[' pair_list . ']'" },
-    { 2, ms_transition_table_+746, 117, "START pair_list" },
-    { 1, ms_transition_table_+748, 117, "RETURN pair_list" },
-    { 2, ms_transition_table_+749, 117, "head of: pair_list" },
-    { 4, ms_transition_table_+751, 15, "rule 15: pair_list <- . pair" },
-    { 1, ms_transition_table_+755, 15, "rule 15: pair_list <- pair ." },
-    { 2, ms_transition_table_+756, 117, "START pair" },
-    { 1, ms_transition_table_+758, 117, "RETURN pair" },
-    { 1, ms_transition_table_+759, 117, "head of: pair" },
-    { 4, ms_transition_table_+760, 17, "rule 17: pair <- . exp MAKE_PAIR exp" },
-    { 3, ms_transition_table_+764, 17, "rule 17: pair <- exp . MAKE_PAIR exp" },
-    { 4, ms_transition_table_+767, 17, "rule 17: pair <- exp MAKE_PAIR . exp" },
-    { 1, ms_transition_table_+771, 17, "rule 17: pair <- exp MAKE_PAIR exp ." },
-    { 3, ms_transition_table_+772, 16, "rule 16: pair_list <- . pair_list ',' pair" },
-    { 3, ms_transition_table_+775, 16, "rule 16: pair_list <- pair_list . ',' pair" },
-    { 4, ms_transition_table_+778, 16, "rule 16: pair_list <- pair_list ',' . pair" },
-    { 1, ms_transition_table_+782, 16, "rule 16: pair_list <- pair_list ',' pair ." },
-    { 1, ms_transition_table_+783, 105, "rule 105: exp <- '[' pair_list ']' ." },
-    { 2, ms_transition_table_+784, 106, "rule 106: exp <- . ERROR_" },
-    { 2, ms_transition_table_+786, 106, "rule 106: exp <- ERROR_ ." },
-    { 2, ms_transition_table_+788, 22, "rule 22: statement <- exp ERROR_ ." },
-    { 4, ms_transition_table_+790, 23, "rule 23: statement <- . exp ';'" },
-    { 3, ms_transition_table_+794, 23, "rule 23: statement <- exp . ';'" },
-    { 1, ms_transition_table_+797, 23, "rule 23: statement <- exp ';' ." },
-    { 3, ms_transition_table_+798, 24, "rule 24: statement <- . '(' ERROR_ ')'" },
-    { 2, ms_transition_table_+801, 24, "rule 24: statement <- '(' . ERROR_ ')'" },
-    { 3, ms_transition_table_+803, 24, "rule 24: statement <- '(' ERROR_ . ')'" },
-    { 1, ms_transition_table_+806, 24, "rule 24: statement <- '(' ERROR_ ')' ." },
-    { 3, ms_transition_table_+807, 25, "rule 25: statement <- . '(' ERROR_" },
-    { 2, ms_transition_table_+810, 25, "rule 25: statement <- '(' . ERROR_" },
-    { 2, ms_transition_table_+812, 25, "rule 25: statement <- '(' ERROR_ ." },
-    { 4, ms_transition_table_+814, 26, "rule 26: statement <- . func_definition" },
-    { 1, ms_transition_table_+818, 26, "rule 26: statement <- func_definition ." },
-    { 2, ms_transition_table_+819, 117, "START func_definition" },
-    { 1, ms_transition_table_+821, 117, "RETURN func_definition" },
-    { 5, ms_transition_table_+822, 117, "head of: func_definition" },
-    { 3, ms_transition_table_+827, 1, "rule 1: func_definition <- . FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+830, 1, "rule 1: func_definition <- FUNCTION . IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+833, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER . '(' param_definition ')' '{' statement_list '}'" },
-    { 4, ms_transition_table_+836, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' . param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+840, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition . ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+843, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' . '{' statement_list '}'" },
-    { 4, ms_transition_table_+846, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' . statement_list '}'" },
-    { 3, ms_transition_table_+850, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list . '}'" },
-    { 1, ms_transition_table_+853, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list '}' ." },
-    { 3, ms_transition_table_+854, 2, "rule 2: func_definition <- . FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+857, 2, "rule 2: func_definition <- FUNCTION . IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+860, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER . SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+863, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE . IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+866, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER . '(' param_definition ')' '{' statement_list '}'" },
-    { 4, ms_transition_table_+869, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' . param_definition ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+873, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition . ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+876, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' . '{' statement_list '}'" },
-    { 4, ms_transition_table_+879, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' . statement_list '}'" },
-    { 3, ms_transition_table_+883, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list . '}'" },
-    { 1, ms_transition_table_+886, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}' ." },
-    { 3, ms_transition_table_+887, 3, "rule 3: func_definition <- . FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+890, 3, "rule 3: func_definition <- FUNCTION . IDENTIFIER '(' ERROR_ ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+893, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER . '(' ERROR_ ')' '{' statement_list '}'" },
-    { 2, ms_transition_table_+896, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' . ERROR_ ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+898, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ . ')' '{' statement_list '}'" },
-    { 3, ms_transition_table_+901, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' . '{' statement_list '}'" },
-    { 4, ms_transition_table_+904, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' . statement_list '}'" },
-    { 3, ms_transition_table_+908, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list . '}'" },
-    { 1, ms_transition_table_+911, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list '}' ." },
-    { 3, ms_transition_table_+912, 4, "rule 4: func_definition <- . FUNCTION '(' param_definition ')' '{' ERROR_" },
-    { 3, ms_transition_table_+915, 4, "rule 4: func_definition <- FUNCTION . '(' param_definition ')' '{' ERROR_" },
-    { 4, ms_transition_table_+918, 4, "rule 4: func_definition <- FUNCTION '(' . param_definition ')' '{' ERROR_" },
-    { 3, ms_transition_table_+922, 4, "rule 4: func_definition <- FUNCTION '(' param_definition . ')' '{' ERROR_" },
-    { 3, ms_transition_table_+925, 4, "rule 4: func_definition <- FUNCTION '(' param_definition ')' . '{' ERROR_" },
-    { 2, ms_transition_table_+928, 4, "rule 4: func_definition <- FUNCTION '(' param_definition ')' '{' . ERROR_" },
-    { 2, ms_transition_table_+930, 4, "rule 4: func_definition <- FUNCTION '(' param_definition ')' '{' ERROR_ ." },
-    { 3, ms_transition_table_+932, 5, "rule 5: func_definition <- . FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_" },
-    { 3, ms_transition_table_+935, 5, "rule 5: func_definition <- FUNCTION . IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_" },
-    { 3, ms_transition_table_+938, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER . '(' param_definition ')' '{' statement_list ERROR_" },
-    { 4, ms_transition_table_+941, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' . param_definition ')' '{' statement_list ERROR_" },
-    { 3, ms_transition_table_+945, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition . ')' '{' statement_list ERROR_" },
-    { 3, ms_transition_table_+948, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' . '{' statement_list ERROR_" },
-    { 4, ms_transition_table_+951, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' . statement_list ERROR_" },
-    { 2, ms_transition_table_+955, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list . ERROR_" },
-    { 2, ms_transition_table_+957, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_ ." },
-    { 3, ms_transition_table_+959, 27, "rule 27: statement <- . '{' statement_list '}'" },
-    { 4, ms_transition_table_+962, 27, "rule 27: statement <- '{' . statement_list '}'" },
-    { 3, ms_transition_table_+966, 27, "rule 27: statement <- '{' statement_list . '}'" },
-    { 1, ms_transition_table_+969, 27, "rule 27: statement <- '{' statement_list '}' ." },
-    { 3, ms_transition_table_+970, 28, "rule 28: statement <- . '{' statement_list ERROR_" },
-    { 4, ms_transition_table_+973, 28, "rule 28: statement <- '{' . statement_list ERROR_" },
-    { 2, ms_transition_table_+977, 28, "rule 28: statement <- '{' statement_list . ERROR_" },
-    { 2, ms_transition_table_+979, 28, "rule 28: statement <- '{' statement_list ERROR_ ." },
-    { 4, ms_transition_table_+981, 29, "rule 29: statement <- . vardecl ';'" },
-    { 3, ms_transition_table_+985, 29, "rule 29: statement <- vardecl . ';'" },
-    { 1, ms_transition_table_+988, 29, "rule 29: statement <- vardecl ';' ." },
-    { 4, ms_transition_table_+989, 30, "rule 30: statement <- . vardecl ERROR_ ';'" },
-    { 2, ms_transition_table_+993, 30, "rule 30: statement <- vardecl . ERROR_ ';'" },
-    { 3, ms_transition_table_+995, 30, "rule 30: statement <- vardecl ERROR_ . ';'" },
-    { 1, ms_transition_table_+998, 30, "rule 30: statement <- vardecl ERROR_ ';' ." },
-    { 3, ms_transition_table_+999, 31, "rule 31: statement <- . WHILE '(' exp ')' statement" },
-    { 3, ms_transition_table_+1002, 31, "rule 31: statement <- WHILE . '(' exp ')' statement" },
-    { 4, ms_transition_table_+1005, 31, "rule 31: statement <- WHILE '(' . exp ')' statement" },
-    { 3, ms_transition_table_+1009, 31, "rule 31: statement <- WHILE '(' exp . ')' statement" },
-    { 4, ms_transition_table_+1012, 31, "rule 31: statement <- WHILE '(' exp ')' . statement" },
-    { 1, ms_transition_table_+1016, 31, "rule 31: statement <- WHILE '(' exp ')' statement ." },
-    { 3, ms_transition_table_+1017, 32, "rule 32: statement <- . WHILE '(' ERROR_" },
-    { 3, ms_transition_table_+1020, 32, "rule 32: statement <- WHILE . '(' ERROR_" },
-    { 2, ms_transition_table_+1023, 32, "rule 32: statement <- WHILE '(' . ERROR_" },
-    { 2, ms_transition_table_+1025, 32, "rule 32: statement <- WHILE '(' ERROR_ ." },
-    { 3, ms_transition_table_+1027, 33, "rule 33: statement <- . WHILE ERROR_" },
-    { 2, ms_transition_table_+1030, 33, "rule 33: statement <- WHILE . ERROR_" },
-    { 2, ms_transition_table_+1032, 33, "rule 33: statement <- WHILE ERROR_ ." },
-    { 3, ms_transition_table_+1034, 34, "rule 34: statement <- . DO statement WHILE '(' exp ')'" },
-    { 4, ms_transition_table_+1037, 34, "rule 34: statement <- DO . statement WHILE '(' exp ')'" },
-    { 3, ms_transition_table_+1041, 34, "rule 34: statement <- DO statement . WHILE '(' exp ')'" },
-    { 3, ms_transition_table_+1044, 34, "rule 34: statement <- DO statement WHILE . '(' exp ')'" },
-    { 4, ms_transition_table_+1047, 34, "rule 34: statement <- DO statement WHILE '(' . exp ')'" },
-    { 3, ms_transition_table_+1051, 34, "rule 34: statement <- DO statement WHILE '(' exp . ')'" },
-    { 1, ms_transition_table_+1054, 34, "rule 34: statement <- DO statement WHILE '(' exp ')' ." },
-    { 3, ms_transition_table_+1055, 35, "rule 35: statement <- . DO statement ERROR_" },
-    { 4, ms_transition_table_+1058, 35, "rule 35: statement <- DO . statement ERROR_" },
-    { 2, ms_transition_table_+1062, 35, "rule 35: statement <- DO statement . ERROR_" },
-    { 2, ms_transition_table_+1064, 35, "rule 35: statement <- DO statement ERROR_ ." },
-    { 3, ms_transition_table_+1066, 36, "rule 36: statement <- . DO statement WHILE '(' ERROR_" },
-    { 4, ms_transition_table_+1069, 36, "rule 36: statement <- DO . statement WHILE '(' ERROR_" },
-    { 3, ms_transition_table_+1073, 36, "rule 36: statement <- DO statement . WHILE '(' ERROR_" },
-    { 3, ms_transition_table_+1076, 36, "rule 36: statement <- DO statement WHILE . '(' ERROR_" },
-    { 2, ms_transition_table_+1079, 36, "rule 36: statement <- DO statement WHILE '(' . ERROR_" },
-    { 2, ms_transition_table_+1081, 36, "rule 36: statement <- DO statement WHILE '(' ERROR_ ." },
-    { 3, ms_transition_table_+1083, 37, "rule 37: statement <- . IF '(' exp ')' statement ELSE statement" },
-    { 3, ms_transition_table_+1086, 37, "rule 37: statement <- IF . '(' exp ')' statement ELSE statement" },
-    { 4, ms_transition_table_+1089, 37, "rule 37: statement <- IF '(' . exp ')' statement ELSE statement" },
-    { 3, ms_transition_table_+1093, 37, "rule 37: statement <- IF '(' exp . ')' statement ELSE statement" },
-    { 4, ms_transition_table_+1096, 37, "rule 37: statement <- IF '(' exp ')' . statement ELSE statement" },
-    { 3, ms_transition_table_+1100, 37, "rule 37: statement <- IF '(' exp ')' statement . ELSE statement" },
-    { 4, ms_transition_table_+1103, 37, "rule 37: statement <- IF '(' exp ')' statement ELSE . statement" },
-    { 1, ms_transition_table_+1107, 37, "rule 37: statement <- IF '(' exp ')' statement ELSE statement ." },
-    { 3, ms_transition_table_+1108, 38, "rule 38: statement <- . IF '(' exp ')' statement" },
-    { 3, ms_transition_table_+1111, 38, "rule 38: statement <- IF . '(' exp ')' statement" },
-    { 4, ms_transition_table_+1114, 38, "rule 38: statement <- IF '(' . exp ')' statement" },
-    { 3, ms_transition_table_+1118, 38, "rule 38: statement <- IF '(' exp . ')' statement" },
-    { 4, ms_transition_table_+1121, 38, "rule 38: statement <- IF '(' exp ')' . statement" },
-    { 1, ms_transition_table_+1125, 38, "rule 38: statement <- IF '(' exp ')' statement ." },
-    { 3, ms_transition_table_+1126, 39, "rule 39: statement <- . IF '(' ERROR_" },
-    { 3, ms_transition_table_+1129, 39, "rule 39: statement <- IF . '(' ERROR_" },
-    { 2, ms_transition_table_+1132, 39, "rule 39: statement <- IF '(' . ERROR_" },
-    { 2, ms_transition_table_+1134, 39, "rule 39: statement <- IF '(' ERROR_ ." },
-    { 3, ms_transition_table_+1136, 40, "rule 40: statement <- . IF ERROR_" },
-    { 2, ms_transition_table_+1139, 40, "rule 40: statement <- IF . ERROR_" },
-    { 2, ms_transition_table_+1141, 40, "rule 40: statement <- IF ERROR_ ." },
-    { 3, ms_transition_table_+1143, 41, "rule 41: statement <- . RETURN exp ';'" },
-    { 4, ms_transition_table_+1146, 41, "rule 41: statement <- RETURN . exp ';'" },
-    { 3, ms_transition_table_+1150, 41, "rule 41: statement <- RETURN exp . ';'" },
-    { 1, ms_transition_table_+1153, 41, "rule 41: statement <- RETURN exp ';' ." },
-    { 3, ms_transition_table_+1154, 42, "rule 42: statement <- . RETURN ';'" },
-    { 3, ms_transition_table_+1157, 42, "rule 42: statement <- RETURN . ';'" },
-    { 1, ms_transition_table_+1160, 42, "rule 42: statement <- RETURN ';' ." },
-    { 3, ms_transition_table_+1161, 43, "rule 43: statement <- . FOR '(' vardecl ';' optionalexp ';' optionalexp ')' statement" },
-    { 3, ms_transition_table_+1164, 43, "rule 43: statement <- FOR . '(' vardecl ';' optionalexp ';' optionalexp ')' statement" },
-    { 4, ms_transition_table_+1167, 43, "rule 43: statement <- FOR '(' . vardecl ';' optionalexp ';' optionalexp ')' statement" },
-    { 3, ms_transition_table_+1171, 43, "rule 43: statement <- FOR '(' vardecl . ';' optionalexp ';' optionalexp ')' statement" },
-    { 4, ms_transition_table_+1174, 43, "rule 43: statement <- FOR '(' vardecl ';' . optionalexp ';' optionalexp ')' statement" },
-    { 3, ms_transition_table_+1178, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp . ';' optionalexp ')' statement" },
-    { 2, ms_transition_table_+1181, 117, "START optionalexp" },
-    { 1, ms_transition_table_+1183, 117, "RETURN optionalexp" },
-    { 2, ms_transition_table_+1184, 117, "head of: optionalexp" },
-    { 1, ms_transition_table_+1186, 56, "rule 56: optionalexp <- ." },
-    { 4, ms_transition_table_+1187, 57, "rule 57: optionalexp <- . exp" },
-    { 1, ms_transition_table_+1191, 57, "rule 57: optionalexp <- exp ." },
-    { 4, ms_transition_table_+1192, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' . optionalexp ')' statement" },
-    { 3, ms_transition_table_+1196, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp . ')' statement" },
-    { 4, ms_transition_table_+1199, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp ')' . statement" },
-    { 1, ms_transition_table_+1203, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp ')' statement ." },
-    { 3, ms_transition_table_+1204, 44, "rule 44: statement <- . FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' statement" },
-    { 3, ms_transition_table_+1207, 44, "rule 44: statement <- FOR . '(' optionalexp ';' optionalexp ';' optionalexp ')' statement" },
-    { 4, ms_transition_table_+1210, 44, "rule 44: statement <- FOR '(' . optionalexp ';' optionalexp ';' optionalexp ')' statement" },
-    { 3, ms_transition_table_+1214, 44, "rule 44: statement <- FOR '(' optionalexp . ';' optionalexp ';' optionalexp ')' statement" },
-    { 4, ms_transition_table_+1217, 44, "rule 44: statement <- FOR '(' optionalexp ';' . optionalexp ';' optionalexp ')' statement" },
-    { 3, ms_transition_table_+1221, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp . ';' optionalexp ')' statement" },
-    { 4, ms_transition_table_+1224, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' . optionalexp ')' statement" },
-    { 3, ms_transition_table_+1228, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp . ')' statement" },
-    { 4, ms_transition_table_+1231, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' . statement" },
-    { 1, ms_transition_table_+1235, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' statement ." },
-    { 3, ms_transition_table_+1236, 45, "rule 45: statement <- . FOR '(' ERROR_" },
-    { 3, ms_transition_table_+1239, 45, "rule 45: statement <- FOR . '(' ERROR_" },
-    { 2, ms_transition_table_+1242, 45, "rule 45: statement <- FOR '(' . ERROR_" },
-    { 2, ms_transition_table_+1244, 45, "rule 45: statement <- FOR '(' ERROR_ ." },
-    { 3, ms_transition_table_+1246, 46, "rule 46: statement <- . FOR ERROR_" },
-    { 2, ms_transition_table_+1249, 46, "rule 46: statement <- FOR . ERROR_" },
-    { 2, ms_transition_table_+1251, 46, "rule 46: statement <- FOR ERROR_ ." },
-    { 3, ms_transition_table_+1253, 47, "rule 47: statement <- . FOREACH '(' vardecl ')' WITHIN exp statement" },
-    { 3, ms_transition_table_+1256, 47, "rule 47: statement <- FOREACH . '(' vardecl ')' WITHIN exp statement" },
-    { 4, ms_transition_table_+1259, 47, "rule 47: statement <- FOREACH '(' . vardecl ')' WITHIN exp statement" },
-    { 3, ms_transition_table_+1263, 47, "rule 47: statement <- FOREACH '(' vardecl . ')' WITHIN exp statement" },
-    { 3, ms_transition_table_+1266, 47, "rule 47: statement <- FOREACH '(' vardecl ')' . WITHIN exp statement" },
-    { 4, ms_transition_table_+1269, 47, "rule 47: statement <- FOREACH '(' vardecl ')' WITHIN . exp statement" },
-    { 4, ms_transition_table_+1273, 47, "rule 47: statement <- FOREACH '(' vardecl ')' WITHIN exp . statement" },
-    { 1, ms_transition_table_+1277, 47, "rule 47: statement <- FOREACH '(' vardecl ')' WITHIN exp statement ." },
-    { 3, ms_transition_table_+1278, 48, "rule 48: statement <- . FOREACH IDENTIFIER WITHIN exp statement" },
-    { 3, ms_transition_table_+1281, 48, "rule 48: statement <- FOREACH . IDENTIFIER WITHIN exp statement" },
-    { 3, ms_transition_table_+1284, 48, "rule 48: statement <- FOREACH IDENTIFIER . WITHIN exp statement" },
-    { 4, ms_transition_table_+1287, 48, "rule 48: statement <- FOREACH IDENTIFIER WITHIN . exp statement" },
-    { 4, ms_transition_table_+1291, 48, "rule 48: statement <- FOREACH IDENTIFIER WITHIN exp . statement" },
-    { 1, ms_transition_table_+1295, 48, "rule 48: statement <- FOREACH IDENTIFIER WITHIN exp statement ." },
-    { 3, ms_transition_table_+1296, 49, "rule 49: statement <- . BREAK ';'" },
-    { 3, ms_transition_table_+1299, 49, "rule 49: statement <- BREAK . ';'" },
-    { 1, ms_transition_table_+1302, 49, "rule 49: statement <- BREAK ';' ." },
-    { 3, ms_transition_table_+1303, 50, "rule 50: statement <- . BREAK ERROR_" },
-    { 2, ms_transition_table_+1306, 50, "rule 50: statement <- BREAK . ERROR_" },
-    { 2, ms_transition_table_+1308, 50, "rule 50: statement <- BREAK ERROR_ ." },
-    { 3, ms_transition_table_+1310, 51, "rule 51: statement <- . BREAK" },
-    { 1, ms_transition_table_+1313, 51, "rule 51: statement <- BREAK ." },
-    { 3, ms_transition_table_+1314, 52, "rule 52: statement <- . CONTINUE ';'" },
-    { 3, ms_transition_table_+1317, 52, "rule 52: statement <- CONTINUE . ';'" },
-    { 1, ms_transition_table_+1320, 52, "rule 52: statement <- CONTINUE ';' ." },
-    { 3, ms_transition_table_+1321, 53, "rule 53: statement <- . CONTINUE ERROR_" },
-    { 2, ms_transition_table_+1324, 53, "rule 53: statement <- CONTINUE . ERROR_" },
-    { 2, ms_transition_table_+1326, 53, "rule 53: statement <- CONTINUE ERROR_ ." },
-    { 3, ms_transition_table_+1328, 54, "rule 54: statement <- . CONTINUE" },
-    { 1, ms_transition_table_+1331, 54, "rule 54: statement <- CONTINUE ." },
-    { 3, ms_transition_table_+1332, 55, "rule 55: statement <- . SWITCH '(' exp ')' '{' case_list '}'" },
-    { 3, ms_transition_table_+1335, 55, "rule 55: statement <- SWITCH . '(' exp ')' '{' case_list '}'" },
-    { 4, ms_transition_table_+1338, 55, "rule 55: statement <- SWITCH '(' . exp ')' '{' case_list '}'" },
-    { 3, ms_transition_table_+1342, 55, "rule 55: statement <- SWITCH '(' exp . ')' '{' case_list '}'" },
-    { 3, ms_transition_table_+1345, 55, "rule 55: statement <- SWITCH '(' exp ')' . '{' case_list '}'" },
-    { 4, ms_transition_table_+1348, 55, "rule 55: statement <- SWITCH '(' exp ')' '{' . case_list '}'" },
-    { 3, ms_transition_table_+1352, 55, "rule 55: statement <- SWITCH '(' exp ')' '{' case_list . '}'" },
-    { 2, ms_transition_table_+1355, 117, "START case_list" },
-    { 1, ms_transition_table_+1357, 117, "RETURN case_list" },
-    { 4, ms_transition_table_+1358, 117, "head of: case_list" },
-    { 3, ms_transition_table_+1362, 61, "rule 61: case_list <- . case_list CASE value CASE_DELIM statement_list" },
-    { 3, ms_transition_table_+1365, 61, "rule 61: case_list <- case_list . CASE value CASE_DELIM statement_list" },
-    { 4, ms_transition_table_+1368, 61, "rule 61: case_list <- case_list CASE . value CASE_DELIM statement_list" },
-    { 3, ms_transition_table_+1372, 61, "rule 61: case_list <- case_list CASE value . CASE_DELIM statement_list" },
-    { 4, ms_transition_table_+1375, 61, "rule 61: case_list <- case_list CASE value CASE_DELIM . statement_list" },
-    { 1, ms_transition_table_+1379, 61, "rule 61: case_list <- case_list CASE value CASE_DELIM statement_list ." },
-    { 3, ms_transition_table_+1380, 62, "rule 62: case_list <- . CASE value CASE_DELIM statement_list" },
-    { 4, ms_transition_table_+1383, 62, "rule 62: case_list <- CASE . value CASE_DELIM statement_list" },
-    { 3, ms_transition_table_+1387, 62, "rule 62: case_list <- CASE value . CASE_DELIM statement_list" },
-    { 4, ms_transition_table_+1390, 62, "rule 62: case_list <- CASE value CASE_DELIM . statement_list" },
-    { 1, ms_transition_table_+1394, 62, "rule 62: case_list <- CASE value CASE_DELIM statement_list ." },
-    { 3, ms_transition_table_+1395, 63, "rule 63: case_list <- . DEFAULT CASE_DELIM statement_list" },
-    { 3, ms_transition_table_+1398, 63, "rule 63: case_list <- DEFAULT . CASE_DELIM statement_list" },
-    { 4, ms_transition_table_+1401, 63, "rule 63: case_list <- DEFAULT CASE_DELIM . statement_list" },
-    { 1, ms_transition_table_+1405, 63, "rule 63: case_list <- DEFAULT CASE_DELIM statement_list ." },
-    { 3, ms_transition_table_+1406, 64, "rule 64: case_list <- . case_list DEFAULT CASE_DELIM statement_list" },
-    { 3, ms_transition_table_+1409, 64, "rule 64: case_list <- case_list . DEFAULT CASE_DELIM statement_list" },
-    { 3, ms_transition_table_+1412, 64, "rule 64: case_list <- case_list DEFAULT . CASE_DELIM statement_list" },
-    { 4, ms_transition_table_+1415, 64, "rule 64: case_list <- case_list DEFAULT CASE_DELIM . statement_list" },
-    { 1, ms_transition_table_+1419, 64, "rule 64: case_list <- case_list DEFAULT CASE_DELIM statement_list ." },
-    { 1, ms_transition_table_+1420, 55, "rule 55: statement <- SWITCH '(' exp ')' '{' case_list '}' ." },
-    { 1, ms_transition_table_+1421, 0, "rule 0: root <- statement_list END_ ." }
+    { 1, ms_transition_table_+0, 117, "FALLBACK" },
+    { 2, ms_transition_table_+1, 117, "START root" },
+    { 1, ms_transition_table_+3, 117, "RETURN root" },
+    { 1, ms_transition_table_+4, 117, "head of: root" },
+    { 4, ms_transition_table_+5, 0, "rule 0: root <- . statement_list END_" },
+    { 3, ms_transition_table_+9, 0, "rule 0: root <- statement_list . END_" },
+    { 2, ms_transition_table_+12, 117, "START statement_list" },
+    { 1, ms_transition_table_+14, 117, "RETURN statement_list" },
+    { 2, ms_transition_table_+15, 117, "head of: statement_list" },
+    { 1, ms_transition_table_+17, 10, "rule 10: statement_list <- ." },
+    { 3, ms_transition_table_+18, 11, "rule 11: statement_list <- . statement_list statement" },
+    { 4, ms_transition_table_+21, 11, "rule 11: statement_list <- statement_list . statement" },
+    { 1, ms_transition_table_+25, 11, "rule 11: statement_list <- statement_list statement ." },
+    { 2, ms_transition_table_+26, 117, "START statement" },
+    { 1, ms_transition_table_+28, 117, "RETURN statement" },
+    { 38, ms_transition_table_+29, 117, "head of: statement" },
+    { 3, ms_transition_table_+67, 18, "rule 18: statement <- . INCLUDE STRING ';'" },
+    { 3, ms_transition_table_+70, 18, "rule 18: statement <- INCLUDE . STRING ';'" },
+    { 3, ms_transition_table_+73, 18, "rule 18: statement <- INCLUDE STRING . ';'" },
+    { 1, ms_transition_table_+76, 18, "rule 18: statement <- INCLUDE STRING ';' ." },
+    { 3, ms_transition_table_+77, 19, "rule 19: statement <- . IMPORT STRING ';'" },
+    { 3, ms_transition_table_+80, 19, "rule 19: statement <- IMPORT . STRING ';'" },
+    { 3, ms_transition_table_+83, 19, "rule 19: statement <- IMPORT STRING . ';'" },
+    { 1, ms_transition_table_+86, 19, "rule 19: statement <- IMPORT STRING ';' ." },
+    { 3, ms_transition_table_+87, 20, "rule 20: statement <- . ';'" },
+    { 1, ms_transition_table_+90, 20, "rule 20: statement <- ';' ." },
+    { 2, ms_transition_table_+91, 21, "rule 21: statement <- . ERROR_ ';'" },
+    { 4, ms_transition_table_+93, 21, "rule 21: statement <- ERROR_ . ';'" },
+    { 1, ms_transition_table_+97, 21, "rule 21: statement <- ERROR_ ';' ." },
+    { 4, ms_transition_table_+98, 22, "rule 22: statement <- . exp ERROR_" },
+    { 2, ms_transition_table_+102, 22, "rule 22: statement <- exp . ERROR_" },
+    { 2, ms_transition_table_+104, 117, "START exp" },
+    { 1, ms_transition_table_+106, 117, "RETURN exp" },
+    { 42, ms_transition_table_+107, 117, "head of: exp" },
+    { 4, ms_transition_table_+149, 65, "rule 65: exp <- . call" },
+    { 1, ms_transition_table_+153, 65, "rule 65: exp <- call ." },
+    { 2, ms_transition_table_+154, 117, "START call" },
+    { 1, ms_transition_table_+156, 117, "RETURN call" },
+    { 2, ms_transition_table_+157, 117, "head of: call" },
+    { 4, ms_transition_table_+159, 107, "rule 107: call <- . exp '(' param_list ')'" },
+    { 3, ms_transition_table_+163, 107, "rule 107: call <- exp . '(' param_list ')'" },
+    { 4, ms_transition_table_+166, 107, "rule 107: call <- exp '(' . param_list ')'" },
+    { 3, ms_transition_table_+170, 107, "rule 107: call <- exp '(' param_list . ')'" },
+    { 2, ms_transition_table_+173, 117, "START param_list" },
+    { 1, ms_transition_table_+175, 117, "RETURN param_list" },
+    { 4, ms_transition_table_+176, 117, "head of: param_list" },
+    { 4, ms_transition_table_+180, 113, "rule 113: param_list <- . exp" },
+    { 1, ms_transition_table_+184, 113, "rule 113: param_list <- exp ." },
+    { 3, ms_transition_table_+185, 114, "rule 114: param_list <- . param_list ',' exp" },
+    { 3, ms_transition_table_+188, 114, "rule 114: param_list <- param_list . ',' exp" },
+    { 4, ms_transition_table_+191, 114, "rule 114: param_list <- param_list ',' . exp" },
+    { 1, ms_transition_table_+195, 114, "rule 114: param_list <- param_list ',' exp ." },
+    { 1, ms_transition_table_+196, 115, "rule 115: param_list <- ." },
+    { 2, ms_transition_table_+197, 116, "rule 116: param_list <- . ERROR_" },
+    { 2, ms_transition_table_+199, 116, "rule 116: param_list <- ERROR_ ." },
+    { 1, ms_transition_table_+201, 107, "rule 107: call <- exp '(' param_list ')' ." },
+    { 4, ms_transition_table_+202, 108, "rule 108: call <- . exp '(' ERROR_" },
+    { 3, ms_transition_table_+206, 108, "rule 108: call <- exp . '(' ERROR_" },
+    { 2, ms_transition_table_+209, 108, "rule 108: call <- exp '(' . ERROR_" },
+    { 2, ms_transition_table_+211, 108, "rule 108: call <- exp '(' ERROR_ ." },
+    { 4, ms_transition_table_+213, 66, "rule 66: exp <- . value" },
+    { 1, ms_transition_table_+217, 66, "rule 66: exp <- value ." },
+    { 2, ms_transition_table_+218, 117, "START value" },
+    { 1, ms_transition_table_+220, 117, "RETURN value" },
+    { 3, ms_transition_table_+221, 117, "head of: value" },
+    { 3, ms_transition_table_+224, 58, "rule 58: value <- . LITERAL" },
+    { 1, ms_transition_table_+227, 58, "rule 58: value <- LITERAL ." },
+    { 3, ms_transition_table_+228, 59, "rule 59: value <- . STRING" },
+    { 1, ms_transition_table_+231, 59, "rule 59: value <- STRING ." },
+    { 3, ms_transition_table_+232, 60, "rule 60: value <- . IDENTIFIER" },
+    { 1, ms_transition_table_+235, 60, "rule 60: value <- IDENTIFIER ." },
+    { 3, ms_transition_table_+236, 67, "rule 67: exp <- . IDENTIFIER SCOPE IDENTIFIER" },
+    { 3, ms_transition_table_+239, 67, "rule 67: exp <- IDENTIFIER . SCOPE IDENTIFIER" },
+    { 3, ms_transition_table_+242, 67, "rule 67: exp <- IDENTIFIER SCOPE . IDENTIFIER" },
+    { 1, ms_transition_table_+245, 67, "rule 67: exp <- IDENTIFIER SCOPE IDENTIFIER ." },
+    { 3, ms_transition_table_+246, 68, "rule 68: exp <- . exp '+' exp" },
+    { 3, ms_transition_table_+249, 68, "rule 68: exp <- exp . '+' exp" },
+    { 4, ms_transition_table_+252, 68, "rule 68: exp <- exp '+' . exp" },
+    { 1, ms_transition_table_+256, 68, "rule 68: exp <- exp '+' exp ." },
+    { 3, ms_transition_table_+257, 69, "rule 69: exp <- . exp '-' exp" },
+    { 3, ms_transition_table_+260, 69, "rule 69: exp <- exp . '-' exp" },
+    { 4, ms_transition_table_+263, 69, "rule 69: exp <- exp '-' . exp" },
+    { 1, ms_transition_table_+267, 69, "rule 69: exp <- exp '-' exp ." },
+    { 3, ms_transition_table_+268, 70, "rule 70: exp <- . exp BINOP_MULT_DIV_MOD exp" },
+    { 3, ms_transition_table_+271, 70, "rule 70: exp <- exp . BINOP_MULT_DIV_MOD exp" },
+    { 4, ms_transition_table_+274, 70, "rule 70: exp <- exp BINOP_MULT_DIV_MOD . exp" },
+    { 1, ms_transition_table_+278, 70, "rule 70: exp <- exp BINOP_MULT_DIV_MOD exp ." },
+    { 3, ms_transition_table_+279, 71, "rule 71: exp <- . exp D exp" },
+    { 3, ms_transition_table_+282, 71, "rule 71: exp <- exp . D exp" },
+    { 4, ms_transition_table_+285, 71, "rule 71: exp <- exp D . exp" },
+    { 1, ms_transition_table_+289, 71, "rule 71: exp <- exp D exp ." },
+    { 3, ms_transition_table_+290, 72, "rule 72: exp <- . exp '=' exp" },
+    { 3, ms_transition_table_+293, 72, "rule 72: exp <- exp . '=' exp" },
+    { 4, ms_transition_table_+296, 72, "rule 72: exp <- exp '=' . exp" },
+    { 1, ms_transition_table_+300, 72, "rule 72: exp <- exp '=' exp ." },
+    { 3, ms_transition_table_+301, 73, "rule 73: exp <- . exp BINOP_ASSIGNMENT exp" },
+    { 3, ms_transition_table_+304, 73, "rule 73: exp <- exp . BINOP_ASSIGNMENT exp" },
+    { 4, ms_transition_table_+307, 73, "rule 73: exp <- exp BINOP_ASSIGNMENT . exp" },
+    { 1, ms_transition_table_+311, 73, "rule 73: exp <- exp BINOP_ASSIGNMENT exp ." },
+    { 3, ms_transition_table_+312, 74, "rule 74: exp <- . exp '^' exp" },
+    { 3, ms_transition_table_+315, 74, "rule 74: exp <- exp . '^' exp" },
+    { 4, ms_transition_table_+318, 74, "rule 74: exp <- exp '^' . exp" },
+    { 1, ms_transition_table_+322, 74, "rule 74: exp <- exp '^' exp ." },
+    { 3, ms_transition_table_+323, 75, "rule 75: exp <- . exp OR exp" },
+    { 3, ms_transition_table_+326, 75, "rule 75: exp <- exp . OR exp" },
+    { 4, ms_transition_table_+329, 75, "rule 75: exp <- exp OR . exp" },
+    { 1, ms_transition_table_+333, 75, "rule 75: exp <- exp OR exp ." },
+    { 3, ms_transition_table_+334, 76, "rule 76: exp <- . exp AND exp" },
+    { 3, ms_transition_table_+337, 76, "rule 76: exp <- exp . AND exp" },
+    { 4, ms_transition_table_+340, 76, "rule 76: exp <- exp AND . exp" },
+    { 1, ms_transition_table_+344, 76, "rule 76: exp <- exp AND exp ." },
+    { 3, ms_transition_table_+345, 77, "rule 77: exp <- . exp BINOP_COMPARE exp" },
+    { 3, ms_transition_table_+348, 77, "rule 77: exp <- exp . BINOP_COMPARE exp" },
+    { 4, ms_transition_table_+351, 77, "rule 77: exp <- exp BINOP_COMPARE . exp" },
+    { 1, ms_transition_table_+355, 77, "rule 77: exp <- exp BINOP_COMPARE exp ." },
+    { 3, ms_transition_table_+356, 78, "rule 78: exp <- . exp BIN_OR exp" },
+    { 3, ms_transition_table_+359, 78, "rule 78: exp <- exp . BIN_OR exp" },
+    { 4, ms_transition_table_+362, 78, "rule 78: exp <- exp BIN_OR . exp" },
+    { 1, ms_transition_table_+366, 78, "rule 78: exp <- exp BIN_OR exp ." },
+    { 3, ms_transition_table_+367, 79, "rule 79: exp <- . exp BIN_AND exp" },
+    { 3, ms_transition_table_+370, 79, "rule 79: exp <- exp . BIN_AND exp" },
+    { 4, ms_transition_table_+373, 79, "rule 79: exp <- exp BIN_AND . exp" },
+    { 1, ms_transition_table_+377, 79, "rule 79: exp <- exp BIN_AND exp ." },
+    { 3, ms_transition_table_+378, 80, "rule 80: exp <- . BIN_NOT exp" },
+    { 4, ms_transition_table_+381, 80, "rule 80: exp <- BIN_NOT . exp" },
+    { 1, ms_transition_table_+385, 80, "rule 80: exp <- BIN_NOT exp ." },
+    { 3, ms_transition_table_+386, 81, "rule 81: exp <- . '(' ERROR_ ')'" },
+    { 2, ms_transition_table_+389, 81, "rule 81: exp <- '(' . ERROR_ ')'" },
+    { 4, ms_transition_table_+391, 81, "rule 81: exp <- '(' ERROR_ . ')'" },
+    { 1, ms_transition_table_+395, 81, "rule 81: exp <- '(' ERROR_ ')' ." },
+    { 3, ms_transition_table_+396, 82, "rule 82: exp <- . '(' exp ')'" },
+    { 4, ms_transition_table_+399, 82, "rule 82: exp <- '(' . exp ')'" },
+    { 3, ms_transition_table_+403, 82, "rule 82: exp <- '(' exp . ')'" },
+    { 1, ms_transition_table_+406, 82, "rule 82: exp <- '(' exp ')' ." },
+    { 3, ms_transition_table_+407, 83, "rule 83: exp <- . '-' exp" },
+    { 4, ms_transition_table_+410, 83, "rule 83: exp <- '-' . exp" },
+    { 1, ms_transition_table_+414, 83, "rule 83: exp <- '-' exp ." },
+    { 3, ms_transition_table_+415, 84, "rule 84: exp <- . '+' exp" },
+    { 4, ms_transition_table_+418, 84, "rule 84: exp <- '+' . exp" },
+    { 1, ms_transition_table_+422, 84, "rule 84: exp <- '+' exp ." },
+    { 3, ms_transition_table_+423, 85, "rule 85: exp <- . NOT ERROR_" },
+    { 2, ms_transition_table_+426, 85, "rule 85: exp <- NOT . ERROR_" },
+    { 2, ms_transition_table_+428, 85, "rule 85: exp <- NOT ERROR_ ." },
+    { 3, ms_transition_table_+430, 86, "rule 86: exp <- . NOT exp" },
+    { 4, ms_transition_table_+433, 86, "rule 86: exp <- NOT . exp" },
+    { 1, ms_transition_table_+437, 86, "rule 86: exp <- NOT exp ." },
+    { 3, ms_transition_table_+438, 87, "rule 87: exp <- . exp '[' exp ']'" },
+    { 3, ms_transition_table_+441, 87, "rule 87: exp <- exp . '[' exp ']'" },
+    { 4, ms_transition_table_+444, 87, "rule 87: exp <- exp '[' . exp ']'" },
+    { 3, ms_transition_table_+448, 87, "rule 87: exp <- exp '[' exp . ']'" },
+    { 1, ms_transition_table_+451, 87, "rule 87: exp <- exp '[' exp ']' ." },
+    { 3, ms_transition_table_+452, 88, "rule 88: exp <- . INCREMENT exp" },
+    { 4, ms_transition_table_+455, 88, "rule 88: exp <- INCREMENT . exp" },
+    { 1, ms_transition_table_+459, 88, "rule 88: exp <- INCREMENT exp ." },
+    { 3, ms_transition_table_+460, 89, "rule 89: exp <- . INCREMENT ERROR_" },
+    { 2, ms_transition_table_+463, 89, "rule 89: exp <- INCREMENT . ERROR_" },
+    { 2, ms_transition_table_+465, 89, "rule 89: exp <- INCREMENT ERROR_ ." },
+    { 3, ms_transition_table_+467, 90, "rule 90: exp <- . exp INCREMENT" },
+    { 3, ms_transition_table_+470, 90, "rule 90: exp <- exp . INCREMENT" },
+    { 1, ms_transition_table_+473, 90, "rule 90: exp <- exp INCREMENT ." },
+    { 3, ms_transition_table_+474, 91, "rule 91: exp <- . DECREMENT exp" },
+    { 4, ms_transition_table_+477, 91, "rule 91: exp <- DECREMENT . exp" },
+    { 1, ms_transition_table_+481, 91, "rule 91: exp <- DECREMENT exp ." },
+    { 3, ms_transition_table_+482, 92, "rule 92: exp <- . DECREMENT ERROR_" },
+    { 2, ms_transition_table_+485, 92, "rule 92: exp <- DECREMENT . ERROR_" },
+    { 2, ms_transition_table_+487, 92, "rule 92: exp <- DECREMENT ERROR_ ." },
+    { 3, ms_transition_table_+489, 93, "rule 93: exp <- . exp DECREMENT" },
+    { 3, ms_transition_table_+492, 93, "rule 93: exp <- exp . DECREMENT" },
+    { 1, ms_transition_table_+495, 93, "rule 93: exp <- exp DECREMENT ." },
+    { 3, ms_transition_table_+496, 94, "rule 94: exp <- . REMOVE '(' exp ',' exp ')'" },
+    { 3, ms_transition_table_+499, 94, "rule 94: exp <- REMOVE . '(' exp ',' exp ')'" },
+    { 4, ms_transition_table_+502, 94, "rule 94: exp <- REMOVE '(' . exp ',' exp ')'" },
+    { 3, ms_transition_table_+506, 94, "rule 94: exp <- REMOVE '(' exp . ',' exp ')'" },
+    { 4, ms_transition_table_+509, 94, "rule 94: exp <- REMOVE '(' exp ',' . exp ')'" },
+    { 3, ms_transition_table_+513, 94, "rule 94: exp <- REMOVE '(' exp ',' exp . ')'" },
+    { 1, ms_transition_table_+516, 94, "rule 94: exp <- REMOVE '(' exp ',' exp ')' ." },
+    { 3, ms_transition_table_+517, 95, "rule 95: exp <- . POP exp" },
+    { 4, ms_transition_table_+520, 95, "rule 95: exp <- POP . exp" },
+    { 1, ms_transition_table_+524, 95, "rule 95: exp <- POP exp ." },
+    { 3, ms_transition_table_+525, 96, "rule 96: exp <- . POP ERROR_" },
+    { 2, ms_transition_table_+528, 96, "rule 96: exp <- POP . ERROR_" },
+    { 2, ms_transition_table_+530, 96, "rule 96: exp <- POP ERROR_ ." },
+    { 3, ms_transition_table_+532, 97, "rule 97: exp <- . POPB exp" },
+    { 4, ms_transition_table_+535, 97, "rule 97: exp <- POPB . exp" },
+    { 1, ms_transition_table_+539, 97, "rule 97: exp <- POPB exp ." },
+    { 3, ms_transition_table_+540, 98, "rule 98: exp <- . POPB ERROR_" },
+    { 2, ms_transition_table_+543, 98, "rule 98: exp <- POPB . ERROR_" },
+    { 2, ms_transition_table_+545, 98, "rule 98: exp <- POPB ERROR_ ." },
+    { 3, ms_transition_table_+547, 99, "rule 99: exp <- . PUSH exp ',' exp" },
+    { 4, ms_transition_table_+550, 99, "rule 99: exp <- PUSH . exp ',' exp" },
+    { 3, ms_transition_table_+554, 99, "rule 99: exp <- PUSH exp . ',' exp" },
+    { 4, ms_transition_table_+557, 99, "rule 99: exp <- PUSH exp ',' . exp" },
+    { 1, ms_transition_table_+561, 99, "rule 99: exp <- PUSH exp ',' exp ." },
+    { 3, ms_transition_table_+562, 100, "rule 100: exp <- . PUSH ERROR_" },
+    { 2, ms_transition_table_+565, 100, "rule 100: exp <- PUSH . ERROR_" },
+    { 2, ms_transition_table_+567, 100, "rule 100: exp <- PUSH ERROR_ ." },
+    { 3, ms_transition_table_+569, 101, "rule 101: exp <- . PUSHB exp ',' exp" },
+    { 4, ms_transition_table_+572, 101, "rule 101: exp <- PUSHB . exp ',' exp" },
+    { 3, ms_transition_table_+576, 101, "rule 101: exp <- PUSHB exp . ',' exp" },
+    { 4, ms_transition_table_+579, 101, "rule 101: exp <- PUSHB exp ',' . exp" },
+    { 1, ms_transition_table_+583, 101, "rule 101: exp <- PUSHB exp ',' exp ." },
+    { 3, ms_transition_table_+584, 102, "rule 102: exp <- . PUSHB ERROR_" },
+    { 2, ms_transition_table_+587, 102, "rule 102: exp <- PUSHB . ERROR_" },
+    { 2, ms_transition_table_+589, 102, "rule 102: exp <- PUSHB ERROR_ ." },
+    { 3, ms_transition_table_+591, 103, "rule 103: exp <- . FUNCTION '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+594, 103, "rule 103: exp <- FUNCTION . '(' param_definition ')' '{' statement_list '}'" },
+    { 4, ms_transition_table_+597, 103, "rule 103: exp <- FUNCTION '(' . param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+601, 103, "rule 103: exp <- FUNCTION '(' param_definition . ')' '{' statement_list '}'" },
+    { 2, ms_transition_table_+604, 117, "START param_definition" },
+    { 1, ms_transition_table_+606, 117, "RETURN param_definition" },
+    { 4, ms_transition_table_+607, 117, "head of: param_definition" },
+    { 1, ms_transition_table_+611, 6, "rule 6: param_definition <- ." },
+    { 4, ms_transition_table_+612, 7, "rule 7: param_definition <- . vardecl" },
+    { 1, ms_transition_table_+616, 7, "rule 7: param_definition <- vardecl ." },
+    { 2, ms_transition_table_+617, 117, "START vardecl" },
+    { 1, ms_transition_table_+619, 117, "RETURN vardecl" },
+    { 4, ms_transition_table_+620, 117, "head of: vardecl" },
+    { 3, ms_transition_table_+624, 109, "rule 109: vardecl <- . VAR IDENTIFIER" },
+    { 3, ms_transition_table_+627, 109, "rule 109: vardecl <- VAR . IDENTIFIER" },
+    { 1, ms_transition_table_+630, 109, "rule 109: vardecl <- VAR IDENTIFIER ." },
+    { 3, ms_transition_table_+631, 110, "rule 110: vardecl <- . VAR IDENTIFIER '=' exp" },
+    { 3, ms_transition_table_+634, 110, "rule 110: vardecl <- VAR . IDENTIFIER '=' exp" },
+    { 3, ms_transition_table_+637, 110, "rule 110: vardecl <- VAR IDENTIFIER . '=' exp" },
+    { 4, ms_transition_table_+640, 110, "rule 110: vardecl <- VAR IDENTIFIER '=' . exp" },
+    { 1, ms_transition_table_+644, 110, "rule 110: vardecl <- VAR IDENTIFIER '=' exp ." },
+    { 3, ms_transition_table_+645, 111, "rule 111: vardecl <- . CONSTANT IDENTIFIER '=' exp" },
+    { 3, ms_transition_table_+648, 111, "rule 111: vardecl <- CONSTANT . IDENTIFIER '=' exp" },
+    { 3, ms_transition_table_+651, 111, "rule 111: vardecl <- CONSTANT IDENTIFIER . '=' exp" },
+    { 4, ms_transition_table_+654, 111, "rule 111: vardecl <- CONSTANT IDENTIFIER '=' . exp" },
+    { 1, ms_transition_table_+658, 111, "rule 111: vardecl <- CONSTANT IDENTIFIER '=' exp ." },
+    { 3, ms_transition_table_+659, 112, "rule 112: vardecl <- . VAR IDENTIFIER '[' exp ']'" },
+    { 3, ms_transition_table_+662, 112, "rule 112: vardecl <- VAR . IDENTIFIER '[' exp ']'" },
+    { 3, ms_transition_table_+665, 112, "rule 112: vardecl <- VAR IDENTIFIER . '[' exp ']'" },
+    { 4, ms_transition_table_+668, 112, "rule 112: vardecl <- VAR IDENTIFIER '[' . exp ']'" },
+    { 3, ms_transition_table_+672, 112, "rule 112: vardecl <- VAR IDENTIFIER '[' exp . ']'" },
+    { 1, ms_transition_table_+675, 112, "rule 112: vardecl <- VAR IDENTIFIER '[' exp ']' ." },
+    { 3, ms_transition_table_+676, 8, "rule 8: param_definition <- . param_definition ',' vardecl" },
+    { 3, ms_transition_table_+679, 8, "rule 8: param_definition <- param_definition . ',' vardecl" },
+    { 4, ms_transition_table_+682, 8, "rule 8: param_definition <- param_definition ',' . vardecl" },
+    { 1, ms_transition_table_+686, 8, "rule 8: param_definition <- param_definition ',' vardecl ." },
+    { 3, ms_transition_table_+687, 9, "rule 9: param_definition <- . param_definition ERROR_" },
+    { 2, ms_transition_table_+690, 9, "rule 9: param_definition <- param_definition . ERROR_" },
+    { 2, ms_transition_table_+692, 9, "rule 9: param_definition <- param_definition ERROR_ ." },
+    { 3, ms_transition_table_+694, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' . '{' statement_list '}'" },
+    { 4, ms_transition_table_+697, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' '{' . statement_list '}'" },
+    { 3, ms_transition_table_+701, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' '{' statement_list . '}'" },
+    { 1, ms_transition_table_+704, 103, "rule 103: exp <- FUNCTION '(' param_definition ')' '{' statement_list '}' ." },
+    { 3, ms_transition_table_+705, 104, "rule 104: exp <- . '[' array_literal ']'" },
+    { 4, ms_transition_table_+708, 104, "rule 104: exp <- '[' . array_literal ']'" },
+    { 3, ms_transition_table_+712, 104, "rule 104: exp <- '[' array_literal . ']'" },
+    { 2, ms_transition_table_+715, 117, "START array_literal" },
+    { 1, ms_transition_table_+717, 117, "RETURN array_literal" },
+    { 3, ms_transition_table_+718, 117, "head of: array_literal" },
+    { 1, ms_transition_table_+721, 12, "rule 12: array_literal <- ." },
+    { 4, ms_transition_table_+722, 13, "rule 13: array_literal <- . exp" },
+    { 1, ms_transition_table_+726, 13, "rule 13: array_literal <- exp ." },
+    { 3, ms_transition_table_+727, 14, "rule 14: array_literal <- . array_literal ',' exp" },
+    { 3, ms_transition_table_+730, 14, "rule 14: array_literal <- array_literal . ',' exp" },
+    { 4, ms_transition_table_+733, 14, "rule 14: array_literal <- array_literal ',' . exp" },
+    { 1, ms_transition_table_+737, 14, "rule 14: array_literal <- array_literal ',' exp ." },
+    { 1, ms_transition_table_+738, 104, "rule 104: exp <- '[' array_literal ']' ." },
+    { 3, ms_transition_table_+739, 105, "rule 105: exp <- . '[' pair_list ']'" },
+    { 4, ms_transition_table_+742, 105, "rule 105: exp <- '[' . pair_list ']'" },
+    { 3, ms_transition_table_+746, 105, "rule 105: exp <- '[' pair_list . ']'" },
+    { 2, ms_transition_table_+749, 117, "START pair_list" },
+    { 1, ms_transition_table_+751, 117, "RETURN pair_list" },
+    { 2, ms_transition_table_+752, 117, "head of: pair_list" },
+    { 4, ms_transition_table_+754, 15, "rule 15: pair_list <- . pair" },
+    { 1, ms_transition_table_+758, 15, "rule 15: pair_list <- pair ." },
+    { 2, ms_transition_table_+759, 117, "START pair" },
+    { 1, ms_transition_table_+761, 117, "RETURN pair" },
+    { 1, ms_transition_table_+762, 117, "head of: pair" },
+    { 4, ms_transition_table_+763, 17, "rule 17: pair <- . exp MAKE_PAIR exp" },
+    { 3, ms_transition_table_+767, 17, "rule 17: pair <- exp . MAKE_PAIR exp" },
+    { 4, ms_transition_table_+770, 17, "rule 17: pair <- exp MAKE_PAIR . exp" },
+    { 1, ms_transition_table_+774, 17, "rule 17: pair <- exp MAKE_PAIR exp ." },
+    { 3, ms_transition_table_+775, 16, "rule 16: pair_list <- . pair_list ',' pair" },
+    { 3, ms_transition_table_+778, 16, "rule 16: pair_list <- pair_list . ',' pair" },
+    { 4, ms_transition_table_+781, 16, "rule 16: pair_list <- pair_list ',' . pair" },
+    { 1, ms_transition_table_+785, 16, "rule 16: pair_list <- pair_list ',' pair ." },
+    { 1, ms_transition_table_+786, 105, "rule 105: exp <- '[' pair_list ']' ." },
+    { 2, ms_transition_table_+787, 106, "rule 106: exp <- . ERROR_" },
+    { 2, ms_transition_table_+789, 106, "rule 106: exp <- ERROR_ ." },
+    { 2, ms_transition_table_+791, 22, "rule 22: statement <- exp ERROR_ ." },
+    { 4, ms_transition_table_+793, 23, "rule 23: statement <- . exp ';'" },
+    { 3, ms_transition_table_+797, 23, "rule 23: statement <- exp . ';'" },
+    { 1, ms_transition_table_+800, 23, "rule 23: statement <- exp ';' ." },
+    { 3, ms_transition_table_+801, 24, "rule 24: statement <- . '(' ERROR_ ')'" },
+    { 2, ms_transition_table_+804, 24, "rule 24: statement <- '(' . ERROR_ ')'" },
+    { 4, ms_transition_table_+806, 24, "rule 24: statement <- '(' ERROR_ . ')'" },
+    { 1, ms_transition_table_+810, 24, "rule 24: statement <- '(' ERROR_ ')' ." },
+    { 3, ms_transition_table_+811, 25, "rule 25: statement <- . '(' ERROR_" },
+    { 2, ms_transition_table_+814, 25, "rule 25: statement <- '(' . ERROR_" },
+    { 2, ms_transition_table_+816, 25, "rule 25: statement <- '(' ERROR_ ." },
+    { 4, ms_transition_table_+818, 26, "rule 26: statement <- . func_definition" },
+    { 1, ms_transition_table_+822, 26, "rule 26: statement <- func_definition ." },
+    { 2, ms_transition_table_+823, 117, "START func_definition" },
+    { 1, ms_transition_table_+825, 117, "RETURN func_definition" },
+    { 5, ms_transition_table_+826, 117, "head of: func_definition" },
+    { 3, ms_transition_table_+831, 1, "rule 1: func_definition <- . FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+834, 1, "rule 1: func_definition <- FUNCTION . IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+837, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER . '(' param_definition ')' '{' statement_list '}'" },
+    { 4, ms_transition_table_+840, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' . param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+844, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition . ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+847, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' . '{' statement_list '}'" },
+    { 4, ms_transition_table_+850, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' . statement_list '}'" },
+    { 3, ms_transition_table_+854, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list . '}'" },
+    { 1, ms_transition_table_+857, 1, "rule 1: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list '}' ." },
+    { 3, ms_transition_table_+858, 2, "rule 2: func_definition <- . FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+861, 2, "rule 2: func_definition <- FUNCTION . IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+864, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER . SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+867, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE . IDENTIFIER '(' param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+870, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER . '(' param_definition ')' '{' statement_list '}'" },
+    { 4, ms_transition_table_+873, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' . param_definition ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+877, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition . ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+880, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' . '{' statement_list '}'" },
+    { 4, ms_transition_table_+883, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' . statement_list '}'" },
+    { 3, ms_transition_table_+887, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list . '}'" },
+    { 1, ms_transition_table_+890, 2, "rule 2: func_definition <- FUNCTION IDENTIFIER SCOPE IDENTIFIER '(' param_definition ')' '{' statement_list '}' ." },
+    { 3, ms_transition_table_+891, 3, "rule 3: func_definition <- . FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+894, 3, "rule 3: func_definition <- FUNCTION . IDENTIFIER '(' ERROR_ ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+897, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER . '(' ERROR_ ')' '{' statement_list '}'" },
+    { 2, ms_transition_table_+900, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' . ERROR_ ')' '{' statement_list '}'" },
+    { 4, ms_transition_table_+902, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ . ')' '{' statement_list '}'" },
+    { 3, ms_transition_table_+906, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' . '{' statement_list '}'" },
+    { 4, ms_transition_table_+909, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' . statement_list '}'" },
+    { 3, ms_transition_table_+913, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list . '}'" },
+    { 1, ms_transition_table_+916, 3, "rule 3: func_definition <- FUNCTION IDENTIFIER '(' ERROR_ ')' '{' statement_list '}' ." },
+    { 3, ms_transition_table_+917, 4, "rule 4: func_definition <- . FUNCTION '(' param_definition ')' '{' ERROR_" },
+    { 3, ms_transition_table_+920, 4, "rule 4: func_definition <- FUNCTION . '(' param_definition ')' '{' ERROR_" },
+    { 4, ms_transition_table_+923, 4, "rule 4: func_definition <- FUNCTION '(' . param_definition ')' '{' ERROR_" },
+    { 3, ms_transition_table_+927, 4, "rule 4: func_definition <- FUNCTION '(' param_definition . ')' '{' ERROR_" },
+    { 3, ms_transition_table_+930, 4, "rule 4: func_definition <- FUNCTION '(' param_definition ')' . '{' ERROR_" },
+    { 2, ms_transition_table_+933, 4, "rule 4: func_definition <- FUNCTION '(' param_definition ')' '{' . ERROR_" },
+    { 2, ms_transition_table_+935, 4, "rule 4: func_definition <- FUNCTION '(' param_definition ')' '{' ERROR_ ." },
+    { 3, ms_transition_table_+937, 5, "rule 5: func_definition <- . FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_" },
+    { 3, ms_transition_table_+940, 5, "rule 5: func_definition <- FUNCTION . IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_" },
+    { 3, ms_transition_table_+943, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER . '(' param_definition ')' '{' statement_list ERROR_" },
+    { 4, ms_transition_table_+946, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' . param_definition ')' '{' statement_list ERROR_" },
+    { 3, ms_transition_table_+950, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition . ')' '{' statement_list ERROR_" },
+    { 3, ms_transition_table_+953, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' . '{' statement_list ERROR_" },
+    { 4, ms_transition_table_+956, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' . statement_list ERROR_" },
+    { 2, ms_transition_table_+960, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list . ERROR_" },
+    { 2, ms_transition_table_+962, 5, "rule 5: func_definition <- FUNCTION IDENTIFIER '(' param_definition ')' '{' statement_list ERROR_ ." },
+    { 3, ms_transition_table_+964, 27, "rule 27: statement <- . '{' statement_list '}'" },
+    { 4, ms_transition_table_+967, 27, "rule 27: statement <- '{' . statement_list '}'" },
+    { 3, ms_transition_table_+971, 27, "rule 27: statement <- '{' statement_list . '}'" },
+    { 1, ms_transition_table_+974, 27, "rule 27: statement <- '{' statement_list '}' ." },
+    { 3, ms_transition_table_+975, 28, "rule 28: statement <- . '{' statement_list ERROR_" },
+    { 4, ms_transition_table_+978, 28, "rule 28: statement <- '{' . statement_list ERROR_" },
+    { 2, ms_transition_table_+982, 28, "rule 28: statement <- '{' statement_list . ERROR_" },
+    { 2, ms_transition_table_+984, 28, "rule 28: statement <- '{' statement_list ERROR_ ." },
+    { 4, ms_transition_table_+986, 29, "rule 29: statement <- . vardecl ';'" },
+    { 3, ms_transition_table_+990, 29, "rule 29: statement <- vardecl . ';'" },
+    { 1, ms_transition_table_+993, 29, "rule 29: statement <- vardecl ';' ." },
+    { 4, ms_transition_table_+994, 30, "rule 30: statement <- . vardecl ERROR_ ';'" },
+    { 2, ms_transition_table_+998, 30, "rule 30: statement <- vardecl . ERROR_ ';'" },
+    { 4, ms_transition_table_+1000, 30, "rule 30: statement <- vardecl ERROR_ . ';'" },
+    { 1, ms_transition_table_+1004, 30, "rule 30: statement <- vardecl ERROR_ ';' ." },
+    { 3, ms_transition_table_+1005, 31, "rule 31: statement <- . WHILE '(' exp ')' statement" },
+    { 3, ms_transition_table_+1008, 31, "rule 31: statement <- WHILE . '(' exp ')' statement" },
+    { 4, ms_transition_table_+1011, 31, "rule 31: statement <- WHILE '(' . exp ')' statement" },
+    { 3, ms_transition_table_+1015, 31, "rule 31: statement <- WHILE '(' exp . ')' statement" },
+    { 4, ms_transition_table_+1018, 31, "rule 31: statement <- WHILE '(' exp ')' . statement" },
+    { 1, ms_transition_table_+1022, 31, "rule 31: statement <- WHILE '(' exp ')' statement ." },
+    { 3, ms_transition_table_+1023, 32, "rule 32: statement <- . WHILE '(' ERROR_" },
+    { 3, ms_transition_table_+1026, 32, "rule 32: statement <- WHILE . '(' ERROR_" },
+    { 2, ms_transition_table_+1029, 32, "rule 32: statement <- WHILE '(' . ERROR_" },
+    { 2, ms_transition_table_+1031, 32, "rule 32: statement <- WHILE '(' ERROR_ ." },
+    { 3, ms_transition_table_+1033, 33, "rule 33: statement <- . WHILE ERROR_" },
+    { 2, ms_transition_table_+1036, 33, "rule 33: statement <- WHILE . ERROR_" },
+    { 2, ms_transition_table_+1038, 33, "rule 33: statement <- WHILE ERROR_ ." },
+    { 3, ms_transition_table_+1040, 34, "rule 34: statement <- . DO statement WHILE '(' exp ')'" },
+    { 4, ms_transition_table_+1043, 34, "rule 34: statement <- DO . statement WHILE '(' exp ')'" },
+    { 3, ms_transition_table_+1047, 34, "rule 34: statement <- DO statement . WHILE '(' exp ')'" },
+    { 3, ms_transition_table_+1050, 34, "rule 34: statement <- DO statement WHILE . '(' exp ')'" },
+    { 4, ms_transition_table_+1053, 34, "rule 34: statement <- DO statement WHILE '(' . exp ')'" },
+    { 3, ms_transition_table_+1057, 34, "rule 34: statement <- DO statement WHILE '(' exp . ')'" },
+    { 1, ms_transition_table_+1060, 34, "rule 34: statement <- DO statement WHILE '(' exp ')' ." },
+    { 3, ms_transition_table_+1061, 35, "rule 35: statement <- . DO statement ERROR_" },
+    { 4, ms_transition_table_+1064, 35, "rule 35: statement <- DO . statement ERROR_" },
+    { 2, ms_transition_table_+1068, 35, "rule 35: statement <- DO statement . ERROR_" },
+    { 2, ms_transition_table_+1070, 35, "rule 35: statement <- DO statement ERROR_ ." },
+    { 3, ms_transition_table_+1072, 36, "rule 36: statement <- . DO statement WHILE '(' ERROR_" },
+    { 4, ms_transition_table_+1075, 36, "rule 36: statement <- DO . statement WHILE '(' ERROR_" },
+    { 3, ms_transition_table_+1079, 36, "rule 36: statement <- DO statement . WHILE '(' ERROR_" },
+    { 3, ms_transition_table_+1082, 36, "rule 36: statement <- DO statement WHILE . '(' ERROR_" },
+    { 2, ms_transition_table_+1085, 36, "rule 36: statement <- DO statement WHILE '(' . ERROR_" },
+    { 2, ms_transition_table_+1087, 36, "rule 36: statement <- DO statement WHILE '(' ERROR_ ." },
+    { 3, ms_transition_table_+1089, 37, "rule 37: statement <- . IF '(' exp ')' statement ELSE statement" },
+    { 3, ms_transition_table_+1092, 37, "rule 37: statement <- IF . '(' exp ')' statement ELSE statement" },
+    { 4, ms_transition_table_+1095, 37, "rule 37: statement <- IF '(' . exp ')' statement ELSE statement" },
+    { 3, ms_transition_table_+1099, 37, "rule 37: statement <- IF '(' exp . ')' statement ELSE statement" },
+    { 4, ms_transition_table_+1102, 37, "rule 37: statement <- IF '(' exp ')' . statement ELSE statement" },
+    { 3, ms_transition_table_+1106, 37, "rule 37: statement <- IF '(' exp ')' statement . ELSE statement" },
+    { 4, ms_transition_table_+1109, 37, "rule 37: statement <- IF '(' exp ')' statement ELSE . statement" },
+    { 1, ms_transition_table_+1113, 37, "rule 37: statement <- IF '(' exp ')' statement ELSE statement ." },
+    { 3, ms_transition_table_+1114, 38, "rule 38: statement <- . IF '(' exp ')' statement" },
+    { 3, ms_transition_table_+1117, 38, "rule 38: statement <- IF . '(' exp ')' statement" },
+    { 4, ms_transition_table_+1120, 38, "rule 38: statement <- IF '(' . exp ')' statement" },
+    { 3, ms_transition_table_+1124, 38, "rule 38: statement <- IF '(' exp . ')' statement" },
+    { 4, ms_transition_table_+1127, 38, "rule 38: statement <- IF '(' exp ')' . statement" },
+    { 1, ms_transition_table_+1131, 38, "rule 38: statement <- IF '(' exp ')' statement ." },
+    { 3, ms_transition_table_+1132, 39, "rule 39: statement <- . IF '(' ERROR_" },
+    { 3, ms_transition_table_+1135, 39, "rule 39: statement <- IF . '(' ERROR_" },
+    { 2, ms_transition_table_+1138, 39, "rule 39: statement <- IF '(' . ERROR_" },
+    { 2, ms_transition_table_+1140, 39, "rule 39: statement <- IF '(' ERROR_ ." },
+    { 3, ms_transition_table_+1142, 40, "rule 40: statement <- . IF ERROR_" },
+    { 2, ms_transition_table_+1145, 40, "rule 40: statement <- IF . ERROR_" },
+    { 2, ms_transition_table_+1147, 40, "rule 40: statement <- IF ERROR_ ." },
+    { 3, ms_transition_table_+1149, 41, "rule 41: statement <- . RETURN exp ';'" },
+    { 4, ms_transition_table_+1152, 41, "rule 41: statement <- RETURN . exp ';'" },
+    { 3, ms_transition_table_+1156, 41, "rule 41: statement <- RETURN exp . ';'" },
+    { 1, ms_transition_table_+1159, 41, "rule 41: statement <- RETURN exp ';' ." },
+    { 3, ms_transition_table_+1160, 42, "rule 42: statement <- . RETURN ';'" },
+    { 3, ms_transition_table_+1163, 42, "rule 42: statement <- RETURN . ';'" },
+    { 1, ms_transition_table_+1166, 42, "rule 42: statement <- RETURN ';' ." },
+    { 3, ms_transition_table_+1167, 43, "rule 43: statement <- . FOR '(' vardecl ';' optionalexp ';' optionalexp ')' statement" },
+    { 3, ms_transition_table_+1170, 43, "rule 43: statement <- FOR . '(' vardecl ';' optionalexp ';' optionalexp ')' statement" },
+    { 4, ms_transition_table_+1173, 43, "rule 43: statement <- FOR '(' . vardecl ';' optionalexp ';' optionalexp ')' statement" },
+    { 3, ms_transition_table_+1177, 43, "rule 43: statement <- FOR '(' vardecl . ';' optionalexp ';' optionalexp ')' statement" },
+    { 4, ms_transition_table_+1180, 43, "rule 43: statement <- FOR '(' vardecl ';' . optionalexp ';' optionalexp ')' statement" },
+    { 3, ms_transition_table_+1184, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp . ';' optionalexp ')' statement" },
+    { 2, ms_transition_table_+1187, 117, "START optionalexp" },
+    { 1, ms_transition_table_+1189, 117, "RETURN optionalexp" },
+    { 2, ms_transition_table_+1190, 117, "head of: optionalexp" },
+    { 1, ms_transition_table_+1192, 56, "rule 56: optionalexp <- ." },
+    { 4, ms_transition_table_+1193, 57, "rule 57: optionalexp <- . exp" },
+    { 1, ms_transition_table_+1197, 57, "rule 57: optionalexp <- exp ." },
+    { 4, ms_transition_table_+1198, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' . optionalexp ')' statement" },
+    { 3, ms_transition_table_+1202, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp . ')' statement" },
+    { 4, ms_transition_table_+1205, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp ')' . statement" },
+    { 1, ms_transition_table_+1209, 43, "rule 43: statement <- FOR '(' vardecl ';' optionalexp ';' optionalexp ')' statement ." },
+    { 3, ms_transition_table_+1210, 44, "rule 44: statement <- . FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' statement" },
+    { 3, ms_transition_table_+1213, 44, "rule 44: statement <- FOR . '(' optionalexp ';' optionalexp ';' optionalexp ')' statement" },
+    { 4, ms_transition_table_+1216, 44, "rule 44: statement <- FOR '(' . optionalexp ';' optionalexp ';' optionalexp ')' statement" },
+    { 3, ms_transition_table_+1220, 44, "rule 44: statement <- FOR '(' optionalexp . ';' optionalexp ';' optionalexp ')' statement" },
+    { 4, ms_transition_table_+1223, 44, "rule 44: statement <- FOR '(' optionalexp ';' . optionalexp ';' optionalexp ')' statement" },
+    { 3, ms_transition_table_+1227, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp . ';' optionalexp ')' statement" },
+    { 4, ms_transition_table_+1230, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' . optionalexp ')' statement" },
+    { 3, ms_transition_table_+1234, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp . ')' statement" },
+    { 4, ms_transition_table_+1237, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' . statement" },
+    { 1, ms_transition_table_+1241, 44, "rule 44: statement <- FOR '(' optionalexp ';' optionalexp ';' optionalexp ')' statement ." },
+    { 3, ms_transition_table_+1242, 45, "rule 45: statement <- . FOR '(' ERROR_" },
+    { 3, ms_transition_table_+1245, 45, "rule 45: statement <- FOR . '(' ERROR_" },
+    { 2, ms_transition_table_+1248, 45, "rule 45: statement <- FOR '(' . ERROR_" },
+    { 2, ms_transition_table_+1250, 45, "rule 45: statement <- FOR '(' ERROR_ ." },
+    { 3, ms_transition_table_+1252, 46, "rule 46: statement <- . FOR ERROR_" },
+    { 2, ms_transition_table_+1255, 46, "rule 46: statement <- FOR . ERROR_" },
+    { 2, ms_transition_table_+1257, 46, "rule 46: statement <- FOR ERROR_ ." },
+    { 3, ms_transition_table_+1259, 47, "rule 47: statement <- . FOREACH '(' vardecl ')' WITHIN exp statement" },
+    { 3, ms_transition_table_+1262, 47, "rule 47: statement <- FOREACH . '(' vardecl ')' WITHIN exp statement" },
+    { 4, ms_transition_table_+1265, 47, "rule 47: statement <- FOREACH '(' . vardecl ')' WITHIN exp statement" },
+    { 3, ms_transition_table_+1269, 47, "rule 47: statement <- FOREACH '(' vardecl . ')' WITHIN exp statement" },
+    { 3, ms_transition_table_+1272, 47, "rule 47: statement <- FOREACH '(' vardecl ')' . WITHIN exp statement" },
+    { 4, ms_transition_table_+1275, 47, "rule 47: statement <- FOREACH '(' vardecl ')' WITHIN . exp statement" },
+    { 4, ms_transition_table_+1279, 47, "rule 47: statement <- FOREACH '(' vardecl ')' WITHIN exp . statement" },
+    { 1, ms_transition_table_+1283, 47, "rule 47: statement <- FOREACH '(' vardecl ')' WITHIN exp statement ." },
+    { 3, ms_transition_table_+1284, 48, "rule 48: statement <- . FOREACH IDENTIFIER WITHIN exp statement" },
+    { 3, ms_transition_table_+1287, 48, "rule 48: statement <- FOREACH . IDENTIFIER WITHIN exp statement" },
+    { 3, ms_transition_table_+1290, 48, "rule 48: statement <- FOREACH IDENTIFIER . WITHIN exp statement" },
+    { 4, ms_transition_table_+1293, 48, "rule 48: statement <- FOREACH IDENTIFIER WITHIN . exp statement" },
+    { 4, ms_transition_table_+1297, 48, "rule 48: statement <- FOREACH IDENTIFIER WITHIN exp . statement" },
+    { 1, ms_transition_table_+1301, 48, "rule 48: statement <- FOREACH IDENTIFIER WITHIN exp statement ." },
+    { 3, ms_transition_table_+1302, 49, "rule 49: statement <- . BREAK ';'" },
+    { 3, ms_transition_table_+1305, 49, "rule 49: statement <- BREAK . ';'" },
+    { 1, ms_transition_table_+1308, 49, "rule 49: statement <- BREAK ';' ." },
+    { 3, ms_transition_table_+1309, 50, "rule 50: statement <- . BREAK ERROR_" },
+    { 2, ms_transition_table_+1312, 50, "rule 50: statement <- BREAK . ERROR_" },
+    { 2, ms_transition_table_+1314, 50, "rule 50: statement <- BREAK ERROR_ ." },
+    { 3, ms_transition_table_+1316, 51, "rule 51: statement <- . BREAK" },
+    { 1, ms_transition_table_+1319, 51, "rule 51: statement <- BREAK ." },
+    { 3, ms_transition_table_+1320, 52, "rule 52: statement <- . CONTINUE ';'" },
+    { 3, ms_transition_table_+1323, 52, "rule 52: statement <- CONTINUE . ';'" },
+    { 1, ms_transition_table_+1326, 52, "rule 52: statement <- CONTINUE ';' ." },
+    { 3, ms_transition_table_+1327, 53, "rule 53: statement <- . CONTINUE ERROR_" },
+    { 2, ms_transition_table_+1330, 53, "rule 53: statement <- CONTINUE . ERROR_" },
+    { 2, ms_transition_table_+1332, 53, "rule 53: statement <- CONTINUE ERROR_ ." },
+    { 3, ms_transition_table_+1334, 54, "rule 54: statement <- . CONTINUE" },
+    { 1, ms_transition_table_+1337, 54, "rule 54: statement <- CONTINUE ." },
+    { 3, ms_transition_table_+1338, 55, "rule 55: statement <- . SWITCH '(' exp ')' '{' case_list '}'" },
+    { 3, ms_transition_table_+1341, 55, "rule 55: statement <- SWITCH . '(' exp ')' '{' case_list '}'" },
+    { 4, ms_transition_table_+1344, 55, "rule 55: statement <- SWITCH '(' . exp ')' '{' case_list '}'" },
+    { 3, ms_transition_table_+1348, 55, "rule 55: statement <- SWITCH '(' exp . ')' '{' case_list '}'" },
+    { 3, ms_transition_table_+1351, 55, "rule 55: statement <- SWITCH '(' exp ')' . '{' case_list '}'" },
+    { 4, ms_transition_table_+1354, 55, "rule 55: statement <- SWITCH '(' exp ')' '{' . case_list '}'" },
+    { 3, ms_transition_table_+1358, 55, "rule 55: statement <- SWITCH '(' exp ')' '{' case_list . '}'" },
+    { 2, ms_transition_table_+1361, 117, "START case_list" },
+    { 1, ms_transition_table_+1363, 117, "RETURN case_list" },
+    { 4, ms_transition_table_+1364, 117, "head of: case_list" },
+    { 3, ms_transition_table_+1368, 61, "rule 61: case_list <- . case_list CASE value CASE_DELIM statement_list" },
+    { 3, ms_transition_table_+1371, 61, "rule 61: case_list <- case_list . CASE value CASE_DELIM statement_list" },
+    { 4, ms_transition_table_+1374, 61, "rule 61: case_list <- case_list CASE . value CASE_DELIM statement_list" },
+    { 3, ms_transition_table_+1378, 61, "rule 61: case_list <- case_list CASE value . CASE_DELIM statement_list" },
+    { 4, ms_transition_table_+1381, 61, "rule 61: case_list <- case_list CASE value CASE_DELIM . statement_list" },
+    { 1, ms_transition_table_+1385, 61, "rule 61: case_list <- case_list CASE value CASE_DELIM statement_list ." },
+    { 3, ms_transition_table_+1386, 62, "rule 62: case_list <- . CASE value CASE_DELIM statement_list" },
+    { 4, ms_transition_table_+1389, 62, "rule 62: case_list <- CASE . value CASE_DELIM statement_list" },
+    { 3, ms_transition_table_+1393, 62, "rule 62: case_list <- CASE value . CASE_DELIM statement_list" },
+    { 4, ms_transition_table_+1396, 62, "rule 62: case_list <- CASE value CASE_DELIM . statement_list" },
+    { 1, ms_transition_table_+1400, 62, "rule 62: case_list <- CASE value CASE_DELIM statement_list ." },
+    { 3, ms_transition_table_+1401, 63, "rule 63: case_list <- . DEFAULT CASE_DELIM statement_list" },
+    { 3, ms_transition_table_+1404, 63, "rule 63: case_list <- DEFAULT . CASE_DELIM statement_list" },
+    { 4, ms_transition_table_+1407, 63, "rule 63: case_list <- DEFAULT CASE_DELIM . statement_list" },
+    { 1, ms_transition_table_+1411, 63, "rule 63: case_list <- DEFAULT CASE_DELIM statement_list ." },
+    { 3, ms_transition_table_+1412, 64, "rule 64: case_list <- . case_list DEFAULT CASE_DELIM statement_list" },
+    { 3, ms_transition_table_+1415, 64, "rule 64: case_list <- case_list . DEFAULT CASE_DELIM statement_list" },
+    { 3, ms_transition_table_+1418, 64, "rule 64: case_list <- case_list DEFAULT . CASE_DELIM statement_list" },
+    { 4, ms_transition_table_+1421, 64, "rule 64: case_list <- case_list DEFAULT CASE_DELIM . statement_list" },
+    { 1, ms_transition_table_+1425, 64, "rule 64: case_list <- case_list DEFAULT CASE_DELIM statement_list ." },
+    { 1, ms_transition_table_+1426, 55, "rule 55: statement <- SWITCH '(' exp ')' '{' case_list '}' ." },
+    { 1, ms_transition_table_+1427, 0, "rule 0: root <- statement_list END_ ." }
 };
 std::size_t const SteelParser::Npda_::ms_state_count_ = sizeof(SteelParser::Npda_::ms_state_table_) / sizeof(*SteelParser::Npda_::ms_state_table_);
 
 SteelParser::Npda_::Transition_ const SteelParser::Npda_::ms_transition_table_[] =
 {
-    { SteelParser::Npda_::Transition_::SHIFT, 300, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(2) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::ABORT, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 300, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(3) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(4) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 256, std::uint32_t(510) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(6) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
     { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(4) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(5) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(9) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(10) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(10) },
+    { SteelParser::Npda_::Transition_::SHIFT, 256, std::uint32_t(511) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(11) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(11) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(13) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(7) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
     { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(9) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(10) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(10) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(11) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(12) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(19) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(23) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(25) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(28) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(283) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(286) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(290) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(293) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(343) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(347) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(351) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(354) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(358) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(364) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(368) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(371) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(378) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(382) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(388) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(396) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(402) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(406) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(409) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(413) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(416) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(432) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(442) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(446) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(449) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(457) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(463) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(466) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(469) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(471) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(474) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(477) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(479) },
-    { SteelParser::Npda_::Transition_::SHIFT, 274, std::uint32_t(16) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(11) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(16) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(20) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(24) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(26) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(29) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(284) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(287) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(291) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(294) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(344) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(348) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(352) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(355) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(359) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(365) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(369) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(372) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(379) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(383) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(389) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(397) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(403) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(407) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(410) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(414) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(417) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(433) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(443) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(447) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(450) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(458) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(464) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(467) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(470) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(472) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(475) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(478) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(480) },
+    { SteelParser::Npda_::Transition_::SHIFT, 274, std::uint32_t(17) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 276, std::uint32_t(17) },
+    { SteelParser::Npda_::Transition_::SHIFT, 276, std::uint32_t(18) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(18) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(19) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(18) },
-    { SteelParser::Npda_::Transition_::SHIFT, 289, std::uint32_t(20) },
+    { SteelParser::Npda_::Transition_::SHIFT, 289, std::uint32_t(21) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 276, std::uint32_t(21) },
+    { SteelParser::Npda_::Transition_::SHIFT, 276, std::uint32_t(22) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(22) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(23) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(19) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(24) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(25) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(20) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(26) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(27) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(27) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(28) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 59, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::POP_STACK, 256, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(21) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(29) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(30) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(282) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(31) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(59) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(70) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(74) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(78) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(82) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(86) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(90) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(94) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(98) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(102) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(106) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(110) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(114) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(118) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(122) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(125) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(129) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(133) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(136) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(139) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(142) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(145) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(150) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(153) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(156) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(159) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(162) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(165) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(168) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(175) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(178) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(181) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(184) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(187) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(192) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(195) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(200) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(203) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(246) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(260) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(280) },
-    { SteelParser::Npda_::Transition_::SHIFT, 312, std::uint32_t(34) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(283) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(34) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(60) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(71) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(75) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(79) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(83) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(87) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(91) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(95) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(99) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(103) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(107) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(111) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(115) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(119) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(123) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(126) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(130) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(134) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(137) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(140) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(143) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(146) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(151) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(154) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(157) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(160) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(163) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(166) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(169) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(176) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(179) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(182) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(185) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(188) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(193) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(196) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(201) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(204) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(247) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(261) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(281) },
+    { SteelParser::Npda_::Transition_::SHIFT, 312, std::uint32_t(35) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(37) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(65) },
-    { SteelParser::Npda_::Transition_::SHIFT, 312, std::uint32_t(36) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(37) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(38) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(55) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(39) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(40) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 314, std::uint32_t(41) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(44) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(54) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 314, std::uint32_t(43) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(44) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(65) },
+    { SteelParser::Npda_::Transition_::SHIFT, 312, std::uint32_t(37) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(38) },
     { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(39) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(56) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(40) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(41) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 314, std::uint32_t(42) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(45) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(47) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(51) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(55) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 314, std::uint32_t(44) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(45) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(46) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(48) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(52) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(46) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(53) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(47) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(113) },
-    { SteelParser::Npda_::Transition_::SHIFT, 314, std::uint32_t(48) },
+    { SteelParser::Npda_::Transition_::SHIFT, 314, std::uint32_t(49) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(49) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(50) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(50) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(51) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(114) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(115) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(53) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(54) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(116) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(107) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(56) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(57) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(57) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(58) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(58) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(59) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(108) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(60) },
+    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(61) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(63) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(66) },
-    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(62) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(63) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(64) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(66) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(68) },
-    { SteelParser::Npda_::Transition_::SHIFT, 279, std::uint32_t(65) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(66) },
+    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(63) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(64) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(65) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(67) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(69) },
+    { SteelParser::Npda_::Transition_::SHIFT, 279, std::uint32_t(66) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(58) },
-    { SteelParser::Npda_::Transition_::SHIFT, 276, std::uint32_t(67) },
+    { SteelParser::Npda_::Transition_::SHIFT, 276, std::uint32_t(68) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(59) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(69) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(70) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(60) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(71) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(72) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 290, std::uint32_t(72) },
+    { SteelParser::Npda_::Transition_::SHIFT, 290, std::uint32_t(73) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(73) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(74) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(67) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(75) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(76) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 43, std::uint32_t(76) },
+    { SteelParser::Npda_::Transition_::SHIFT, 43, std::uint32_t(77) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(77) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(78) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(68) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(79) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(80) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 45, std::uint32_t(80) },
+    { SteelParser::Npda_::Transition_::SHIFT, 45, std::uint32_t(81) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(81) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(82) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(69) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(83) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(84) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 277, std::uint32_t(84) },
+    { SteelParser::Npda_::Transition_::SHIFT, 277, std::uint32_t(85) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(85) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(86) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(70) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(87) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(88) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 258, std::uint32_t(88) },
+    { SteelParser::Npda_::Transition_::SHIFT, 258, std::uint32_t(89) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(89) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(90) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(71) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(91) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(92) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 61, std::uint32_t(92) },
+    { SteelParser::Npda_::Transition_::SHIFT, 61, std::uint32_t(93) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(93) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(94) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(72) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(95) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(96) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 278, std::uint32_t(96) },
+    { SteelParser::Npda_::Transition_::SHIFT, 278, std::uint32_t(97) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(97) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(98) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(73) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(99) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(100) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 94, std::uint32_t(100) },
+    { SteelParser::Npda_::Transition_::SHIFT, 94, std::uint32_t(101) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(101) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(102) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(74) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(103) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(104) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 261, std::uint32_t(104) },
+    { SteelParser::Npda_::Transition_::SHIFT, 261, std::uint32_t(105) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(105) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(106) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(75) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(107) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(108) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 260, std::uint32_t(108) },
+    { SteelParser::Npda_::Transition_::SHIFT, 260, std::uint32_t(109) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(109) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(110) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(76) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(111) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(112) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 259, std::uint32_t(112) },
+    { SteelParser::Npda_::Transition_::SHIFT, 259, std::uint32_t(113) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(113) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(114) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(77) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(115) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(116) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 298, std::uint32_t(116) },
+    { SteelParser::Npda_::Transition_::SHIFT, 298, std::uint32_t(117) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(117) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(118) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(78) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(119) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(120) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 297, std::uint32_t(120) },
+    { SteelParser::Npda_::Transition_::SHIFT, 297, std::uint32_t(121) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(121) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(122) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(79) },
-    { SteelParser::Npda_::Transition_::SHIFT, 299, std::uint32_t(123) },
+    { SteelParser::Npda_::Transition_::SHIFT, 299, std::uint32_t(124) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(124) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(125) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(80) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(126) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(127) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(127) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(128) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(128) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(129) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 41, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::POP_STACK, 256, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(81) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(130) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(131) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(131) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(132) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(132) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(133) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(82) },
-    { SteelParser::Npda_::Transition_::SHIFT, 45, std::uint32_t(134) },
+    { SteelParser::Npda_::Transition_::SHIFT, 45, std::uint32_t(135) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(135) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(136) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(83) },
-    { SteelParser::Npda_::Transition_::SHIFT, 43, std::uint32_t(137) },
+    { SteelParser::Npda_::Transition_::SHIFT, 43, std::uint32_t(138) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(138) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(139) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(84) },
-    { SteelParser::Npda_::Transition_::SHIFT, 262, std::uint32_t(140) },
+    { SteelParser::Npda_::Transition_::SHIFT, 262, std::uint32_t(141) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(141) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(142) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(85) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 262, std::uint32_t(143) },
+    { SteelParser::Npda_::Transition_::SHIFT, 262, std::uint32_t(144) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(144) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(145) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(86) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(146) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(147) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(147) },
+    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(148) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(148) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(149) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(149) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(150) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(87) },
-    { SteelParser::Npda_::Transition_::SHIFT, 280, std::uint32_t(151) },
+    { SteelParser::Npda_::Transition_::SHIFT, 280, std::uint32_t(152) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(152) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(153) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(88) },
-    { SteelParser::Npda_::Transition_::SHIFT, 280, std::uint32_t(154) },
+    { SteelParser::Npda_::Transition_::SHIFT, 280, std::uint32_t(155) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(155) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(156) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(89) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(157) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(158) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 280, std::uint32_t(158) },
+    { SteelParser::Npda_::Transition_::SHIFT, 280, std::uint32_t(159) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(90) },
-    { SteelParser::Npda_::Transition_::SHIFT, 281, std::uint32_t(160) },
+    { SteelParser::Npda_::Transition_::SHIFT, 281, std::uint32_t(161) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(161) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(162) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(91) },
-    { SteelParser::Npda_::Transition_::SHIFT, 281, std::uint32_t(163) },
+    { SteelParser::Npda_::Transition_::SHIFT, 281, std::uint32_t(164) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(164) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(165) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(92) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(166) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(167) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 281, std::uint32_t(167) },
+    { SteelParser::Npda_::Transition_::SHIFT, 281, std::uint32_t(168) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(93) },
-    { SteelParser::Npda_::Transition_::SHIFT, 286, std::uint32_t(169) },
+    { SteelParser::Npda_::Transition_::SHIFT, 286, std::uint32_t(170) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(170) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(171) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(171) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(172) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(172) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(173) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(173) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(174) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(174) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(175) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(94) },
-    { SteelParser::Npda_::Transition_::SHIFT, 282, std::uint32_t(176) },
+    { SteelParser::Npda_::Transition_::SHIFT, 282, std::uint32_t(177) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(177) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(178) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(95) },
-    { SteelParser::Npda_::Transition_::SHIFT, 282, std::uint32_t(179) },
+    { SteelParser::Npda_::Transition_::SHIFT, 282, std::uint32_t(180) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(180) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(181) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(96) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 283, std::uint32_t(182) },
+    { SteelParser::Npda_::Transition_::SHIFT, 283, std::uint32_t(183) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(183) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(184) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(97) },
-    { SteelParser::Npda_::Transition_::SHIFT, 283, std::uint32_t(185) },
+    { SteelParser::Npda_::Transition_::SHIFT, 283, std::uint32_t(186) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(186) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(187) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(98) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 284, std::uint32_t(188) },
+    { SteelParser::Npda_::Transition_::SHIFT, 284, std::uint32_t(189) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(189) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(190) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(190) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(191) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(191) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(192) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(99) },
-    { SteelParser::Npda_::Transition_::SHIFT, 284, std::uint32_t(193) },
+    { SteelParser::Npda_::Transition_::SHIFT, 284, std::uint32_t(194) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(194) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(195) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(100) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 285, std::uint32_t(196) },
+    { SteelParser::Npda_::Transition_::SHIFT, 285, std::uint32_t(197) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(197) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(198) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(198) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(199) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(199) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(200) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(101) },
-    { SteelParser::Npda_::Transition_::SHIFT, 285, std::uint32_t(201) },
+    { SteelParser::Npda_::Transition_::SHIFT, 285, std::uint32_t(202) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(202) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(203) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(102) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(204) },
+    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(205) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(205) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(206) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(206) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(207) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(209) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(242) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(208) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(209) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(210) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(211) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(235) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(239) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(6) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(212) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(243) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(214) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(209) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(210) },
     { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(219) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(224) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(229) },
-    { SteelParser::Npda_::Transition_::SHIFT, 275, std::uint32_t(217) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(211) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(212) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(236) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(240) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(6) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(213) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(218) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(7) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(215) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(217) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(220) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(225) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(230) },
+    { SteelParser::Npda_::Transition_::SHIFT, 275, std::uint32_t(218) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(219) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(109) },
-    { SteelParser::Npda_::Transition_::SHIFT, 275, std::uint32_t(220) },
+    { SteelParser::Npda_::Transition_::SHIFT, 275, std::uint32_t(221) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(221) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(222) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 61, std::uint32_t(222) },
+    { SteelParser::Npda_::Transition_::SHIFT, 61, std::uint32_t(223) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(223) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(224) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(110) },
-    { SteelParser::Npda_::Transition_::SHIFT, 287, std::uint32_t(225) },
+    { SteelParser::Npda_::Transition_::SHIFT, 287, std::uint32_t(226) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(226) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(227) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 61, std::uint32_t(227) },
+    { SteelParser::Npda_::Transition_::SHIFT, 61, std::uint32_t(228) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(228) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(229) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(111) },
-    { SteelParser::Npda_::Transition_::SHIFT, 275, std::uint32_t(230) },
+    { SteelParser::Npda_::Transition_::SHIFT, 275, std::uint32_t(231) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(231) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(232) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(232) },
+    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(233) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(233) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(234) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(234) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(235) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(112) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(236) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(237) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(237) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(238) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(238) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(239) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(8) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(240) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(241) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(241) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(242) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(9) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(243) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(244) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(244) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(245) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(245) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(246) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(103) },
-    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(247) },
+    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(248) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 304, std::uint32_t(248) },
+    { SteelParser::Npda_::Transition_::SHIFT, 304, std::uint32_t(249) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(251) },
-    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(259) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 304, std::uint32_t(250) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(251) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(252) },
+    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(260) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 304, std::uint32_t(251) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(252) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(253) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(255) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(254) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(256) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(12) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(254) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(255) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(13) },
-    { SteelParser::Npda_::Transition_::SHIFT, 304, std::uint32_t(256) },
+    { SteelParser::Npda_::Transition_::SHIFT, 304, std::uint32_t(257) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(257) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(258) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(258) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(259) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(14) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(104) },
-    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(261) },
+    { SteelParser::Npda_::Transition_::SHIFT, 91, std::uint32_t(262) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 305, std::uint32_t(262) },
+    { SteelParser::Npda_::Transition_::SHIFT, 305, std::uint32_t(263) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(265) },
-    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(279) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 305, std::uint32_t(264) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(265) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(266) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(275) },
-    { SteelParser::Npda_::Transition_::SHIFT, 306, std::uint32_t(267) },
+    { SteelParser::Npda_::Transition_::SHIFT, 93, std::uint32_t(280) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(270) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(15) },
-    { SteelParser::Npda_::Transition_::SHIFT, 306, std::uint32_t(269) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(270) },
+    { SteelParser::Npda_::Transition_::SHIFT, 305, std::uint32_t(265) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(266) },
     { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(267) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(276) },
+    { SteelParser::Npda_::Transition_::SHIFT, 306, std::uint32_t(268) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(271) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(272) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(15) },
+    { SteelParser::Npda_::Transition_::SHIFT, 306, std::uint32_t(270) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(271) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(272) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(273) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 296, std::uint32_t(273) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 296, std::uint32_t(274) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(274) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(275) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(17) },
-    { SteelParser::Npda_::Transition_::SHIFT, 305, std::uint32_t(276) },
+    { SteelParser::Npda_::Transition_::SHIFT, 305, std::uint32_t(277) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(277) },
+    { SteelParser::Npda_::Transition_::SHIFT, 44, std::uint32_t(278) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 306, std::uint32_t(278) },
+    { SteelParser::Npda_::Transition_::SHIFT, 306, std::uint32_t(279) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(270) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(271) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(16) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(105) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(281) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(282) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(106) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(22) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(284) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(285) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(285) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(286) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(23) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(287) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(288) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(288) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(289) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(289) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(290) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 41, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::POP_STACK, 256, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(24) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(291) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(292) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(292) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(293) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(25) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 301, std::uint32_t(294) },
+    { SteelParser::Npda_::Transition_::SHIFT, 301, std::uint32_t(295) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(297) },
-    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(26) },
-    { SteelParser::Npda_::Transition_::SHIFT, 301, std::uint32_t(296) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(297) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(298) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(307) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(318) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(327) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(334) },
-    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(299) },
+    { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(26) },
+    { SteelParser::Npda_::Transition_::SHIFT, 301, std::uint32_t(297) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(298) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(299) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(308) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(319) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(328) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(335) },
+    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(300) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(300) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(301) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(301) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(302) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(302) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(303) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(209) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(303) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(210) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(304) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(304) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(305) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(305) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(306) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(306) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(307) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(308) },
+    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(309) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(309) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(310) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 290, std::uint32_t(310) },
+    { SteelParser::Npda_::Transition_::SHIFT, 290, std::uint32_t(311) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(311) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(312) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(312) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(313) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(313) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(314) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(209) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(314) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(210) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(315) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(315) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(316) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(316) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(317) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(317) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(318) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(2) },
-    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(319) },
+    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(320) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(320) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(321) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(321) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(322) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(322) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(323) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(323) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(324) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 41, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::POP_STACK, 256, std::uint32_t(2) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(324) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(325) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(325) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(326) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(326) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(327) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(3) },
-    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(328) },
+    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(329) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(329) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(330) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(330) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(331) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(209) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(331) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(210) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(332) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(332) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(333) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(333) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(334) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(4) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(335) },
+    { SteelParser::Npda_::Transition_::SHIFT, 269, std::uint32_t(336) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(336) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(337) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(337) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(338) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(338) },
+    { SteelParser::Npda_::Transition_::SHIFT, 302, std::uint32_t(339) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(209) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(339) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(210) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(340) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(340) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(341) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(341) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(342) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(342) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(343) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(5) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(344) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(345) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(345) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(346) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(346) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(347) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(27) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(348) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(349) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(349) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(350) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(350) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(351) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(28) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(352) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(353) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(353) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(354) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(29) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(355) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(356) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(356) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(357) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(357) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(358) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 59, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::POP_STACK, 256, std::uint32_t(2) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(30) },
-    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(359) },
+    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(360) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(360) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(361) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(361) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(362) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(362) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(363) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(363) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(364) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(31) },
-    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(365) },
+    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(366) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(366) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(367) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(367) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(368) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(32) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(369) },
+    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(370) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(370) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(371) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 288, std::uint32_t(372) },
+    { SteelParser::Npda_::Transition_::SHIFT, 288, std::uint32_t(373) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(373) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(374) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
-    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(374) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
+    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(375) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(375) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(376) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(376) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(377) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(377) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(378) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(34) },
-    { SteelParser::Npda_::Transition_::SHIFT, 288, std::uint32_t(379) },
+    { SteelParser::Npda_::Transition_::SHIFT, 288, std::uint32_t(380) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(380) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(381) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(381) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(382) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(35) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 288, std::uint32_t(383) },
+    { SteelParser::Npda_::Transition_::SHIFT, 288, std::uint32_t(384) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(384) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(385) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
-    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(385) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
+    { SteelParser::Npda_::Transition_::SHIFT, 263, std::uint32_t(386) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(386) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(387) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(387) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(388) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(36) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(389) },
+    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(390) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(390) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(391) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(391) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(392) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(392) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(393) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(393) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(394) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
-    { SteelParser::Npda_::Transition_::SHIFT, 268, std::uint32_t(394) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
+    { SteelParser::Npda_::Transition_::SHIFT, 268, std::uint32_t(395) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(395) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(396) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(37) },
-    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(397) },
+    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(398) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(398) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(399) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(399) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(400) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(400) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(401) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(401) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(402) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(38) },
-    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(403) },
+    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(404) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(404) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(405) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(405) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(406) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(39) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(407) },
+    { SteelParser::Npda_::Transition_::SHIFT, 267, std::uint32_t(408) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(408) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(409) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(40) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 266, std::uint32_t(410) },
+    { SteelParser::Npda_::Transition_::SHIFT, 266, std::uint32_t(411) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(411) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(412) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(412) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(413) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(41) },
-    { SteelParser::Npda_::Transition_::SHIFT, 266, std::uint32_t(414) },
+    { SteelParser::Npda_::Transition_::SHIFT, 266, std::uint32_t(415) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(415) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(416) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(42) },
-    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(417) },
+    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(418) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(418) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(419) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(419) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(420) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(420) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(421) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(421) },
+    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(422) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(424) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(428) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(423) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(424) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(425) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(429) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(424) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(425) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(426) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(427) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(56) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(427) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(428) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(57) },
-    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(429) },
+    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(430) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(424) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(430) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(425) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(431) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(431) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(432) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(43) },
-    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(433) },
+    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(434) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(434) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(435) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(435) },
+    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(436) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(424) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(436) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(425) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(437) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(437) },
+    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(438) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(424) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(438) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(425) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(439) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(439) },
+    { SteelParser::Npda_::Transition_::SHIFT, 308, std::uint32_t(440) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(424) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(440) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(425) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(441) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(441) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(442) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(44) },
-    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(443) },
+    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(444) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(444) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(445) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(445) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(446) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(45) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(447) },
+    { SteelParser::Npda_::Transition_::SHIFT, 271, std::uint32_t(448) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(448) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(449) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(46) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 272, std::uint32_t(450) },
+    { SteelParser::Npda_::Transition_::SHIFT, 272, std::uint32_t(451) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(451) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(452) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(452) },
+    { SteelParser::Npda_::Transition_::SHIFT, 313, std::uint32_t(453) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(215) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(453) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(216) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(454) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 273, std::uint32_t(454) },
+    { SteelParser::Npda_::Transition_::SHIFT, 273, std::uint32_t(455) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(455) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(456) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(456) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(457) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(47) },
-    { SteelParser::Npda_::Transition_::SHIFT, 272, std::uint32_t(458) },
+    { SteelParser::Npda_::Transition_::SHIFT, 272, std::uint32_t(459) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(459) },
+    { SteelParser::Npda_::Transition_::SHIFT, 270, std::uint32_t(460) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 273, std::uint32_t(460) },
+    { SteelParser::Npda_::Transition_::SHIFT, 273, std::uint32_t(461) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(461) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(462) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(462) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 307, std::uint32_t(463) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(14) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(15) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(48) },
-    { SteelParser::Npda_::Transition_::SHIFT, 264, std::uint32_t(464) },
+    { SteelParser::Npda_::Transition_::SHIFT, 264, std::uint32_t(465) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(465) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(466) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(49) },
-    { SteelParser::Npda_::Transition_::SHIFT, 264, std::uint32_t(467) },
+    { SteelParser::Npda_::Transition_::SHIFT, 264, std::uint32_t(468) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(468) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(469) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(50) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 264, std::uint32_t(470) },
+    { SteelParser::Npda_::Transition_::SHIFT, 264, std::uint32_t(471) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(51) },
-    { SteelParser::Npda_::Transition_::SHIFT, 265, std::uint32_t(472) },
+    { SteelParser::Npda_::Transition_::SHIFT, 265, std::uint32_t(473) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(473) },
+    { SteelParser::Npda_::Transition_::SHIFT, 59, std::uint32_t(474) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(52) },
-    { SteelParser::Npda_::Transition_::SHIFT, 265, std::uint32_t(475) },
+    { SteelParser::Npda_::Transition_::SHIFT, 265, std::uint32_t(476) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(476) },
+    { SteelParser::Npda_::Transition_::SHIFT, 257, std::uint32_t(477) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::REDUCE, 256, std::uint32_t(53) },
     { SteelParser::Npda_::Transition_::DISCARD_LOOKAHEAD, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 265, std::uint32_t(478) },
+    { SteelParser::Npda_::Transition_::SHIFT, 265, std::uint32_t(479) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(54) },
-    { SteelParser::Npda_::Transition_::SHIFT, 291, std::uint32_t(480) },
+    { SteelParser::Npda_::Transition_::SHIFT, 291, std::uint32_t(481) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(481) },
+    { SteelParser::Npda_::Transition_::SHIFT, 40, std::uint32_t(482) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(482) },
+    { SteelParser::Npda_::Transition_::SHIFT, 311, std::uint32_t(483) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(32) },
-    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(483) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(33) },
+    { SteelParser::Npda_::Transition_::SHIFT, 41, std::uint32_t(484) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(484) },
+    { SteelParser::Npda_::Transition_::SHIFT, 123, std::uint32_t(485) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(485) },
+    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(486) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(488) },
-    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(509) },
-    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
-    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(487) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(488) },
-    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(489) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(495) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(500) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(504) },
-    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(490) },
+    { SteelParser::Npda_::Transition_::SHIFT, 125, std::uint32_t(510) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 292, std::uint32_t(491) },
+    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(488) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(489) },
+    { SteelParser::Npda_::Transition_::RETURN, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(490) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(496) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(501) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(505) },
+    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(491) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(492) },
+    { SteelParser::Npda_::Transition_::SHIFT, 292, std::uint32_t(492) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(63) },
-    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(493) },
+    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(493) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(494) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(64) },
+    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(494) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(495) },
+    { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
+    { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(61) },
-    { SteelParser::Npda_::Transition_::SHIFT, 292, std::uint32_t(496) },
+    { SteelParser::Npda_::Transition_::SHIFT, 292, std::uint32_t(497) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(497) },
+    { SteelParser::Npda_::Transition_::SHIFT, 309, std::uint32_t(498) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(63) },
-    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(498) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(64) },
+    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(499) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(499) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(500) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(62) },
-    { SteelParser::Npda_::Transition_::SHIFT, 293, std::uint32_t(501) },
+    { SteelParser::Npda_::Transition_::SHIFT, 293, std::uint32_t(502) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(502) },
+    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(503) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(503) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(504) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(63) },
-    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(505) },
+    { SteelParser::Npda_::Transition_::SHIFT, 310, std::uint32_t(506) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 293, std::uint32_t(506) },
+    { SteelParser::Npda_::Transition_::SHIFT, 293, std::uint32_t(507) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(507) },
+    { SteelParser::Npda_::Transition_::SHIFT, 294, std::uint32_t(508) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(508) },
+    { SteelParser::Npda_::Transition_::SHIFT, 303, std::uint32_t(509) },
     { SteelParser::Npda_::Transition_::INSERT_LOOKAHEAD_ERROR, 0, std::uint32_t(-1) },
     { SteelParser::Npda_::Transition_::POP_STACK, 257, std::uint32_t(1) },
-    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(7) },
+    { SteelParser::Npda_::Transition_::EPSILON, 0, std::uint32_t(8) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(64) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(55) },
     { SteelParser::Npda_::Transition_::REDUCE, 0, std::uint32_t(0) }
@@ -6005,7 +6295,7 @@ std::size_t const SteelParser::Npda_::ms_transition_count_ = sizeof(SteelParser:
 // ///////////////////////////////////////////////////////////////////////
 
 
-#line 69 "SteelParser.trison"
+#line 69 "../src/SteelParser.trison"
 
 
 void SteelParser::addError(unsigned int line, const std::string &error)
@@ -6046,4 +6336,4 @@ SteelParser::Token SteelParser::Scan ()
 
 } // namespace Steel
 
-#line 6050 "SteelParser.cpp"
+#line 6340 "../src/SteelParser.cpp"

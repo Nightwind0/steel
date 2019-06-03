@@ -10,7 +10,7 @@
 #define REFLEX_CPP_DEBUG_CODE_(spew_code) if (DebugSpewIsEnabled()) { spew_code; }
 
 
-#line 25 "SteelScanner.reflex"
+#line 25 "../src/SteelScanner.reflex"
 
 #include <iostream>
 #include <cassert>
@@ -19,7 +19,7 @@
 #include "File.h"
 namespace Steel { 
 
-#line 23 "SteelScanner.cpp"
+#line 23 "../src/SteelScanner.cpp"
 
 SteelScanner::SteelScanner ()
     :
@@ -35,13 +35,13 @@ SteelScanner::SteelScanner ()
     SetDebugSpewStream(NULL);
 
 
-#line 110 "SteelScanner.reflex"
+#line 110 "../src/SteelScanner.reflex"
 
 	m_line = 1;
 	m_script_name = "UNKNOWN SCRIPT";	
 	m_token = NULL;
 
-#line 45 "SteelScanner.cpp"
+#line 45 "../src/SteelScanner.cpp"
 
     ResetForNewInput();
 }
@@ -104,11 +104,11 @@ void SteelScanner::ResetForNewInput ()
     assert(CurrentStateMachine() == StateMachine::START_);
 
 
-#line 116 "SteelScanner.reflex"
+#line 116 "../src/SteelScanner.reflex"
 
 	m_line = 1;	
 
-#line 112 "SteelScanner.cpp"
+#line 112 "../src/SteelScanner.cpp"
 }
 
 SteelParser::Token SteelScanner::Scan () throw()
@@ -154,12 +154,12 @@ SteelParser::Token SteelScanner::Scan () throw()
             do
             {
 
-#line 120 "SteelScanner.reflex"
+#line 120 "../src/SteelScanner.reflex"
 
 	//std::cerr << "Warning: unmatched input found:" 
 	//<< '\'' << accepted_string << '\'' << std::endl;
 
-#line 163 "SteelScanner.cpp"
+#line 163 "../src/SteelScanner.cpp"
 
             }
             while (false);
@@ -182,12 +182,12 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 0:
                 {
 
-#line 477 "SteelScanner.reflex"
+#line 477 "../src/SteelScanner.reflex"
 
         m_line += NewlineCount(accepted_string);
         SwitchToStateMachine(StateMachine::MAIN);
     
-#line 191 "SteelScanner.cpp"
+#line 191 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -195,12 +195,12 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 1:
                 {
 
-#line 483 "SteelScanner.reflex"
+#line 483 "../src/SteelScanner.reflex"
 
         m_line += NewlineCount(accepted_string);
         //EmitWarning("unterminated block comment", GetFiLoc());
      
-#line 204 "SteelScanner.cpp"
+#line 204 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -208,11 +208,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 2:
                 {
 
-#line 148 "SteelScanner.reflex"
+#line 148 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::END_,NULL);
 	
-#line 216 "SteelScanner.cpp"
+#line 216 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -220,11 +220,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 3:
                 {
 
-#line 153 "SteelScanner.reflex"
+#line 153 "../src/SteelScanner.reflex"
 
 		    SwitchToStateMachine(StateMachine::COMMENT_GUTS);
 	
-#line 228 "SteelScanner.cpp"
+#line 228 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -232,11 +232,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 4:
                 {
 
-#line 158 "SteelScanner.reflex"
+#line 158 "../src/SteelScanner.reflex"
 
 		m_line++;
 	
-#line 240 "SteelScanner.cpp"
+#line 240 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -244,11 +244,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 5:
                 {
 
-#line 163 "SteelScanner.reflex"
+#line 163 "../src/SteelScanner.reflex"
 
 		// Eat the comment
 	
-#line 252 "SteelScanner.cpp"
+#line 252 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -256,11 +256,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 6:
                 {
 
-#line 168 "SteelScanner.reflex"
+#line 168 "../src/SteelScanner.reflex"
 
 		// Eat it
 	 
-#line 264 "SteelScanner.cpp"
+#line 264 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -268,13 +268,13 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 7:
                 {
 
-#line 173 "SteelScanner.reflex"
+#line 173 "../src/SteelScanner.reflex"
 
 		m_token = new AstString(m_line,m_script_name);
 		
 		SwitchToStateMachine(StateMachine::STRING_LITERAL_GUTS);
 	
-#line 278 "SteelScanner.cpp"
+#line 278 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -282,11 +282,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 8:
                 {
 
-#line 180 "SteelScanner.reflex"
+#line 180 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::LITERAL, new AstBoolean(m_line,m_script_name,true)) ;
 	
-#line 290 "SteelScanner.cpp"
+#line 290 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -294,11 +294,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 9:
                 {
 
-#line 185 "SteelScanner.reflex"
+#line 185 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::LITERAL, new AstBoolean(m_line,m_script_name,false));
 	
-#line 302 "SteelScanner.cpp"
+#line 302 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -306,11 +306,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 10:
                 {
 
-#line 190 "SteelScanner.reflex"
+#line 190 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::POP,NULL);
 	
-#line 314 "SteelScanner.cpp"
+#line 314 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -318,11 +318,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 11:
                 {
 
-#line 195 "SteelScanner.reflex"
+#line 195 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::POPB,NULL);
 	
-#line 326 "SteelScanner.cpp"
+#line 326 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -330,11 +330,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 12:
                 {
 
-#line 200 "SteelScanner.reflex"
+#line 200 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::PUSH,NULL);
 	
-#line 338 "SteelScanner.cpp"
+#line 338 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -342,11 +342,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 13:
                 {
 
-#line 205 "SteelScanner.reflex"
+#line 205 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::PUSHB,NULL);
 	
-#line 350 "SteelScanner.cpp"
+#line 350 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -354,11 +354,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 14:
                 {
 
-#line 210 "SteelScanner.reflex"
+#line 210 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::IMPORT,NULL);
 	
-#line 362 "SteelScanner.cpp"
+#line 362 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -366,11 +366,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 15:
                 {
 
-#line 215 "SteelScanner.reflex"
+#line 215 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::INCLUDE,NULL);
 	
-#line 374 "SteelScanner.cpp"
+#line 374 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -378,11 +378,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 16:
                 {
 
-#line 220 "SteelScanner.reflex"
+#line 220 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::CASE,NULL);
 	
-#line 386 "SteelScanner.cpp"
+#line 386 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -390,11 +390,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 17:
                 {
 
-#line 225 "SteelScanner.reflex"
+#line 225 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::CASE_DELIM,NULL);
 	
-#line 398 "SteelScanner.cpp"
+#line 398 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -402,11 +402,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 18:
                 {
 
-#line 230 "SteelScanner.reflex"
+#line 230 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::SWITCH,NULL);
 	
-#line 410 "SteelScanner.cpp"
+#line 410 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -414,11 +414,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 19:
                 {
 
-#line 235 "SteelScanner.reflex"
+#line 235 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::DEFAULT,NULL);
 	
-#line 422 "SteelScanner.cpp"
+#line 422 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -426,11 +426,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 20:
                 {
 
-#line 240 "SteelScanner.reflex"
+#line 240 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::LAMBDA,NULL);
 	
-#line 434 "SteelScanner.cpp"
+#line 434 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -438,11 +438,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 21:
                 {
 
-#line 245 "SteelScanner.reflex"
+#line 245 "../src/SteelScanner.reflex"
 
                 return SteelParser::Token(SteelParser::Terminal::REMOVE,NULL);
         
-#line 446 "SteelScanner.cpp"
+#line 446 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -450,11 +450,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 22:
                 {
 
-#line 250 "SteelScanner.reflex"
+#line 250 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::SCOPE,NULL);
 	
-#line 458 "SteelScanner.cpp"
+#line 458 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -462,11 +462,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 23:
                 {
 
-#line 255 "SteelScanner.reflex"
+#line 255 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::DECREMENT,NULL);
 	
-#line 470 "SteelScanner.cpp"
+#line 470 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -474,11 +474,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 24:
                 {
 
-#line 260 "SteelScanner.reflex"
+#line 260 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::INCREMENT,NULL);
 	
-#line 482 "SteelScanner.cpp"
+#line 482 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -486,11 +486,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 25:
                 {
 
-#line 265 "SteelScanner.reflex"
+#line 265 "../src/SteelScanner.reflex"
 
 		    return SteelParser::Token(SteelParser::Terminal::BINOP_ASSIGNMENT, new AstBinOp(m_line,m_script_name,AstBinOp::ADD_ASSIGN));
 	
-#line 494 "SteelScanner.cpp"
+#line 494 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -498,11 +498,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 26:
                 {
 
-#line 270 "SteelScanner.reflex"
+#line 270 "../src/SteelScanner.reflex"
  
 	return SteelParser::Token(SteelParser::Terminal::BINOP_ASSIGNMENT, new AstBinOp(m_line,m_script_name,AstBinOp::SUB_ASSIGN));
 	
-#line 506 "SteelScanner.cpp"
+#line 506 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -510,11 +510,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 27:
                 {
 
-#line 275 "SteelScanner.reflex"
+#line 275 "../src/SteelScanner.reflex"
 
 	return SteelParser::Token(SteelParser::Terminal::BINOP_ASSIGNMENT, new AstBinOp(m_line,m_script_name,AstBinOp::MULT_ASSIGN));
 	
-#line 518 "SteelScanner.cpp"
+#line 518 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -522,11 +522,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 28:
                 {
 
-#line 280 "SteelScanner.reflex"
+#line 280 "../src/SteelScanner.reflex"
 
 	return SteelParser::Token(SteelParser::Terminal::BINOP_ASSIGNMENT, new AstBinOp(m_line,m_script_name,AstBinOp::DIV_ASSIGN));
 	
-#line 530 "SteelScanner.cpp"
+#line 530 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -534,11 +534,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 29:
                 {
 
-#line 285 "SteelScanner.reflex"
+#line 285 "../src/SteelScanner.reflex"
  
 		 return SteelParser::Token(SteelParser::Terminal::D,NULL);
 	 
-#line 542 "SteelScanner.cpp"
+#line 542 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -546,11 +546,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 30:
                 {
 
-#line 290 "SteelScanner.reflex"
+#line 290 "../src/SteelScanner.reflex"
 
 		    return SteelParser::Token((SteelParser::Terminal::Name)accepted_string[0], NULL);
 	
-#line 554 "SteelScanner.cpp"
+#line 554 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -558,11 +558,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 31:
                 {
 
-#line 296 "SteelScanner.reflex"
+#line 296 "../src/SteelScanner.reflex"
 
 	return SteelParser::Token(SteelParser::Terminal::BINOP_ASSIGNMENT, new AstBinOp(m_line,m_script_name,AstBinOp::MOD_ASSIGN));
 	
-#line 566 "SteelScanner.cpp"
+#line 566 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -570,11 +570,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 32:
                 {
 
-#line 301 "SteelScanner.reflex"
+#line 301 "../src/SteelScanner.reflex"
  
 		    return SteelParser::Token(SteelParser::Terminal::MAKE_PAIR,NULL);
 	
-#line 578 "SteelScanner.cpp"
+#line 578 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -582,11 +582,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 33:
                 {
 
-#line 306 "SteelScanner.reflex"
+#line 306 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::LITERAL,new AstInteger(m_line,m_script_name,ToInt(accepted_string)));
 	
-#line 590 "SteelScanner.cpp"
+#line 590 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -594,11 +594,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 34:
                 {
 
-#line 311 "SteelScanner.reflex"
+#line 311 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::LITERAL,new AstInteger(m_line,m_script_name,ToIntFromHex(accepted_string)));
 	
-#line 602 "SteelScanner.cpp"
+#line 602 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -606,11 +606,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 35:
                 {
 
-#line 316 "SteelScanner.reflex"
+#line 316 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::LITERAL, new AstFloat(m_line,m_script_name,ToFloat(accepted_string)));
 	
-#line 614 "SteelScanner.cpp"
+#line 614 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -618,11 +618,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 36:
                 {
 
-#line 321 "SteelScanner.reflex"
+#line 321 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::BINOP_MULT_DIV_MOD, new AstBinOp(m_line,m_script_name,AstBinOp::MULT,NULL,NULL));
 	
-#line 626 "SteelScanner.cpp"
+#line 626 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -630,11 +630,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 37:
                 {
 
-#line 326 "SteelScanner.reflex"
+#line 326 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::BINOP_MULT_DIV_MOD, new AstBinOp(m_line,m_script_name,AstBinOp::DIV,NULL,NULL));
 	
-#line 638 "SteelScanner.cpp"
+#line 638 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -642,11 +642,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 38:
                 {
 
-#line 331 "SteelScanner.reflex"
+#line 331 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::BINOP_MULT_DIV_MOD, new AstBinOp(m_line,m_script_name,AstBinOp::MOD,NULL,NULL));
 	
-#line 650 "SteelScanner.cpp"
+#line 650 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -654,11 +654,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 39:
                 {
 
-#line 336 "SteelScanner.reflex"
+#line 336 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token((SteelParser::Terminal::Name)accepted_string[0],NULL);
 	
-#line 662 "SteelScanner.cpp"
+#line 662 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -666,11 +666,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 40:
                 {
 
-#line 341 "SteelScanner.reflex"
+#line 341 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_line,m_script_name,AstBinOp::LTE,NULL,NULL));
 	
-#line 674 "SteelScanner.cpp"
+#line 674 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -678,11 +678,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 41:
                 {
 
-#line 346 "SteelScanner.reflex"
+#line 346 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_line,m_script_name,AstBinOp::GTE,NULL,NULL));
 	
-#line 686 "SteelScanner.cpp"
+#line 686 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -690,11 +690,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 42:
                 {
 
-#line 351 "SteelScanner.reflex"
+#line 351 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_line,m_script_name,AstBinOp::NE,NULL,NULL));
 	
-#line 698 "SteelScanner.cpp"
+#line 698 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -702,11 +702,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 43:
                 {
 
-#line 356 "SteelScanner.reflex"
+#line 356 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_line,m_script_name,AstBinOp::EQ,NULL,NULL));
 	 
-#line 710 "SteelScanner.cpp"
+#line 710 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -714,12 +714,12 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 44:
                 {
 
-#line 361 "SteelScanner.reflex"
+#line 361 "../src/SteelScanner.reflex"
 
 	return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_line,m_script_name,AstBinOp::LT,NULL,NULL));
 
 	
-#line 723 "SteelScanner.cpp"
+#line 723 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -727,11 +727,11 @@ SteelParser::Token SteelScanner::Scan () throw()
                 case 45:
                 {
 
-#line 367 "SteelScanner.reflex"
+#line 367 "../src/SteelScanner.reflex"
 
 return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_line,m_script_name,AstBinOp::GT,NULL,NULL));		 
 	
-#line 735 "SteelScanner.cpp"
+#line 735 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -739,11 +739,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 46:
                 {
 
-#line 372 "SteelScanner.reflex"
+#line 372 "../src/SteelScanner.reflex"
  
 		 return SteelParser::Token(SteelParser::Terminal::AND,NULL);
 	 
-#line 747 "SteelScanner.cpp"
+#line 747 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -751,11 +751,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 47:
                 {
 
-#line 377 "SteelScanner.reflex"
+#line 377 "../src/SteelScanner.reflex"
 
 		    return SteelParser::Token(SteelParser::Terminal::BIN_AND,NULL);
 	
-#line 759 "SteelScanner.cpp"
+#line 759 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -763,11 +763,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 48:
                 {
 
-#line 382 "SteelScanner.reflex"
+#line 382 "../src/SteelScanner.reflex"
  
 		    return SteelParser::Token(SteelParser::Terminal::BIN_OR,NULL);
 	
-#line 771 "SteelScanner.cpp"
+#line 771 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -775,11 +775,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 49:
                 {
 
-#line 387 "SteelScanner.reflex"
+#line 387 "../src/SteelScanner.reflex"
 
 		    return SteelParser::Token(SteelParser::Terminal::BIN_NOT,NULL);
 	
-#line 783 "SteelScanner.cpp"
+#line 783 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -787,11 +787,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 50:
                 {
 
-#line 392 "SteelScanner.reflex"
+#line 392 "../src/SteelScanner.reflex"
  
 		 return SteelParser::Token(SteelParser::Terminal::OR,NULL);
 	 
-#line 795 "SteelScanner.cpp"
+#line 795 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -799,11 +799,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 51:
                 {
 
-#line 397 "SteelScanner.reflex"
+#line 397 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::NOT,NULL);
 	
-#line 807 "SteelScanner.cpp"
+#line 807 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -811,11 +811,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 52:
                 {
 
-#line 402 "SteelScanner.reflex"
+#line 402 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::WHILE,NULL);
 	
-#line 819 "SteelScanner.cpp"
+#line 819 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -823,11 +823,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 53:
                 {
 
-#line 407 "SteelScanner.reflex"
+#line 407 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::DO,NULL);
 	
-#line 831 "SteelScanner.cpp"
+#line 831 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -835,11 +835,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 54:
                 {
 
-#line 412 "SteelScanner.reflex"
+#line 412 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::FOR,NULL);
 	
-#line 843 "SteelScanner.cpp"
+#line 843 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -847,11 +847,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 55:
                 {
 
-#line 417 "SteelScanner.reflex"
+#line 417 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::FOREACH,NULL);
 	
-#line 855 "SteelScanner.cpp"
+#line 855 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -859,11 +859,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 56:
                 {
 
-#line 422 "SteelScanner.reflex"
+#line 422 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::WITHIN,NULL);
 	
-#line 867 "SteelScanner.cpp"
+#line 867 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -871,11 +871,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 57:
                 {
 
-#line 427 "SteelScanner.reflex"
+#line 427 "../src/SteelScanner.reflex"
  
 		 return SteelParser::Token(SteelParser::Terminal::BREAK,NULL);
 	
-#line 879 "SteelScanner.cpp"
+#line 879 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -883,11 +883,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 58:
                 {
 
-#line 432 "SteelScanner.reflex"
+#line 432 "../src/SteelScanner.reflex"
  
 		 return SteelParser::Token(SteelParser::Terminal::CONTINUE,NULL);
 	
-#line 891 "SteelScanner.cpp"
+#line 891 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -895,11 +895,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 59:
                 {
 
-#line 437 "SteelScanner.reflex"
+#line 437 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::IF,NULL);
 	
-#line 903 "SteelScanner.cpp"
+#line 903 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -907,11 +907,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 60:
                 {
 
-#line 442 "SteelScanner.reflex"
+#line 442 "../src/SteelScanner.reflex"
 
 		 return SteelParser::Token(SteelParser::Terminal::ELSE,NULL);
 	
-#line 915 "SteelScanner.cpp"
+#line 915 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -919,11 +919,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 61:
                 {
 
-#line 447 "SteelScanner.reflex"
+#line 447 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::RETURN,NULL);
 	
-#line 927 "SteelScanner.cpp"
+#line 927 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -931,11 +931,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 62:
                 {
 
-#line 452 "SteelScanner.reflex"
+#line 452 "../src/SteelScanner.reflex"
  
 		return SteelParser::Token(SteelParser::Terminal::FUNCTION,NULL);
 	
-#line 939 "SteelScanner.cpp"
+#line 939 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -943,11 +943,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 63:
                 {
 
-#line 457 "SteelScanner.reflex"
+#line 457 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::VAR,NULL);
 	
-#line 951 "SteelScanner.cpp"
+#line 951 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -955,11 +955,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 64:
                 {
 
-#line 462 "SteelScanner.reflex"
+#line 462 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::CONSTANT,NULL);
 	
-#line 963 "SteelScanner.cpp"
+#line 963 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -967,11 +967,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 65:
                 {
 
-#line 467 "SteelScanner.reflex"
+#line 467 "../src/SteelScanner.reflex"
 
 		return SteelParser::Token(SteelParser::Terminal::IDENTIFIER,new AstIdentifier(m_line,m_script_name,accepted_string));		
 	
-#line 975 "SteelScanner.cpp"
+#line 975 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -979,13 +979,13 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 66:
                 {
 
-#line 494 "SteelScanner.reflex"
+#line 494 "../src/SteelScanner.reflex"
 
 		// First, add the accepted_string to the string..
 		AstString *pString = (AstString*)m_token;		
 		pString->addChar(accepted_string[0]);
 	
-#line 989 "SteelScanner.cpp"
+#line 989 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -993,14 +993,14 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 67:
                 {
 
-#line 502 "SteelScanner.reflex"
+#line 502 "../src/SteelScanner.reflex"
  
 		AstString *pString = (AstString*)m_token;
 
 		SwitchToStateMachine(StateMachine::MAIN);
 		return SteelParser::Token(SteelParser::Terminal::STRING,m_token);
 	
-#line 1004 "SteelScanner.cpp"
+#line 1004 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -1008,11 +1008,11 @@ return SteelParser::Token(SteelParser::Terminal::BINOP_COMPARE, new AstBinOp(m_l
                 case 68:
                 {
 
-#line 510 "SteelScanner.reflex"
+#line 510 "../src/SteelScanner.reflex"
 
 		// Error
 	
-#line 1016 "SteelScanner.cpp"
+#line 1016 "../src/SteelScanner.cpp"
 
                 }
                 break;
@@ -1049,21 +1049,21 @@ void SteelScanner::Unreject (std::uint32_t unreject_char_count)
 bool SteelScanner::IsInputAtEnd_ () throw()
 {
 
-#line 134 "SteelScanner.reflex"
+#line 134 "../src/SteelScanner.reflex"
 
 	return m_stream.eof();
 
-#line 1057 "SteelScanner.cpp"
+#line 1057 "../src/SteelScanner.cpp"
 }
 
 std::uint8_t SteelScanner::ReadNextAtom_ () throw()
 {
 
-#line 130 "SteelScanner.reflex"
+#line 130 "../src/SteelScanner.reflex"
 
     return m_stream.get();
 
-#line 1067 "SteelScanner.cpp"
+#line 1067 "../src/SteelScanner.cpp"
 }
 
 void SteelScanner::PrintAtom_ (std::ostream &out, std::uint8_t atom)
@@ -13217,7 +13217,7 @@ std::uint32_t const SteelScanner::ms_accept_handler_count_ = sizeof(SteelScanner
 // ///////////////////////////////////////////////////////////////////////
 
 
-#line 55 "SteelScanner.reflex"
+#line 55 "../src/SteelScanner.reflex"
 
 void SteelScanner::setBuffer(const char * pBuffer, const std::string &name)
 {
@@ -13272,4 +13272,4 @@ int SteelScanner::NewlineCount(const std::string &text)
 
 } // namespace
 
-#line 13276 "SteelScanner.cpp"
+#line 13276 "../src/SteelScanner.cpp"

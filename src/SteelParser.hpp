@@ -17,7 +17,7 @@
 #include <vector>
 
 
-#line 7 "SteelParser.trison"
+#line 7 "../src/SteelParser.trison"
 
 #if !defined(STEEL_PARSER_HPP_)
 #define STEEL_PARSER_HPP_
@@ -31,7 +31,7 @@ namespace Steel {
 class SteelScanner;
 
 
-#line 35 "SteelParser.hpp"
+#line 35 "../src/SteelParser.hpp"
 
 /// @brief A parser class.
 ///
@@ -59,6 +59,10 @@ public:
         /// Indicates that the parse was halted because the number of realized
         /// lookaheads exceeded the max allowable lookahead count (NPDA target only).
         PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_COUNT,
+        /// Indicates that the parse was halted because the realized size of the
+        /// lookahead queue exceeded the max allowable lookahead queue size (NPDA
+        /// target only).
+        PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_QUEUE_SIZE,
         /// Indicates that the parse was halted because the depth of the parse tree
         /// exceeded the max allowable parse tree depth (NPDA target only).
         PRC_EXCEEDED_MAX_ALLOWABLE_PARSE_TREE_DEPTH,
@@ -216,10 +220,22 @@ public:
     /// documented in trison.cpp.targetspec.  A negative value means that there is
     /// no limit.
     std::int64_t MaxAllowableLookaheadCount () const;
-    /// Returns the maximum number of lookaheads used in any parser decision so far
-    /// (this is not the theoretical maximum for the grammar/npda, it's the maximum
-    /// only for the states the parser has actually encountered).
+    /// Returns the maximum number of lookaheads (not including %error tokens) used in
+    /// any parser decision so far (this is not the theoretical maximum for the
+    /// grammar/npda, it's the maximum only for the states the parser has actually
+    /// encountered).
     std::size_t MaxRealizedLookaheadCount () const;
+    /// Returns the highest value that MaxRealizedLookaheadQueueSize may be before the
+    /// PRC_EXCEEDED_MAX_ALLOWABLE_LOOKAHEAD_QUEUE_SIZE error is generated.  The default
+    /// is set by the default_max_allowable_lookahead_queue_size directive, which is
+    /// documented in trison.cpp.targetspec.  A negative value means that there is
+    /// no limit.
+    std::int64_t MaxAllowableLookaheadQueueSize () const;
+    /// Returns the maximum size of the lookahead queue (including %error tokens) used
+    /// in any parser decision so far (this is not the theoretical maximum for the
+    /// grammar/npda, it's the maximum only for the states the parser has actually
+    /// encountered).
+    std::size_t MaxRealizedLookaheadQueueSize () const;
     /// Returns the maximum parse tree depth that may occur before the
     /// PRC_EXCEEDED_MAX_ALLOWABLE_PARSE_TREE_DEPTH error is generated.  The default
     /// is set by the default_max_allowable_parse_tree_depth directive, which is
@@ -234,6 +250,9 @@ public:
     /// Sets the maximum allowable lookahead count.  The initial value is given by
     /// the default_max_allowable_lookahead_count directive defined in trison.cpp.targetspec.
     void SetMaxAllowableLookaheadCount (std::int64_t max_allowable_lookahead_count);
+    /// Sets the maximum allowable lookahead queue size.  The initial value is given by
+    /// the default_max_allowable_lookahead_queue_size directive defined in trison.cpp.targetspec.
+    void SetMaxAllowableLookaheadQueueSize (std::int64_t max_allowable_lookahead_queue_size);
     /// Sets the maximum allowable parse tree depth.  The initial value is given by
     /// the default_max_allowable_parse_tree_depth directive defined in trison.cpp.targetspec.
     void SetMaxAllowableParseTreeDepth (std::int64_t max_allowable_parse_tree_depth);
@@ -244,24 +263,27 @@ public:
         // Individual flags
         DSF_START_END_PARSE             = 1 << 0,
         DSF_ITERATION_COUNT             = 1 << 1,
-        DSF_ACTION                      = 1 << 2,
-        DSF_PROGRAMMER_ERROR            = 1 << 3,
-        DSF_PARSE_TREE_MESSAGE          = 1 << 4,
-        DSF_REALIZED_LOOKAHEAD_QUEUE    = 1 << 5,
-        DSF_SHIFT_REDUCE_CONFLICT       = 1 << 6,
-        DSF_REDUCE_REDUCE_CONFLICT      = 1 << 7,
-        DSF_TRANSITION_PROCESSING       = 1 << 8,
-        DSF_TRANSITION_EXERCISING       = 1 << 9,
-        DSF_HPS_REMOVE_DEFUNCT          = 1 << 10,
-        DSF_HPS_NODE_CREATION_DELETION  = 1 << 11,
+        DSF_SCANNER_ACTION              = 1 << 2,
+        DSF_PARSER_ACTION               = 1 << 3,
+        DSF_STACK_AND_LOOKAHEADS        = 1 << 4,
+        DSF_PROGRAMMER_ERROR            = 1 << 5,
+        DSF_PARSE_TREE_MESSAGE          = 1 << 6,
+        DSF_LIMIT_EXCEEDED              = 1 << 7,
+        DSF_SHIFT_REDUCE_CONFLICT       = 1 << 8,
+        DSF_REDUCE_REDUCE_CONFLICT      = 1 << 9,
+        DSF_TRANSITION_PROCESSING       = 1 << 10,
+        DSF_TRANSITION_EXERCISING       = 1 << 11,
+        DSF_HPS_REMOVE_DEFUNCT          = 1 << 12,
+        DSF_HPS_NODE_CREATION_DELETION  = 1 << 13,
         // If more are added, then make sure to update DSF_HIGHEST_.
         DSF_HIGHEST_                    = DSF_HPS_NODE_CREATION_DELETION,
 
         // Pre-defined common sets of bitflags, in ascending order of verbosity.
-        DSF_NONE                        = 0,
-        DSF_MINIMAL                     = DSF_START_END_PARSE|DSF_ACTION|DSF_PROGRAMMER_ERROR,
-        DSF_INTERMEDIATE                = DSF_START_END_PARSE|DSF_ITERATION_COUNT|DSF_PARSE_TREE_MESSAGE|DSF_ACTION|DSF_SHIFT_REDUCE_CONFLICT|DSF_PROGRAMMER_ERROR,
-        DSF_ALL                         = DSF_HIGHEST_-1
+        DSF__NONE                        = 0,
+        DSF__MINIMAL                     = DSF_START_END_PARSE|DSF_SCANNER_ACTION|DSF_PARSER_ACTION|DSF_LIMIT_EXCEEDED|DSF_PROGRAMMER_ERROR,
+        DSF__MINIMAL_VERBOSE             = DSF__MINIMAL|DSF_STACK_AND_LOOKAHEADS,
+        DSF__INTERMEDIATE                = DSF__MINIMAL_VERBOSE|DSF_ITERATION_COUNT|DSF_PARSE_TREE_MESSAGE|DSF_SHIFT_REDUCE_CONFLICT,
+        DSF__ALL                         = DSF_HIGHEST_-1 // This depends on everything being contiguous bitflags
     };
 
     /// Returns true if and only if "debug spew" is enabled (which prints, to the
@@ -329,7 +351,7 @@ public:
     ParserReturnCode Parse (AstBase* *return_token, Nonterminal::Name nonterminal_to_parse = Nonterminal::root);
 
 
-#line 46 "SteelParser.trison"
+#line 46 "../src/SteelParser.trison"
 
   	void setBuffer(const char *pBuffer, const std::string &script_name);
 	void setFileProvider(IFileProvider* provider);
@@ -347,7 +369,7 @@ private:
 	IFileProvider* m_file_provider;
 	std::string mErrors;
 
-#line 351 "SteelParser.hpp"
+#line 373 "../src/SteelParser.hpp"
 
 
 private:
@@ -357,6 +379,7 @@ private:
     // ///////////////////////////////////////////////////////////////////////
 
     std::int64_t m_max_allowable_lookahead_count;
+    std::int64_t m_max_allowable_lookahead_queue_size;
     std::int64_t m_max_allowable_parse_tree_depth;
 
     // debug spew methods
@@ -375,9 +398,13 @@ private:
     ParserReturnCode Parse_ (AstBase* *return_token, Nonterminal::Name nonterminal_to_parse);
     void ThrowAwayToken_ (Token const &token) throw();
     void ThrowAwayTokenData_ (AstBase* const &token_data) throw();
+    Token::Data InsertLookaheadErrorActions_ (Token const &noconsume_lookahead_token);
+    Token::Data DiscardLookaheadActions_ (Token const &consume_stack_top_error_token, Token const &consume_lookahead_token);
+    Token::Data PopStack1Actions_ (std::vector<Token> const &consume_stack_top_tokens, Token const &consume_lookahead_token);
+    Token::Data PopStack2Actions_ (std::vector<Token> const &consume_stack_top_tokens, Token const &noconsume_lookahead_token);
+    Token::Data RunNonassocErrorActions_ (Token const &lookahead);
     void ResetForNewInput_ () throw();
     Token Scan_ () throw();
-    void RunNonassocErrorActions_ (Token const &lookahead);
     // debug spew methods
     void PrintParserStatus_ (std::ostream &out) const;
 
@@ -407,6 +434,7 @@ private:
         {
             Token::Id       m_reduction_nonterminal_token_id;
             std::uint32_t   m_token_count;
+            bool            m_has_lookahead_directive;
             std::uint32_t   m_precedence_index;
             char const *    m_description;
         }; // end of struct SteelParser::Grammar_::Rule_
@@ -441,7 +469,7 @@ private:
         struct Transition_
         {
             // TODO: Make this into a strong enum (C++11)
-            enum Type { RETURN = 1, REDUCE, SHIFT, INSERT_LOOKAHEAD_ERROR, DISCARD_LOOKAHEAD, POP_STACK, EPSILON };
+            enum Type { RETURN = 1, ABORT, REDUCE, SHIFT, INSERT_LOOKAHEAD_ERROR, DISCARD_LOOKAHEAD, POP_STACK, EPSILON };
             std::uint8_t    m_type;
             // TODO: Rename this to m_token_id
             std::uint32_t   m_token_index;  // TODO: smallest int
@@ -452,20 +480,35 @@ private:
             // Lexicographic ordering on the tuple (m_type, m_token_index, m_data_index).
             struct Order
             {
-                // TODO: Rename SortedTypeIndex to ActionClassIndex?
-                static std::uint32_t SortedTypeIndex (Type type)
+                static std::uint32_t const MIN_SORTED_TYPE_INDEX = 0;
+                // static std::uint32_t const MAX_SORTED_TYPE_INDEX = 3;
+                static std::uint32_t const MAX_SORTED_TYPE_INDEX = 4;
+
+                // TODO: Rename SortedTypeIndex to OrderedActionIndex?
+                static std::uint32_t SortedTypeIndex (Transition_ const &transition)
                 {
-                    switch (type)
+                    switch (transition.m_type)
                     {
                         case REDUCE:
                         case SHIFT:
                             return 0;
 
-                        case DISCARD_LOOKAHEAD:
                         case POP_STACK:
-                            return 1;
+                            // POP_STACK 2 has higher precedence than DISCARD_LOOKAHEAD
+                            if (transition.m_data_index == 2)
+                                return 1;
+                            // POP_STACK 1 has equal precedence as DISCARD_LOOKAHEAD
+                            else
+                            {
+                                assert(transition.m_data_index == 1);
+                                return 2;
+                            }
+
+                        case DISCARD_LOOKAHEAD:
+                            return 2;
 
                         case RETURN:
+                        case ABORT:
                             return 2;
 
                         case INSERT_LOOKAHEAD_ERROR:
@@ -474,14 +517,38 @@ private:
 
                         default:
                             assert(false && "this should never happen");
-                            return 3; // Arbitrary
+                            return 4; // Arbitrary
                     }
+                    // switch (type)
+                    // {
+                    //     case REDUCE:
+                    //     case SHIFT:
+                    //         return 0;
+                    //
+                    //     case POP_STACK:
+                    //         return 1;
+                    //
+                    //     case DISCARD_LOOKAHEAD:
+                    //         return 2;
+                    //
+                    //     case RETURN:
+                    //     case ABORT:
+                    //         return 3;
+                    //
+                    //     case INSERT_LOOKAHEAD_ERROR:
+                    //     case EPSILON:
+                    //         return 4;
+                    //
+                    //     default:
+                    //         assert(false && "this should never happen");
+                    //         return 5; // Arbitrary
+                    // }
                 }
 
                 bool operator () (Transition_ const &lhs, Transition_ const &rhs) const
                 {
-                    std::uint32_t sorted_type_index_lhs = SortedTypeIndex(Type(lhs.m_type));
-                    std::uint32_t sorted_type_index_rhs = SortedTypeIndex(Type(rhs.m_type));
+                    std::uint32_t sorted_type_index_lhs = SortedTypeIndex(lhs);
+                    std::uint32_t sorted_type_index_rhs = SortedTypeIndex(rhs);
                     if (sorted_type_index_lhs != sorted_type_index_rhs)
                         return sorted_type_index_lhs < sorted_type_index_rhs;
                     else if (lhs.m_type != rhs.m_type)
@@ -574,26 +641,15 @@ private:
                 return 1;
         }
 
-        // The print_delimiter_at_branch_length parameter should be the realized stack depth.  It will
-        // print a semicolon after the realized portion of the stack, so that the hypothetical portion
-        // of the stack can be visually distinguished.
         template <typename T>
-        void PrintRootToLeaf (std::ostream &out, T (*DataTransform)(DataType const &), std::shared_ptr<TreeNode_> const &delimiting_ancestor = std::shared_ptr<TreeNode_>(), std::string const &delimiter = std::string()) const
+        void PrintRootToLeaf (std::ostream &out, T (*DataTransform)(DataType const &)) const
         {
             if (this->HasParent())
             {
-                Parent()->PrintRootToLeaf(out, DataTransform, delimiting_ancestor);
+                Parent()->PrintRootToLeaf(out, DataTransform);
                 out << ' ';
             }
-            // If there is no delimiting ancestor, then the delimiting ancestor is the root.
-            else if (!bool(delimiting_ancestor) && !delimiter.empty())
-                out << delimiter << ' ';
-
             out << DataTransform(Data());
-
-            // Print the delimiter, if called for.
-            if (Equals(this->shared_from_this(), delimiting_ancestor) && !delimiter.empty())
-                out << ' ' << delimiter;
         }
 
     private:
@@ -694,13 +750,16 @@ private:
         TokenQueue_ const & LookaheadQueue                      () const { return m_lookahead_queue; }
 
         std::size_t         MaxRealizedLookaheadCount           () const { return m_max_realized_lookahead_count; }
+        std::size_t         MaxRealizedLookaheadQueueSize       () const { return m_max_realized_lookahead_queue_size; }
         bool                HasExceededMaxAllowableLookaheadCount (std::int64_t max_allowable_lookahead_count) const { return max_allowable_lookahead_count >= 0 && m_max_realized_lookahead_count > std::size_t(max_allowable_lookahead_count); }
+        bool                HasExceededMaxAllowableLookaheadQueueSize (std::int64_t max_allowable_lookahead_queue_size) const { return max_allowable_lookahead_queue_size >= 0 && m_max_realized_lookahead_queue_size > std::size_t(max_allowable_lookahead_queue_size); }
         bool                HasEncounteredErrorState            () const { return m_has_encountered_error_state; }
 
         // This is used during the hypothetical branch processing for when more lookaheads are needed in the queue.
         void                PushBackLookahead                   (Token const &lookahead, HPSQueue_ const &hps_queue);
 
         Token               PopStack                            ();
+        void                ReplaceTokenStackTopWith            (Token const &replacement);
         Token               PopFrontLookahead                   (HPSQueue_ &hps_queue);
 
         void                StealTokenStackTop                  (AstBase* *&return_token);
@@ -718,6 +777,8 @@ private:
         // This one is tricky to implement within RealizedState_ alone.
         //void                ExecuteActionPopStack               (std::uint32_t pop_count);
 
+        void                PrintStackAndLookaheads             (std::ostream &out) const;
+
         void                ClearStack                          ();
         void                Reinitialize                        (Npda_::StateIndex_ initial_state);
 
@@ -725,9 +786,13 @@ private:
 
         void                Initialize                          (Npda_::StateIndex_ initial_state);
 
+    public:
         void                PushFrontLookahead                  (Token const &lookahead, HPSQueue_ &hps_queue);
+    private:
         void                UpdateMaxRealizedLookaheadCount     ();
+    public:
         void                SetHasEncounteredErrorState         () { m_has_encountered_error_state = true; }
+    private:
 
         static bool         IsScannerGeneratedTokenId           (Token::Id token_id)
         {
@@ -743,13 +808,14 @@ private:
         // This is related to k in the LALR(k) quantity of the grammar, though it's only what's been realized
         // during the parse, not the theoretical bound (if it even exists).
         std::size_t         m_max_realized_lookahead_count;
+        std::size_t         m_max_realized_lookahead_queue_size;
         // TODO: Maybe make this into the number of times error recovery has been entered.
         bool                m_has_encountered_error_state;
     }; // end of struct SteelParser::RealizedState_
 
     struct HypotheticalState_
     {
-        HypotheticalState_      (std::uint32_t initial_state);
+        HypotheticalState_      (Branch_ const &initial_branch);
         ~HypotheticalState_     ();
 
         // The min and max realized lookahead cursors being equal across all HPSes indicates that
@@ -788,7 +854,7 @@ private:
 
     void ExecuteAndRemoveTrunkActions_ (bool &should_return, ParserReturnCode &parser_return_code, AstBase* *&return_token);
     void ContinueNPDAParse_ (bool &should_return);
-    Token::Data ExecuteReductionRule_ (std::uint32_t const rule_index_, TokenStack_ const &token_stack) throw();
+    Token::Data ExecuteReductionRule_ (std::uint32_t const rule_index_, TokenStack_ const &token_stack, Token const *lookahead_) throw();
 
     // TODO: This should probably be inside HypotheticalState_
     struct ParseTreeNode_
@@ -797,7 +863,7 @@ private:
         // Note: HPS stands for "Hypothetical Parser State", which represents one of possibly many
         // ways the non-deterministic parser can parse the input.
         // TODO: probably order this so that the Spec::Order gives an obvious way to do error handling action last
-        enum Type { ROOT = 0, RETURN, REDUCE, SHIFT, INSERT_LOOKAHEAD_ERROR, DISCARD_LOOKAHEAD, POP_STACK, HPS, COUNT_ };
+        enum Type { ROOT = 0, RETURN, ABORT, REDUCE, SHIFT, INSERT_LOOKAHEAD_ERROR, DISCARD_LOOKAHEAD, POP_STACK, HPS, COUNT_ };
         static std::uint32_t const UNUSED_DATA = std::uint32_t(-1);
 
         struct Spec
@@ -948,9 +1014,9 @@ std::ostream &operator << (std::ostream &stream, SteelParser::ParserReturnCode p
 
 std::ostream &operator << (std::ostream &stream, SteelParser::Token const &token);
 
-#line 22 "SteelParser.trison"
+#line 22 "../src/SteelParser.trison"
 
 } // namespace Steel
 #endif // !defined(STEEL_PARSER_HPP_)
 
-#line 957 "SteelParser.hpp"
+#line 1023 "../src/SteelParser.hpp"
