@@ -522,7 +522,7 @@ private:
 #endif // !defined(ReflexCpp_namespace_)
 
 
-#line 8 "SteelScanner.reflex"
+#line 8 "../src/SteelScanner.reflex"
 
 
 #include <cassert>
@@ -534,7 +534,7 @@ private:
 namespace Steel { 
 class AstBase;
 
-#line 538 "SteelScanner.hpp"
+#line 538 "../src/SteelScanner.hpp"
 
 class SteelScanner : private ReflexCpp_::AutomatonApparatus_FastAndBig_Interactive_
 {
@@ -553,14 +553,14 @@ public:
     }; // end of struct SteelScanner::StateMachine
 
 
-#line 35 "SteelScanner.reflex"
+#line 35 "../src/SteelScanner.reflex"
 
 	void setBuffer(const char * pBuffer, const std::string &name);
 	void append(const std::string& str);
 	int getCurrentLine() const { return m_line; }
 	std::string getScriptName() const { return m_script_name; }
 
-#line 564 "SteelScanner.hpp"
+#line 564 "../src/SteelScanner.hpp"
 
 public:
 
@@ -595,7 +595,7 @@ public:
 public:
 
 
-#line 42 "SteelScanner.reflex"
+#line 42 "../src/SteelScanner.reflex"
 
 
 	// Converters
@@ -608,7 +608,7 @@ public:
 	AstBase * m_token;
 	std::string m_script_name;
 
-#line 612 "SteelScanner.hpp"
+#line 612 "../src/SteelScanner.hpp"
 
 
 private:
@@ -654,9 +654,9 @@ private:
 }; // end of class SteelScanner
 
 
-#line 20 "SteelScanner.reflex"
+#line 20 "../src/SteelScanner.reflex"
 
 } // namespace
 #endif // _STEEL_SCANNER_H
 
-#line 663 "SteelScanner.hpp"
+#line 663 "../src/SteelScanner.hpp"
