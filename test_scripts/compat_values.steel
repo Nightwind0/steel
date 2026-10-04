@@ -1,0 +1,8 @@
+// Deterministic smoke test: declarations, numeric/logical operators, interpolation.
+declare $count = 7;
+declare $factor = 2.5;
+
+println($count + 5);
+println($factor * 2);
+if ($count > 5 and not false) println("count={$count}");
+println("cost=${$factor}");

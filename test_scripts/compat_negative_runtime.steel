@@ -1,0 +1,2 @@
+// Expected runtime error: unresolved identifier.
+println($compat_missing_name);

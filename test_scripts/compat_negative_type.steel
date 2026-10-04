@@ -1,0 +1,2 @@
+// Expected runtime error: len only accepts strings, arrays, and hashes.
+println(len(42));

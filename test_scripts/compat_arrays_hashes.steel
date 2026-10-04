@@ -1,0 +1,13 @@
+// Array/hash literals, indexing, mutation, push/pop, and collection helpers.
+declare @values = [2, 4, 6];
+pushb @values, 8;
+println(len(@values));
+println(@values[2]);
+println(popb @values);
+
+declare #mapping = hash();
+#mapping["first"] = 11;
+#mapping["second"] = 22;
+#mapping["third"] = 33;
+println(#mapping["second"]);
+println(#mapping["first"]);

@@ -1,0 +1,13 @@
+// Named functions, defaults, closures, and recursion.
+function add_with_default(declare $left, declare $right = 4) {
+    return $left + $right;
+}
+
+function make_adder(declare $base) {
+    return function (declare $amount) { return $base + $amount; };
+}
+
+println(add_with_default(3));
+println(add_with_default(3, 8));
+declare $add_ten = make_adder(10);
+println($add_ten(5));

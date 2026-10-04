@@ -1,0 +1,12 @@
+// for/while/foreach, continue/break, and switch fallthrough.
+declare $sum = 0;
+for (declare $i = 0; $i < 5; $i++) {
+    if ($i == 2) continue;
+    $sum += $i;
+}
+println($sum);
+
+declare @items = [3, 5, 8];
+foreach (declare $item) in @items {
+    println($item);
+}
