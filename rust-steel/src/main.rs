@@ -380,7 +380,7 @@ impl Parser {
             let target = self.expression(12)?; self.expect_symbol(",")?; let value = self.expression(2)?;
             return Ok(Expr::Call(Box::new(Expr::Variable(if push_front { "__push" } else { "__pushb" }.into())), vec![target, value]));
         }
-        if self.eat_keyword("remove") { self.expect_symbol("(")?; let a = self.expression(0)?; self.expect_symbol(",")?; let b = self.expression(0)?; self.expect_symbol(")")?; return Ok(Expr::Call(Box::new(Expr::Variable("__remove".into())), vec![a,b])); }
+        if self.eat_keyword("remove") { self.expect_symbol("(")?; let a = self.expression(2)?; self.expect_symbol(",")?; let b = self.expression(2)?; self.expect_symbol(")")?; return Ok(Expr::Call(Box::new(Expr::Variable("__remove".into())), vec![a,b])); }
         match self.advance().kind {
             TokenKind::Number(v) => Ok(Expr::Literal(if v.fract() == 0.0 { Value::Int(v as i64) } else { Value::Real(v) })),
             TokenKind::String(v) => Ok(Expr::Literal(Value::Str(v))),

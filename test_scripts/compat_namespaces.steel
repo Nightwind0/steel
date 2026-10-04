@@ -1,0 +1,8 @@
+// Qualified calls and using-imports.
+function sample::greet() {
+    println("hello from sample");
+}
+
+sample::greet();
+using "sample";
+greet();

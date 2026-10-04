@@ -1,0 +1,2 @@
+// Expected parse error: an initializer must contain an expression.
+var $compat_bad_initializer = ;
