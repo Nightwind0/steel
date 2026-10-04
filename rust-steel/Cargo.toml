@@ -1,0 +1,8 @@
+[package]
+name = "steel-rs"
+version = "0.1.0"
+edition = "2024"
+
+[[bin]]
+name = "steel-rs"
+path = "src/main.rs"
