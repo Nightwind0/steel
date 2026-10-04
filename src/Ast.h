@@ -835,10 +835,9 @@ namespace Steel {
 		virtual ostream & print(std::ostream &out);
 		virtual bool hasInitializer() const { return m_pExp != NULL; }
 		virtual eStopType execute(SteelInterpreter *pInterpreter);
-		virtual AstIdentifier* getIdentifier() const { return m_pId.get(); }
+		virtual AstIdentifier* getIdentifier() const { return AstDeclaration::getIdentifier(); }
 		virtual void FindIdentifiers(std::list<AstIdentifier*>& o_ids);  		
 	private:
-		std::unique_ptr<AstIdentifier> m_pId;
 		std::unique_ptr<AstExpression> m_pIndex;
 		std::unique_ptr<AstExpression> m_pExp;
 	};

@@ -128,8 +128,8 @@ int main(int argc, char * argv[])
             std::cerr << ex.getLine() << ':';
         
         std::cerr << ex.getMessage() << std::endl;
+        return 1;
     }
 
 }
-
 

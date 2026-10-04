@@ -2008,7 +2008,7 @@ AstArrayDeclaration::AstArrayDeclaration(unsigned int line,
                                          const std::string &script,
                                          AstIdentifier *pId,
                                          AstExpression *pInt)
-  :AstDeclaration(line,script,pId,pInt),m_pId(pId),m_pIndex(pInt),m_pExp(nullptr)
+  :AstDeclaration(line,script,pId,nullptr),m_pIndex(pInt),m_pExp(nullptr)
 {
 }
 
@@ -2036,19 +2036,19 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
     try
     {
         if(m_pIndex)
-            pInterpreter->declare_array( m_pId->getValue(), m_pIndex->evaluate(pInterpreter));
-        else pInterpreter->declare_array( m_pId->getValue(), 0);
+            pInterpreter->declare_array( getIdentifier()->getValue(), m_pIndex->evaluate(pInterpreter));
+        else pInterpreter->declare_array( getIdentifier()->getValue(), 0);
     }
     catch(AlreadyDefined)
     {
         throw SteelException(SteelException::VARIABLE_DEFINED,
                              GetLine(),
                              GetScript(),
-                             "Array: '" + m_pId->getValue() + "' was previously defined.");
+                             "Array: '" + getIdentifier()->getValue() + "' was previously defined.");
     }
 
     try{
-        SteelType * pVar = pInterpreter->lookup_lvalue( m_pId->getValue() );
+        SteelType * pVar = pInterpreter->lookup_lvalue( getIdentifier()->getValue() );
         // If this is null here, we're in a BAD way. Programming error.
         assert ( nullptr != pVar);
 	
@@ -2063,7 +2063,7 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
         throw SteelException(SteelException::TYPE_MISMATCH,
                              GetLine(),
                              GetScript(),
-                             "Attempt to assign scalar to array in declaration of :'" + m_pId->getValue() + '\'');
+                             "Attempt to assign scalar to array in declaration of :'" + getIdentifier()->getValue() + '\'');
     }
     catch(UnknownIdentifier id)
     {
@@ -2078,7 +2078,7 @@ AstStatement::eStopType AstArrayDeclaration::execute(SteelInterpreter *pInterpre
 
 ostream & AstArrayDeclaration::print(std::ostream &out)
 {
-    out << "var " << *m_pId ;
+    out << "var " << *getIdentifier() ;
     if(m_pIndex) out << '[' << *m_pIndex << ']';
     if(m_pExp) out << '=' << *m_pExp;
     out << ';' << std::endl;
